@@ -1,5 +1,7 @@
 package main
 
+import "strings"
+
 func first_not_empty(parts ...string) (result string) {
 	for i := range parts {
 		if len(parts[i]) > 0 {
@@ -7,4 +9,20 @@ func first_not_empty(parts ...string) (result string) {
 		}
 	}
 	return
+}
+
+func index_byte_n(path string, needle byte, n int) int {
+
+	idx := 0
+	for s := 0; s < n; s++ {
+
+		i := strings.IndexByte(path[idx:], needle)
+		if i < 0 { // not found
+			break
+		}
+
+		idx = idx + i + 1
+	}
+
+	return idx - 1
 }

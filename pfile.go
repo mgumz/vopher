@@ -7,14 +7,23 @@ import (
 	"log"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 
 	neturl "net/url"
 )
 
+// most plugins are fetched from github. the github zip-files
+// put the files into a subfolder like this:
+//   vim-plugin/doc/plugin.txt
+//   vim-plugin/README.txt
+//
+const DEFAULT_STRIP = 1
+
 type Plugin struct {
-	name string
-	url  *neturl.URL
+	name      string
+	url       *neturl.URL
+	strip_dir int
 }
 
 func ScanPluginFile(name string) (map[string]Plugin, error) {
@@ -46,6 +55,9 @@ func ScanPluginReader(reader io.ReadCloser) (plugins map[string]Plugin, err erro
 			//log.Printf("skip %v", fields)
 			continue
 		}
+
+		// TODO: uncaught situation:
+		// http://example.com/bar.zip strip=1
 		name := ""
 		if len(fields) > 1 {
 			name, fields = fields[0], fields[1:]
@@ -60,7 +72,22 @@ func ScanPluginReader(reader io.ReadCloser) (plugins map[string]Plugin, err erro
 			return nil, fmt.Errorf("existing plugin %q on line %d", name, lnumber)
 		}
 
-		plugins[name] = Plugin{name: name, url: url}
+		plugin := Plugin{name: name, url: url, strip_dir: DEFAULT_STRIP}
+
+		// parse optional arguments
+		fields = fields[1:]
+		for i := range fields {
+			if strings.HasPrefix(fields[i], "strip=") {
+				strip, err := strconv.ParseUint((fields[i])[6:], 10, 8)
+				if err == nil {
+					plugin.strip_dir = int(strip)
+				} else {
+					return nil, fmt.Errorf("strange 'strip' field on line %d", lnumber)
+				}
+			}
+		}
+
+		plugins[name] = plugin
 	}
 	return
 }

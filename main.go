@@ -32,7 +32,6 @@ import (
 	"flag"
 	"io"
 	"log"
-	"net/http"
 	"os"
 	"path"
 	"path/filepath"
@@ -50,6 +49,7 @@ func (jw *JobWait) Done() { jw.ProgressTicker.WriteCounter += 1; jw.WaitGroup.Do
 func (jw *JobWait) Wait() { jw.WaitGroup.Wait(); jw.ProgressTicker.MaxOut() }
 
 func main() {
+	force := flag.Bool("force", false, "force download of existing plugins")
 	depfile := flag.String("pf", "plugins.lst", "plugins.lst")
 	base := flag.String("plugins", ".", "path to extract the plugins to")
 	flag.Parse()
@@ -66,22 +66,42 @@ func main() {
 	go wg.Start("vopher", 25*time.Millisecond)
 
 	for _, plugin := range plugins {
+
 		plugin_folder := filepath.Join(*base, plugin.name)
+
+		_, err := os.Stat(plugin_folder)
+		if err == nil { // plugin_folder exists
+			if !*force {
+				continue
+			}
+		}
+
 		if !strings.HasSuffix(plugin.url.Path, ".zip") {
 			switch plugin.url.Host {
 			case "github.com":
 				remote_zip := first_not_empty(plugin.url.Fragment, "master") + ".zip"
 				plugin.url.Path = path.Join(plugin.url.Path, "archive", remote_zip)
+			default:
+				ext, err := httpdetect_ftype(plugin.url.String())
+				if err != nil {
+					log.Printf("error: %q: %s", plugin.url, err)
+					continue
+				}
+				if ext != ".zip" {
+					log.Printf("error: %q: not a zip", plugin.url)
+					continue
+				}
 			}
 		}
+
 		wg.Add(1)
-		go fetch_and_extract(&wg, plugin_folder, plugin.url.String())
+		go fetch_and_extract(&wg, plugin_folder, plugin.url.String(), plugin.strip_dir)
 	}
 	wg.Wait()
 	wg.Stop()
 }
 
-func fetch_and_extract(wg *JobWait, base, url string) {
+func fetch_and_extract(wg *JobWait, base, url string, skip_dirs int) {
 	defer wg.Done()
 
 	if err := os.MkdirAll(base, 0777); err != nil {
@@ -101,13 +121,27 @@ func fetch_and_extract(wg *JobWait, base, url string) {
 	}
 	defer zfile.Close()
 	for _, f := range zfile.File {
-		oname := f.Name[strings.IndexByte(f.Name, '/')+1:]
+		idx := index_byte_n(f.Name, '/', skip_dirs)
+
+		oname := f.Name[idx+1:]
+
+		// root-directory
+		//   pname/      <- root-directory
+		//   pname/a.vim
+		if oname == "" {
+			continue
+		}
+
 		oname = filepath.Join(base, filepath.Clean(oname))
-		//fmt.Println(f.Name, "=>", oname)
+
 		if f.FileInfo().IsDir() {
 			os.MkdirAll(oname, 0777)
 			continue
 		}
+
+		// TODO: call only if needed
+		os.MkdirAll(filepath.Dir(oname), 0777)
+
 		zreader, err := f.Open()
 		if err != nil {
 			log.Println(oname, err)
@@ -124,33 +158,4 @@ func fetch_and_extract(wg *JobWait, base, url string) {
 		ofile.Close()
 		zreader.Close()
 	}
-}
-
-func httpget(out, url string) (err error) {
-
-	var file *os.File
-	var resp *http.Response
-
-	if file, err = os.Create(out); err != nil {
-		return err
-	}
-	defer file.Close()
-
-	if resp, err = http.Get(url); err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	reader := io.Reader(resp.Body)
-	/*
-		if resp.ContentLength > 0 {
-			progress := NewProgressTicker(resp.ContentLength)
-			defer progress.Stop()
-			go progress.Start(out, 2*time.Millisecond)
-			reader = io.TeeReader(reader, progress)
-		}
-	*/
-
-	_, err = io.Copy(file, reader)
-	return err
 }
