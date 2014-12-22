@@ -8,6 +8,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"path"
@@ -22,6 +23,20 @@ var allowed_actions = []string{
 	"update",
 	"c",
 	"clean",
+}
+
+func usage() {
+
+	fmt.Fprintln(os.Stderr, `vopher - acquire vim-plugins the gopher-way
+
+usage: vopher [flags] <action>
+
+actions
+  update - acquire the given plugins from the -f list
+  clean - remove given plugins frmo the -f list
+
+flags`)
+	flag.PrintDefaults()
 }
 
 func main() {
@@ -39,6 +54,8 @@ func main() {
 	flag.StringVar(&cli.file, "f", cli.file, "path to list of plugins")
 	flag.StringVar(&cli.dir, "dir", cli.dir, "directory to extract the plugins to")
 	flag.StringVar(&cli.ui, "ui", cli.ui, "ui mode")
+
+	flag.Usage = usage
 	flag.Parse()
 
 	if len(flag.Args()) > 0 {
