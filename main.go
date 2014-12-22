@@ -28,9 +28,7 @@ package main
 //        plugin-name fehlt
 
 import (
-	"archive/zip"
 	"flag"
-	"io"
 	"log"
 	"os"
 	"path"
@@ -48,30 +46,59 @@ type JobWait struct {
 func (jw *JobWait) Done() { jw.ProgressTicker.WriteCounter += 1; jw.WaitGroup.Done() }
 func (jw *JobWait) Wait() { jw.WaitGroup.Wait(); jw.ProgressTicker.MaxOut() }
 
+var allowed_actions = []string{
+	"u",
+	"up",
+	"update",
+	"c",
+	"clean",
+}
+
 func main() {
-	force := flag.Bool("force", false, "force download of existing plugins")
-	depfile := flag.String("pf", "plugins.lst", "plugins.lst")
-	base := flag.String("plugins", ".", "path to extract the plugins to")
+
+	log.SetPrefix("vopher.")
+	cli := struct {
+		action string
+		force  bool
+		file   string
+		dir    string
+	}{action: "update", dir: "."}
+
+	flag.BoolVar(&cli.force, "force", cli.force, "if already existant: refetch plugins")
+	flag.StringVar(&cli.file, "f", cli.file, "path to list of plugins")
+	flag.StringVar(&cli.dir, "dir", cli.dir, "directory to extract the plugins to")
 	flag.Parse()
 
-	plugins, err := ScanPluginFile(*depfile)
-	if err != nil {
-		log.Fatal(err)
+	if len(flag.Args()) > 0 {
+		cli.action = flag.Args()[0]
 	}
-	if len(plugins) == 0 {
-		log.Fatal("empty plugin-file")
+
+	if prefix_in_stringslice(allowed_actions, cli.action) == -1 {
+		log.Fatal("error: unknown action")
 	}
+
+	switch cli.action {
+	case "update", "u", "up":
+		plugins := must_read_plugins(cli.file)
+		update(plugins, cli.dir, cli.force)
+	case "clean", "c", "cl":
+		plugins := must_read_plugins(cli.file)
+		clean(plugins, cli.dir, cli.force)
+	}
+}
+
+func update(plugins PluginList, dir string, force bool) {
 
 	wg := JobWait{ProgressTicker: NewProgressTicker(int64(len(plugins)))}
 	go wg.Start("vopher", 25*time.Millisecond)
 
 	for _, plugin := range plugins {
 
-		plugin_folder := filepath.Join(*base, plugin.name)
+		plugin_folder := filepath.Join(dir, plugin.name)
 
 		_, err := os.Stat(plugin_folder)
 		if err == nil { // plugin_folder exists
-			if !*force {
+			if !force {
 				continue
 			}
 		}
@@ -95,67 +122,48 @@ func main() {
 		}
 
 		wg.Add(1)
-		go fetch_and_extract(&wg, plugin_folder, plugin.url.String(), plugin.strip_dir)
+		go acquire(&wg, plugin_folder, plugin.url.String(), plugin.strip_dir)
 	}
 	wg.Wait()
 	wg.Stop()
 }
 
-func fetch_and_extract(wg *JobWait, base, url string, skip_dirs int) {
-	defer wg.Done()
+func clean(plugins PluginList, dir string, force bool) {
 
-	if err := os.MkdirAll(base, 0777); err != nil {
-		log.Println("mkdir", base, err)
+	if !force {
+		log.Println("'clean' needs -force flag")
 		return
 	}
 
-	name := base + ".zip"
-	if err := httpget(name, url); err != nil {
-		log.Println(url, err)
-		return
+	var prefix, suffix string
+
+	for _, plugin := range plugins {
+		plugin_folder := filepath.Join(dir, plugin.name)
+		prefix = ""
+		suffix = "ok"
+		_, err := os.Stat(plugin_folder)
+		if err == nil { // plugin_folder exists
+			err = os.RemoveAll(plugin_folder)
+			if err != nil {
+				prefix = "error:"
+				suffix = err.Error()
+			}
+		} else {
+			prefix = "info:"
+			suffix = "does not exist"
+		}
+		log.Println("'clean'", prefix, plugin_folder, suffix)
 	}
-	zfile, err := zip.OpenReader(name)
+}
+
+func must_read_plugins(path string) PluginList {
+	plugins, err := ScanPluginFile(path)
 	if err != nil {
-		log.Println(name, err)
-		return
+		log.Fatal(err)
 	}
-	defer zfile.Close()
-	for _, f := range zfile.File {
-		idx := index_byte_n(f.Name, '/', skip_dirs)
 
-		oname := f.Name[idx+1:]
-
-		// root-directory
-		//   pname/      <- root-directory
-		//   pname/a.vim
-		if oname == "" {
-			continue
-		}
-
-		oname = filepath.Join(base, filepath.Clean(oname))
-
-		if f.FileInfo().IsDir() {
-			os.MkdirAll(oname, 0777)
-			continue
-		}
-
-		// TODO: call only if needed
-		os.MkdirAll(filepath.Dir(oname), 0777)
-
-		zreader, err := f.Open()
-		if err != nil {
-			log.Println(oname, err)
-		}
-		ofile, err := os.Create(oname)
-		if err != nil {
-			log.Println(oname, err)
-		}
-		_, err = io.Copy(ofile, zreader)
-		if err != nil {
-			log.Println(oname, err)
-		}
-
-		ofile.Close()
-		zreader.Close()
+	if len(plugins) == 0 {
+		log.Fatalf("empty plugin-file %q", path)
 	}
+	return plugins
 }

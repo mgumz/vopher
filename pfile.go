@@ -26,7 +26,9 @@ type Plugin struct {
 	strip_dir int
 }
 
-func ScanPluginFile(name string) (map[string]Plugin, error) {
+type PluginList map[string]Plugin
+
+func ScanPluginFile(name string) (PluginList, error) {
 
 	file, err := os.Open(name)
 	if err != nil {
@@ -35,9 +37,9 @@ func ScanPluginFile(name string) (map[string]Plugin, error) {
 	return ScanPluginReader(file)
 }
 
-func ScanPluginReader(reader io.ReadCloser) (plugins map[string]Plugin, err error) {
+func ScanPluginReader(reader io.ReadCloser) (plugins PluginList, err error) {
 
-	plugins = make(map[string]Plugin)
+	plugins = make(PluginList)
 	defer reader.Close()
 
 	var (

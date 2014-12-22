@@ -26,3 +26,12 @@ func index_byte_n(path string, needle byte, n int) int {
 
 	return idx - 1
 }
+
+func prefix_in_stringslice(lst []string, s string) int {
+	for i := range lst {
+		if strings.HasPrefix(lst[i], s) {
+			return i
+		}
+	}
+	return -1
+}
