@@ -23,6 +23,7 @@ var allowed_actions = []string{
 	"update",
 	"c",
 	"clean",
+	"sample",
 }
 
 func usage() {
@@ -33,10 +34,33 @@ usage: vopher [flags] <action>
 
 actions
   update - acquire the given plugins from the -f list
-  clean - remove given plugins frmo the -f list
+  clean  - remove given plugins frmo the -f list
+  sample - print sample vopher.list to stdout
 
 flags`)
 	flag.PrintDefaults()
+}
+
+func sample() {
+	fmt.Println(`# sample vopher.list file
+# a comment starts with a '#', the whole line gets ignored.
+# empty lines are ignored as well.
+
+# fetch tpope's 'vim-fugitive' plugin, the master branch (rox, btw)
+# and places the content of the zip-file into -dir <folder>/vim-fugitive.
+https://github.com/tpope/vim-fugitive
+
+# fetch tpope's 'vim-fugitive' plugin, but grab the tagged release 'v2.1'
+# instead of 'master'.
+https://github.com/tpope/vim-fugitive#v2.1
+
+# fetch tpope's 'vim-fugitive' plugin and place it under -dir <folder>/foo
+foo https://github.com/tpope/vim-fugitive
+
+# fetch tpope's 'vim-fugitive' plugin, but do not strip any directories
+# from the filenames in the zip. the default is to strip the first directory
+# name, but sometimes you need to have more control.
+vim-fugitive https://github.com/tpope/vim-fugitive strip=0`)
 }
 
 func main() {
@@ -64,6 +88,11 @@ func main() {
 
 	if prefix_in_stringslice(allowed_actions, cli.action) == -1 {
 		log.Fatal("error: unknown action")
+	}
+
+	if cli.action == "sample" {
+		sample()
+		return
 	}
 
 	var ui JobUi
