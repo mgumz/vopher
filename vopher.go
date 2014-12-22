@@ -79,7 +79,7 @@ func main() {
 			duration:       25 * time.Millisecond,
 		}
 	case "simple":
-		ui = &UiSimple{runtime: make(map[string]_ri)}
+		ui = &UiSimple{jobs: make(map[string]_ri)}
 	}
 
 	switch cli.action {
