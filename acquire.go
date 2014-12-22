@@ -11,8 +11,8 @@ import (
 // fetch 'url' and extract it into 'base'. skip 'skip_dirs'
 // leading directories in filenames in zip while extracting
 // the contents
-func acquire(wg *JobWait, base, url string, skip_dirs int) {
-	defer wg.Done()
+func acquire(base, url string, skip_dirs int, ui JobUi) {
+	defer ui.JobDone(base)
 
 	if err := os.MkdirAll(base, 0777); err != nil {
 		log.Println("mkdir", base, err)

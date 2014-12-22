@@ -34,17 +34,8 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
-	"sync"
 	"time"
 )
-
-type JobWait struct {
-	sync.WaitGroup
-	*ProgressTicker
-}
-
-func (jw *JobWait) Done() { jw.ProgressTicker.WriteCounter += 1; jw.WaitGroup.Done() }
-func (jw *JobWait) Wait() { jw.WaitGroup.Wait(); jw.ProgressTicker.MaxOut() }
 
 var allowed_actions = []string{
 	"u",
@@ -62,11 +53,13 @@ func main() {
 		force  bool
 		file   string
 		dir    string
-	}{action: "update", dir: "."}
+		ui     string
+	}{action: "update", dir: ".", ui: "progressline"}
 
 	flag.BoolVar(&cli.force, "force", cli.force, "if already existant: refetch plugins")
 	flag.StringVar(&cli.file, "f", cli.file, "path to list of plugins")
 	flag.StringVar(&cli.dir, "dir", cli.dir, "directory to extract the plugins to")
+	flag.StringVar(&cli.ui, "ui", cli.ui, "ui mode")
 	flag.Parse()
 
 	if len(flag.Args()) > 0 {
@@ -77,20 +70,31 @@ func main() {
 		log.Fatal("error: unknown action")
 	}
 
+	var ui JobUi
+	switch cli.ui {
+	case "progressline":
+		ui = &UiOneLine{
+			ProgressTicker: NewProgressTicker(0),
+			prefix:         "vopher",
+			duration:       25 * time.Millisecond,
+		}
+	case "simple":
+		ui = &UiSimple{runtime: make(map[string]_ri)}
+	}
+
 	switch cli.action {
 	case "update", "u", "up":
 		plugins := must_read_plugins(cli.file)
-		update(plugins, cli.dir, cli.force)
+		update(plugins, cli.dir, cli.force, ui)
 	case "clean", "c", "cl":
 		plugins := must_read_plugins(cli.file)
 		clean(plugins, cli.dir, cli.force)
 	}
 }
 
-func update(plugins PluginList, dir string, force bool) {
+func update(plugins PluginList, dir string, force bool, ui JobUi) {
 
-	wg := JobWait{ProgressTicker: NewProgressTicker(int64(len(plugins)))}
-	go wg.Start("vopher", 25*time.Millisecond)
+	ui.Start()
 
 	for _, plugin := range plugins {
 
@@ -121,11 +125,11 @@ func update(plugins PluginList, dir string, force bool) {
 			}
 		}
 
-		wg.Add(1)
-		go acquire(&wg, plugin_folder, plugin.url.String(), plugin.strip_dir)
+		ui.AddJob(plugin_folder)
+		go acquire(plugin_folder, plugin.url.String(), plugin.strip_dir, ui)
 	}
-	wg.Wait()
-	wg.Stop()
+	ui.Wait()
+	ui.Stop()
 }
 
 func clean(plugins PluginList, dir string, force bool) {
