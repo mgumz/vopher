@@ -5,27 +5,6 @@ package main
 // which does it all.
 //
 // plugins: http://vimawesome.com/
-//
-// ui-options:
-//
-// * https://godoc.org/github.com/jroimartin/gocui
-//
-//  global-progress [..............]
-//  plugin1         [....]
-//  plugin2         [............]
-//  plugin3         [..............]
-//
-// cons: vertical space
-//
-// ui-option2:
-//   <-> global progress
-//  [....|.....|.....|....|....|....]
-//   ^
-//   | plugin-progress via _-=#░█▓▒░█
-//   v
-//
-// cons: horizontal space
-//        plugin-name fehlt
 
 import (
 	"flag"
