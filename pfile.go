@@ -31,6 +31,11 @@ type Plugin struct {
 	strip_dir int
 }
 
+func (pl *Plugin) String() string {
+	return fmt.Sprintf("Plugin{%q, %q, strip=%d}",
+		pl.name, pl.url.String(), pl.strip_dir)
+}
+
 type PluginList map[string]Plugin
 
 func ScanPluginFile(name string) (PluginList, error) {
@@ -56,7 +61,9 @@ func ScanPluginReader(reader io.ReadCloser) (plugins PluginList, err error) {
 	)
 
 	scanner.Split(bufio.ScanLines)
+
 	for lnumber := 1; scanner.Scan(); lnumber++ {
+
 		line = scanner.Text()
 
 		if lnumber == 1 {
@@ -64,14 +71,11 @@ func ScanPluginReader(reader io.ReadCloser) (plugins PluginList, err error) {
 		}
 
 		if fields, skip = is_comment(strings.Fields(line)); skip {
-			//log.Printf("skip %v", fields)
 			continue
 		}
 
-		// TODO: uncaught situation:
-		// http://example.com/bar.zip strip=1
 		name := ""
-		if len(fields) > 1 {
+		if len(fields) > 1 && !strings.Contains(fields[0], "://") {
 			name, fields = fields[0], fields[1:]
 		}
 		if url, err = neturl.Parse(fields[0]); err != nil {
@@ -82,6 +86,11 @@ func ScanPluginReader(reader io.ReadCloser) (plugins PluginList, err error) {
 		name = first_not_empty(name, path.Base(url.Path))
 		if _, skip = plugins[name]; skip {
 			return nil, fmt.Errorf("existing plugin %q on line %d", name, lnumber)
+		}
+
+		// strip away .zip (or other archive-formats)
+		if strings.HasSuffix(name, ".zip") {
+			name = name[:len(name)-4]
 		}
 
 		plugin := Plugin{name: name, url: url, strip_dir: DEFAULT_STRIP}
