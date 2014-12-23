@@ -39,6 +39,10 @@ func (pt *ProgressTicker) Stop() {
 }
 
 func (pt *ProgressTicker) Print(prefix string) {
+	if pt.Max == 0 {
+		return
+	}
+
 	ticks := strings.Repeat("=====", 10)
 	n := math.Max(1.0, math.Floor(float64(len(ticks))*pt.Progress()))
 	fmt.Printf("\r%s: (%d/%d) %s|",
