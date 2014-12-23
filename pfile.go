@@ -9,16 +9,21 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 
 	neturl "net/url"
 )
 
-// most plugins are fetched from github. the github zip-files
-// put the files into a subfolder like this:
-//   vim-plugin/doc/plugin.txt
-//   vim-plugin/README.txt
-//
-const DEFAULT_STRIP = 1
+const (
+	// most plugins are fetched from github. the github zip-files
+	// put the files into a subfolder like this:
+	//   vim-plugin/doc/plugin.txt
+	//   vim-plugin/README.txt
+	//
+	DEFAULT_STRIP = 1
+
+	BYTE_ORDER_MARK = '\uFEFF'
+)
 
 type Plugin struct {
 	name      string
@@ -53,6 +58,11 @@ func ScanPluginReader(reader io.ReadCloser) (plugins PluginList, err error) {
 	scanner.Split(bufio.ScanLines)
 	for lnumber := 1; scanner.Scan(); lnumber++ {
 		line = scanner.Text()
+
+		if lnumber == 1 {
+			line = strip_bom(line)
+		}
+
 		if fields, skip = is_comment(strings.Fields(line)); skip {
 			//log.Printf("skip %v", fields)
 			continue
@@ -96,4 +106,11 @@ func ScanPluginReader(reader io.ReadCloser) (plugins PluginList, err error) {
 
 func is_comment(fields []string) ([]string, bool) {
 	return fields, (len(fields) == 0 || len(fields[0]) == 0 || fields[0][0] == '#')
+}
+
+func strip_bom(in string) string {
+	if strings.IndexRune(in, BYTE_ORDER_MARK) == -1 {
+		return in
+	}
+	return in[utf8.RuneLen(BYTE_ORDER_MARK):]
 }
