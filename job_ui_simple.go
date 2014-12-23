@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -29,7 +30,13 @@ func (ui *UiSimple) Stop() {
 		rt := ui.jobs[id]
 		d += rt.end.Sub(rt.start)
 	}
-	fmt.Println("finish (", ui.runtime.end.Sub(ui.runtime.start), "for", len(ui.jobs), "jobs, cumulated runtime ", d, ")")
+
+	dt := ui.runtime.end.Sub(ui.runtime.start)
+
+	fmt.Println("done", strconv.FormatFloat(dt.Seconds(), 'f', 2, 64)+"s",
+		"(", len(ui.jobs), "jobs, cumulated runtime ",
+		strconv.FormatFloat(d.Seconds(), 'f', 2, 64),
+		")")
 }
 
 func (ui *UiSimple) AddJob(id string) {
@@ -42,7 +49,8 @@ func (ui *UiSimple) JobDone(id string) {
 	rt := ui.jobs[id]
 	rt.end = time.Now()
 	ui.jobs[id] = rt
-	fmt.Println("done", id, ui.jobs[id].end.Sub(ui.jobs[id].start))
+	d := ui.jobs[id].end.Sub(ui.jobs[id].start)
+	fmt.Println(" job", strconv.FormatFloat(d.Seconds(), 'f', 2, 64)+"s", id)
 }
 
 func (ui *UiSimple) Wait()    { ui.WaitGroup.Wait() }
