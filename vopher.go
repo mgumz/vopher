@@ -20,6 +20,8 @@ var allowed_actions = []string{
 	"update",
 	"c",
 	"clean",
+	"check",
+	"prune",
 	"sample",
 }
 
@@ -30,8 +32,15 @@ func usage() {
 usage: vopher [flags] <action>
 
 actions
-  update - acquire the given plugins from the -f list
-  clean  - remove given plugins frmo the -f list
+  update - acquire the given plugins from the -f <list>
+  check  - check plugins from -f <list> against a more
+           recent version
+  clean  - remove given plugins from the -f <list>
+  prune  - remove all entries from -dir <folder>
+           which are not referenced in -f <list>.
+           use -force=true to actually delete entries.
+           use -all=true to also delete <plugin>.zip
+           entries.
   sample - print sample vopher.list to stdout
 
 flags`)
@@ -44,12 +53,14 @@ func main() {
 	cli := struct {
 		action string
 		force  bool
+		all    bool
 		file   string
 		dir    string
 		ui     string
 	}{action: "update", dir: ".", ui: "progressline"}
 
-	flag.BoolVar(&cli.force, "force", cli.force, "if already existant: refetch plugins")
+	flag.BoolVar(&cli.force, "force", cli.force, "force certain actions")
+	flag.BoolVar(&cli.all, "all", cli.force, "don't keep <plugin>.zip around")
 	flag.StringVar(&cli.file, "f", cli.file, "path to list of plugins")
 	flag.StringVar(&cli.dir, "dir", cli.dir, "directory to extract the plugins to")
 	flag.StringVar(&cli.ui, "ui", cli.ui, "ui mode")
@@ -86,9 +97,15 @@ func main() {
 	case "update", "u", "up":
 		plugins := must_read_plugins(cli.file)
 		act_update(plugins, cli.dir, cli.force, ui)
+	case "check":
+		plugins := must_read_plugins(cli.file)
+		act_check(plugins, cli.dir, ui)
 	case "clean", "c", "cl":
 		plugins := must_read_plugins(cli.file)
 		act_clean(plugins, cli.dir, cli.force)
+	case "prune":
+		plugins := must_read_plugins(cli.file)
+		act_prune(plugins, cli.dir, cli.force, cli.all)
 	}
 }
 
