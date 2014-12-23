@@ -13,8 +13,8 @@ func first_not_empty(parts ...string) (result string) {
 
 func index_byte_n(path string, needle byte, n int) int {
 
-	idx := 0
-	for s := 0; s < n; s++ {
+	idx, s := 0, 0
+	for ; s < n; s++ {
 
 		i := strings.IndexByte(path[idx:], needle)
 		if i < 0 { // not found
@@ -22,6 +22,10 @@ func index_byte_n(path string, needle byte, n int) int {
 		}
 
 		idx = idx + i + 1
+	}
+
+	if s < n {
+		idx = 0
 	}
 
 	return idx - 1
