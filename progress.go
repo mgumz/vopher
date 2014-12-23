@@ -21,20 +21,24 @@ func NewProgressTicker(max int64) *ProgressTicker {
 func (pt *ProgressTicker) Start(prefix string, dur time.Duration) {
 	pt.stop = make(chan bool)
 	pt.ticker = time.NewTicker(dur)
-	for {
-		select {
-		case <-pt.ticker.C:
-			pt.Print(prefix)
-		case <-pt.stop:
-			pt.Print(prefix)
-			fmt.Println()
-			return
+
+	go func() {
+		for {
+			select {
+			case <-pt.ticker.C:
+				pt.Print(prefix)
+			case <-pt.stop:
+				pt.ticker.Stop()
+				pt.Print(prefix)
+				fmt.Println()
+				fmt.Println()
+				return
+			}
 		}
-	}
+	}()
 }
 
 func (pt *ProgressTicker) Stop() {
-	pt.ticker.Stop()
 	pt.stop <- true
 }
 

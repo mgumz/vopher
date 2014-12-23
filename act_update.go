@@ -16,8 +16,7 @@ func act_update(plugins PluginList, dir string, force bool, ui JobUi) {
 
 		plugin_folder := filepath.Join(dir, plugin.name)
 
-		_, err := os.Stat(plugin_folder)
-		if err == nil { // plugin_folder exists
+		if _, err := os.Stat(plugin_folder); err == nil { // plugin_folder exists
 			if !force {
 				continue
 			}
@@ -44,6 +43,7 @@ func act_update(plugins PluginList, dir string, force bool, ui JobUi) {
 		ui.AddJob(plugin_folder)
 		go acquire(plugin_folder, plugin.url.String(), plugin.strip_dir, ui)
 	}
+
 	ui.Wait()
 	ui.Stop()
 }
