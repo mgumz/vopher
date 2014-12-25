@@ -18,13 +18,13 @@ var allowed_actions = []string{
 	"u",
 	"up",
 	"update",
-	"c",
 	"clean",
+	"c",
 	"check",
 	"prune",
 	"sample",
-	"status",
 	"st",
+	"status",
 }
 
 func usage() {
@@ -101,10 +101,10 @@ func main() {
 	case "update", "u", "up":
 		plugins := must_read_plugins(cli.file)
 		act_update(plugins, cli.dir, cli.force, ui)
-	case "check":
+	case "check", "c":
 		plugins := must_read_plugins(cli.file)
 		act_check(plugins, cli.dir, ui)
-	case "clean", "c", "cl":
+	case "clean":
 		plugins := must_read_plugins(cli.file)
 		act_clean(plugins, cli.dir, cli.force)
 	case "prune":
