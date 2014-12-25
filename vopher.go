@@ -25,6 +25,7 @@ var allowed_actions = []string{
 	"sample",
 	"st",
 	"status",
+	"search",
 }
 
 func usage() {
@@ -35,6 +36,7 @@ usage: vopher [flags] <action>
 
 actions
   update - acquire the given plugins from the -f <list>
+  search - use http://vimawesome.com/ to list some plugins
   check  - check plugins from -f <list> against a more
            recent version
   clean  - remove given plugins from the -f <list>
@@ -83,6 +85,8 @@ func main() {
 	if cli.action == "sample" {
 		act_sample()
 		return
+	} else if cli.action == "search" && len(flag.Args()) < 2 {
+		log.Fatal("error: missing arguments for 'search'")
 	}
 
 	var ui JobUi
@@ -113,6 +117,8 @@ func main() {
 	case "status", "st":
 		plugins := may_read_plugins(cli.file)
 		act_status(plugins, cli.dir)
+	case "search":
+		act_search(flag.Args()[1:]...)
 	}
 }
 
