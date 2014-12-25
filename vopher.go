@@ -23,6 +23,8 @@ var allowed_actions = []string{
 	"check",
 	"prune",
 	"sample",
+	"status",
+	"st",
 }
 
 func usage() {
@@ -41,6 +43,8 @@ actions
            use -force=true to actually delete entries.
            use -all=true to also delete <plugin>.zip
            entries.
+  status - lists plugins in -dir <folder> and marks missing or
+           referenced and unreferenced plugins accordingly
   sample - print sample vopher.list to stdout
 
 flags`)
@@ -106,7 +110,18 @@ func main() {
 	case "prune":
 		plugins := must_read_plugins(cli.file)
 		act_prune(plugins, cli.dir, cli.force, cli.all)
+	case "status", "st":
+		plugins := may_read_plugins(cli.file)
+		act_status(plugins, cli.dir)
 	}
+}
+
+func may_read_plugins(path string) PluginList {
+	plugins, err := ScanPluginFile(path)
+	if err != nil {
+		plugins = make(PluginList)
+	}
+	return plugins
 }
 
 func must_read_plugins(path string) PluginList {
