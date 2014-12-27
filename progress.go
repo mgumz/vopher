@@ -52,7 +52,7 @@ func (pt *ProgressTicker) Print(prefix string) {
 		return
 	}
 
-	cols, _, _ := TerminalSize(os.Stdin)
+	cols, _, _ := TerminalSize(os.Stdout)
 	info := fmt.Sprintf("%s: (%d/%d)", prefix, pt.WriteCounter, pt.Max)
 	full := bytes.Repeat([]byte("."), cols-len(info)-2)
 	n_ticks := int(math.Max(1.0, math.Floor(float64(len(full))*pt.Progress())))
