@@ -3,13 +3,12 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"log"
 	"math"
 	"os"
 	"strconv"
 	"time"
 )
-
-const CURSOR_UP = "\x1b[1A"
 
 type ProgressTicker struct {
 	WriteMeter
@@ -26,8 +25,8 @@ func (pt *ProgressTicker) Start(prefix string, dur time.Duration) {
 	pt.stop = make(chan bool)
 	pt.ticker = time.NewTicker(dur)
 
-	fmt.Println()
 	go func() {
+		fmt.Println()
 		for {
 			select {
 			case <-pt.ticker.C:
@@ -53,6 +52,12 @@ func (pt *ProgressTicker) Print(prefix string) {
 	}
 
 	cols, _, _ := TerminalSize(os.Stdout)
+
+	if cols <= 0 {
+		log.Fatal("can't get TerminalSize(), use other -ui type")
+		return
+	}
+
 	info := fmt.Sprintf("%s: (%d/%d)", prefix, pt.WriteCounter, pt.Max)
 	full := bytes.Repeat([]byte("."), cols-len(info)-2)
 	n_ticks := int(math.Max(1.0, math.Floor(float64(len(full))*pt.Progress())))
@@ -73,7 +78,8 @@ func (pt *ProgressTicker) Print(prefix string) {
 
 	// using cursor-up+progress+newline works more stable than to \r
 	// the cursor.
-	fmt.Println(CURSOR_UP, info, string(full))
+	CursorNUp(os.Stdout, 1)
+	fmt.Println(info, string(full))
 }
 
 func (pt *ProgressTicker) MaxOut() {
