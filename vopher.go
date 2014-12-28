@@ -63,7 +63,7 @@ func main() {
 		file   string
 		dir    string
 		ui     string
-	}{action: "update", dir: ".", ui: "progressline"}
+	}{action: "update", dir: ".", ui: "oneline"}
 
 	flag.BoolVar(&cli.force, "force", cli.force, "force certain actions")
 	flag.BoolVar(&cli.all, "all", cli.force, "don't keep <plugin>.zip around")
@@ -91,7 +91,7 @@ func main() {
 
 	var ui JobUi
 	switch cli.ui {
-	case "progressline":
+	case "oneline":
 		ui = &UiOneLine{
 			ProgressTicker: NewProgressTicker(0),
 			prefix:         "vopher",
