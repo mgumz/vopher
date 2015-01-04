@@ -11,6 +11,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	stduser "os/user"
+	"path/filepath"
 	"time"
 )
 
@@ -99,6 +101,17 @@ func main() {
 		}
 	case "simple":
 		ui = &UiSimple{jobs: make(map[string]_ri)}
+	}
+
+	if cli.dir == "" {
+		log.Fatal("error: empty -dir")
+	}
+	if cli.dir[0] == '~' {
+		user, err := stduser.Current()
+		if err != nil {
+			log.Fatal("error: optaining current user?? %s", err)
+		}
+		cli.dir = filepath.Join(user.HomeDir, cli.dir[1:])
 	}
 
 	switch cli.action {
