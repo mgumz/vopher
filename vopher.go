@@ -11,8 +11,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	stduser "os/user"
-	"path/filepath"
 	"time"
 )
 
@@ -106,13 +104,15 @@ func main() {
 	if cli.dir == "" {
 		log.Fatal("error: empty -dir")
 	}
-	if cli.dir[0] == '~' {
-		user, err := stduser.Current()
-		if err != nil {
-			log.Fatal("error: optaining current user?? %s", err)
-		}
-		cli.dir = filepath.Join(user.HomeDir, cli.dir[1:])
+
+	var (
+		path string
+		err  error
+	)
+	if path, err = expand_path(cli.dir); err != nil {
+		log.Fatal("error: expanding %q failed while obtaining current user?? %s", cli.dir, err)
 	}
+	cli.dir = path
 
 	switch cli.action {
 	case "update", "u", "up":
