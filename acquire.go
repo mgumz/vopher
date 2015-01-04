@@ -2,6 +2,7 @@ package main
 
 import (
 	"archive/zip"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -11,23 +12,19 @@ import (
 // fetch 'url' and extract it into 'base'. skip 'skip_dirs'
 // leading directories in filenames in zip while extracting
 // the contents
-func acquire(base, url string, skip_dirs int, ui JobUi) {
-	defer ui.JobDone(base)
+func acquire(base, url string, skip_dirs int) error {
 
 	if err := os.MkdirAll(base, 0777); err != nil {
-		log.Println("mkdir", base, err)
-		return
+		return fmt.Errorf("mkdir %q: %s", base, err)
 	}
 
 	name := base + ".zip"
 	if err := httpget(name, url); err != nil {
-		log.Println(url, err)
-		return
+		return err
 	}
 	zfile, err := zip.OpenReader(name)
 	if err != nil {
-		log.Println(name, err)
-		return
+		return err
 	}
 	defer zfile.Close()
 	for _, f := range zfile.File {
@@ -68,4 +65,6 @@ func acquire(base, url string, skip_dirs int, ui JobUi) {
 		ofile.Close()
 		zreader.Close()
 	}
+
+	return nil
 }

@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"runtime"
 	"strconv"
 	"strings"
 	"unicode/utf8"
@@ -23,12 +24,23 @@ const (
 	DEFAULT_STRIP = 1
 
 	BYTE_ORDER_MARK = '\uFEFF'
+
+	OPT_STRIP_DIR     = 0
+	OPT_POSTUPDATE    = 1
+	OPT_POSTUPDATE_OS = 2
 )
 
+var PLUGIN_OPTS = []string{
+	"strip=",
+	"postupdate=",
+	"postupdate." + runtime.GOOS,
+}
+
 type Plugin struct {
-	name      string
-	url       *neturl.URL
-	strip_dir int
+	name       string
+	url        *neturl.URL
+	strip_dir  int    // strip n dir-parts from archive-entries
+	postupdate string // execute after 'update'-action
 }
 
 func (pl *Plugin) String() string {
@@ -94,23 +106,41 @@ func ScanPluginReader(reader io.ReadCloser) (plugins PluginList, err error) {
 		}
 
 		plugin := Plugin{name: name, url: url, strip_dir: DEFAULT_STRIP}
-
-		// parse optional arguments
-		fields = fields[1:]
-		for i := range fields {
-			if strings.HasPrefix(fields[i], "strip=") {
-				strip, err := strconv.ParseUint((fields[i])[6:], 10, 8)
-				if err == nil {
-					plugin.strip_dir = int(strip)
-				} else {
-					return nil, fmt.Errorf("strange 'strip' field on line %d", lnumber)
-				}
-			}
+		if err = plugin.OptionsFromFields(fields[1:]); err != nil {
+			return nil, fmt.Errorf("parsing optional fields: %q, plugin %q on line %d", err, name, lnumber)
 		}
 
 		plugins[name] = plugin
 	}
 	return
+}
+
+func (p *Plugin) OptionsFromFields(fields []string) error {
+
+	for i := range fields {
+		if strings.HasPrefix(fields[i], PLUGIN_OPTS[OPT_STRIP_DIR]) {
+			strip, err := strconv.ParseUint((fields[i])[len(PLUGIN_OPTS[OPT_STRIP_DIR]):], 10, 8)
+			if err == nil {
+				p.strip_dir = int(strip)
+			} else {
+				return fmt.Errorf("strange 'strip' field")
+			}
+		} else if strings.HasPrefix(fields[i], PLUGIN_OPTS[OPT_POSTUPDATE]) && p.postupdate == "" {
+			p.postupdate = fields[i][len(PLUGIN_OPTS[OPT_POSTUPDATE]):]
+		} else if strings.HasPrefix(fields[i], PLUGIN_OPTS[OPT_POSTUPDATE_OS]) {
+			p.postupdate = fields[i][len(PLUGIN_OPTS[OPT_POSTUPDATE_OS]):]
+		}
+	}
+
+	if p.postupdate != "" {
+		decoded, err := neturl.QueryUnescape(p.postupdate)
+		if err != nil {
+			return err
+		}
+		p.postupdate = decoded
+	}
+
+	return nil
 }
 
 func is_comment(fields []string) ([]string, bool) {
