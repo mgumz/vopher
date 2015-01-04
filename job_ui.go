@@ -30,6 +30,7 @@ type JobUi interface {
 	Refresh()
 
 	AddJob(job_id string)
+	Print(job_id, msg string)
 	JobDone(job_id string)
 	Wait() // wait for all jobs to be .Done()
 }

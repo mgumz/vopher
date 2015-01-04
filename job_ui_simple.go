@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -16,6 +18,7 @@ type UiSimple struct {
 	sync.WaitGroup
 	runtime _ri
 	jobs    map[string]_ri
+	sync.Mutex
 }
 
 func (ui *UiSimple) Start() {
@@ -33,10 +36,12 @@ func (ui *UiSimple) Stop() {
 
 	dt := ui.runtime.end.Sub(ui.runtime.start)
 
+	ui.Lock()
 	fmt.Println("done", strconv.FormatFloat(dt.Seconds(), 'f', 2, 64)+"s",
 		"(", len(ui.jobs), "jobs, cumulated runtime ",
 		strconv.FormatFloat(d.Seconds(), 'f', 2, 64),
 		")")
+	ui.Unlock()
 }
 
 func (ui *UiSimple) AddJob(id string) {
@@ -50,7 +55,19 @@ func (ui *UiSimple) JobDone(id string) {
 	rt.end = time.Now()
 	ui.jobs[id] = rt
 	d := ui.jobs[id].end.Sub(ui.jobs[id].start)
+	ui.Lock()
 	fmt.Println(" job", strconv.FormatFloat(d.Seconds(), 'f', 2, 64)+"s", id)
+	ui.Unlock()
+}
+
+func (ui *UiSimple) Print(id, msg string) {
+	scanner := bufio.NewScanner(strings.NewReader(msg))
+	scanner.Split(bufio.ScanLines)
+	ui.Lock()
+	for scanner.Scan() {
+		fmt.Println(" job", id, scanner.Text())
+	}
+	ui.Unlock()
 }
 
 func (ui *UiSimple) Wait()    { ui.WaitGroup.Wait() }

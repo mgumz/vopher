@@ -2,6 +2,7 @@ package main
 
 import (
 	"archive/zip"
+	"bytes"
 	"encoding/xml"
 	"fmt"
 	"log"
@@ -49,7 +50,9 @@ func act_check(plugins PluginList, base string, ui JobUi) {
 			}
 			wg.Wait()
 
-			fmt.Printf("\n\n## %s - %s\n", plugin.name, plugin.url)
+			buf := bytes.NewBuffer(nil)
+
+			fmt.Fprintf(buf, "\n\n## %s - %s\n", plugin.name, plugin.url)
 
 			prefix := " "
 			for i := range commits {
@@ -58,16 +61,17 @@ func act_check(plugins PluginList, base string, ui JobUi) {
 					continue
 				}
 
-				fmt.Println(c.section)
+				fmt.Fprintln(buf, c.section)
 				for _, entry := range c.atom.Entry {
 					prefix = " "
 					if entry.Id == head || entry.Id == alt_head {
 						prefix = "*"
 					}
-					fmt.Printf("  %s%.10s %s %s\n", prefix, entry.Id, entry.Updated, entry.Title)
+					fmt.Fprintf(buf, "  %s%.10s %s %s\n", prefix, entry.Id, entry.Updated, entry.Title)
 				}
 			}
 
+			ui.Print(plugin.name, buf.String())
 		}
 	}
 }
