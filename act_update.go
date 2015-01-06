@@ -56,6 +56,7 @@ func acquire_and_postupdate(dir string, plugin Plugin, ui JobUi) {
 		err  error
 		path string
 		out  []byte
+		path_cmd []string
 	)
 
 	if err = acquire(dir, plugin.url.String(), plugin.strip_dir); err != nil {
@@ -92,8 +93,10 @@ func acquire_and_postupdate(dir string, plugin Plugin, ui JobUi) {
 	// underneath it. if the user wants to call a script inside .Dir (which
 	// should be a rare case anyway) then she should use $VOPHER_DIR/cmd which
 	// gets expanded, see above.
+	path_cmd = strings.Split(path, " ")
 	cmd := exec.Cmd{
-		Path: path,
+		Path: path_cmd[0],
+		Args: path_cmd[1:],
 		Env: append(os.Environ(),
 			"VOPHER_NAME="+plugin.name,
 			"VOPHER_DIR="+dir,
