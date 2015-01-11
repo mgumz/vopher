@@ -39,7 +39,7 @@ func act_check(plugins PluginList, base string, ui JobUi) {
 			wg := sync.WaitGroup{}
 			wg.Add(len(commits))
 			for i := range commits {
-				if head == "master" {
+				if i == 0 && head == "master" { // don't check 'master' two times
 					wg.Done()
 					continue
 				}
