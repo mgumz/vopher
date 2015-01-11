@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 	stduser "os/user"
 	"path/filepath"
 	"strings"
@@ -60,4 +61,34 @@ func expand_path(p string) (string, error) {
 	}
 
 	return p, nil
+}
+
+// expands 'v' by replacing occurences of  by their
+// os.Environ() equivalent, except for $VOPHER_DIR which is
+// replaced by 'vopher_dir'
+//
+// if no match is found, $VAR is returned.
+//
+// NOTE: this behavior is different from os.ExpandEnv()
+func expand_var_environment(v, vopher_dir string) string {
+	switch v {
+	case "VOPHER_DIR":
+		return vopher_dir
+	default:
+		for _, env := range os.Environ() {
+			if strings.HasPrefix(env, v) && (env[len(v)] == '=') && (len(env)-len(v) > 1) {
+				return env[len(v)+1:]
+			}
+		}
+	}
+
+	// 404-environment -> "unaltered"
+	return "$" + v
+}
+
+// wrapper around os.Expand() and expand_var_environment
+func expand_path_environment(path, vopher_dir string) string {
+	return os.Expand(path, func(p string) string {
+		return expand_var_environment(p, vopher_dir)
+	})
 }

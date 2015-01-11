@@ -1,6 +1,10 @@
 package main
 
-import "testing"
+import (
+	"log"
+	"os"
+	"testing"
+)
 
 func TestIndexByteN(t *testing.T) {
 
@@ -20,6 +24,41 @@ func TestIndexByteN(t *testing.T) {
 			i, 2, '/', test.text, idx)
 		if idx != test.idx {
 			t.Fatalf("%d: expected %d, got %d", i, test.idx, idx)
+		}
+	}
+}
+
+func TestExpandVar(t *testing.T) {
+	var (
+		vopher_dir = "YIPI"
+		tests      = []struct {
+			in, expected string
+		}{
+			{"foo", "foo"},
+			{"foo bar", "foo bar"},
+			{"foo $FOO", "foo BAR"},
+			{"foo $VOPHER", "foo $VOPHER"},
+			{"foo ${VOPHER}", "foo $VOPHER"},
+			{"foo $VOPHER_DIR", "foo YIPI"},
+		}
+	)
+
+	os.Clearenv()
+	os.Setenv("FOO", "BAR")
+	os.Setenv("FOO1", "WUFF")
+	os.Setenv("EMPTY", "")
+
+	for i := range tests {
+
+		out := expand_path_environment(tests[i].in, vopher_dir)
+
+		t.Logf("%d: expand (VOPHER_DIR=%q, $ENV:%v) %q => %q",
+			i, vopher_dir, os.Environ(), tests[i].in, out)
+
+		if out != tests[i].expected {
+			log.Fatalf("%d: error expanding %q, got %q, expected %q\n%v",
+				i, tests[i].in, out, tests[i].expected,
+				os.Environ())
 		}
 	}
 }

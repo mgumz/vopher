@@ -75,14 +75,7 @@ func acquire_and_postupdate(dir string, plugin Plugin, ui JobUi) {
 		log.Printf("%s: expanding .postupdate %q: %s", dir, plugin.postupdate, err)
 		return
 	}
-
-	path = os.Expand(path, func(p string) string {
-		switch p {
-		case "VOPHER_DIR":
-			return dir
-		}
-		return p
-	})
+	path = expand_path_environment(path, dir)
 
 	// we won't check for existing executable, we just prepare the
 	// right environment and then we launch it. if it fails, the OS will tell
