@@ -98,7 +98,7 @@ func _gh_get_repository(remote *url.URL) (name, head string) {
 		head = head[:len(head)-4]
 	}
 
-	return
+	return name, head
 }
 
 // minimal atom-parser sufficient to extract only what we need
@@ -119,13 +119,13 @@ func _gh_get_commits(repo *url.URL, parts ...string) *_GhAtom {
 
 	resp, err := http.Get(atom_url.String())
 	if err != nil {
-		log.Println("error", atom_url, err)
+		log.Printf("error: %q %v", atom_url.String(), err)
 		return nil
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		log.Println("error", atom_url, err)
+		log.Printf("error: %q %v", atom_url.String(), err)
 		return nil
 	}
 
@@ -133,7 +133,7 @@ func _gh_get_commits(repo *url.URL, parts ...string) *_GhAtom {
 	gh := _GhAtom{}
 
 	if err = xmldec.Decode(&gh); err != nil {
-		log.Println("error", atom_url, err)
+		log.Printf("error: %q %v", atom_url.String(), err)
 		return nil
 	}
 
@@ -152,12 +152,13 @@ func _gh_get_commits(repo *url.URL, parts ...string) *_GhAtom {
 	return &gh
 }
 
+// the comment in a github-zip file refers to the git-commit-id
+// used by github to create the zip.
 func _gh_guess_commit_by_zip(name, base string) string {
 
 	path := filepath.Join(base, name+".zip")
 	zfile, err := zip.OpenReader(path)
 	if err != nil {
-		log.Println(path)
 		return ""
 	}
 	defer zfile.Close()
