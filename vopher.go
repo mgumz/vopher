@@ -1,10 +1,11 @@
-package main
-
+// *vopher* - acquire and manage vim-plugins by the power of the gopher
+//
 // idea: instead of having python/ruby/curl/wget/fetch/git installed
 // for a vim-plugin-manager to fetch the plugins i just want one binary
 // which does it all.
 //
 // plugins: http://vimawesome.com/
+package main
 
 import (
 	"flag"
@@ -59,6 +60,7 @@ func main() {
 	cli := struct {
 		action string
 		force  bool
+		dry    bool
 		all    bool
 		file   string
 		dir    string
@@ -66,6 +68,7 @@ func main() {
 	}{action: "update", dir: ".", ui: "oneline"}
 
 	flag.BoolVar(&cli.force, "force", cli.force, "force certain actions")
+	flag.BoolVar(&cli.dry, "dry", cli.dry, "dry-run, show what would happen")
 	flag.BoolVar(&cli.all, "all", cli.force, "don't keep <plugin>.zip around")
 	flag.StringVar(&cli.file, "f", cli.file, "path to list of plugins")
 	flag.StringVar(&cli.dir, "dir", cli.dir, "directory to extract the plugins to")
@@ -117,7 +120,8 @@ func main() {
 	switch cli.action {
 	case "update", "u", "up":
 		plugins := must_read_plugins(cli.file)
-		act_update(plugins, cli.dir, cli.force, ui)
+		opts := actUpdateOptions{dir: cli.dir, force: cli.force, dry_run: cli.dry}
+		act_update(plugins, ui, &opts)
 	case "check", "c":
 		plugins := must_read_plugins(cli.file)
 		act_check(plugins, cli.dir, ui)

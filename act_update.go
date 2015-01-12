@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -9,16 +10,22 @@ import (
 	"strings"
 )
 
-func act_update(plugins PluginList, dir string, force bool, ui JobUi) {
+type actUpdateOptions struct {
+	dir     string // dir to extract the plugins to
+	force   bool   // enforce acquire, even plugin exists
+	dry_run bool   // don't extract, just show the files
+}
+
+func act_update(plugins PluginList, ui JobUi, opts *actUpdateOptions) {
 
 	ui.Start()
 
 	for _, plugin := range plugins {
 
-		plugin_folder := filepath.Join(dir, plugin.name)
+		plugin_folder := filepath.Join(opts.dir, plugin.name)
 
 		if _, err := os.Stat(plugin_folder); err == nil { // plugin_folder exists
-			if !force {
+			if !opts.force {
 				continue
 			}
 		}
@@ -42,24 +49,30 @@ func act_update(plugins PluginList, dir string, force bool, ui JobUi) {
 		}
 
 		ui.AddJob(plugin_folder)
-		go acquire_and_postupdate(plugin_folder, plugin, ui)
+		go acquire_and_postupdate(plugin_folder, opts.dry_run, plugin, ui)
 	}
 
 	ui.Wait()
 	ui.Stop()
 }
 
-func acquire_and_postupdate(dir string, plugin Plugin, ui JobUi) {
+func acquire_and_postupdate(dir string, dry_run bool, plugin Plugin, ui JobUi) {
+
 	defer ui.JobDone(dir)
 
 	var (
 		err  error
 		path string
 		out  []byte
+
+		acquire_f func(string, string, int) error = acquire
 	)
 
-	if err = acquire(dir, plugin.url.String(), plugin.strip_dir); err != nil {
-		log.Printf("%s: %q", dir, err)
+	if dry_run {
+		acquire_f = dry_acquire
+	}
+	if err = acquire_f(dir, plugin.url.String(), plugin.strip_dir); err != nil {
+		log.Printf("%s: %v", dir, err)
 		return
 	}
 
@@ -91,6 +104,11 @@ func acquire_and_postupdate(dir string, plugin Plugin, ui JobUi) {
 			"VOPHER_NAME="+plugin.name,
 			"VOPHER_DIR="+dir,
 			"VOPHER_URL="+plugin.url.String()),
+	}
+
+	if dry_run {
+		fmt.Printf("# postupdate: %q (env: %v)\n", cmd.Path, cmd.Env)
+		return
 	}
 
 	out, err = cmd.CombinedOutput()
