@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/sha1"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"log"
@@ -33,7 +35,7 @@ func httpdetect_ftype(url string) (string, error) {
 	return path.Ext(content[idx+len(fn):]), nil
 }
 
-func httpget(out, url string) (err error) {
+func httpget(out, url, checkSha1 string) (err error) {
 
 	var file *os.File
 	var resp *http.Response
@@ -54,7 +56,13 @@ func httpget(out, url string) (err error) {
 	}
 
 	reader := io.Reader(resp.Body)
+	hasher := sha1.New()
+	tee := io.TeeReader(reader, hasher)
+
 	/*
+		// NOTE: idea to report sub-progress, but maybe not worth the
+		// effort since plugins are really small
+
 		if resp.ContentLength > 0 {
 			progress := NewProgressTicker(resp.ContentLength)
 			defer progress.Stop()
@@ -63,6 +71,14 @@ func httpget(out, url string) (err error) {
 		}
 	*/
 
-	_, err = io.Copy(file, reader)
+	if _, err = io.Copy(file, tee); err != nil {
+		return err
+	}
+
+	sha1Sum := hex.EncodeToString(hasher.Sum(nil))
+	if checkSha1 != "" && checkSha1 != sha1Sum {
+		return fmt.Errorf("sha1 does not match: got %s, expected %s", sha1Sum, checkSha1)
+	}
+
 	return err
 }

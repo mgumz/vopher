@@ -14,6 +14,7 @@ type actUpdateOptions struct {
 	dir     string // dir to extract the plugins to
 	force   bool   // enforce acquire, even plugin exists
 	dry_run bool   // don't extract, just show the files
+	sha1    string // checksum to check the downloaded file against
 }
 
 func act_update(plugins PluginList, ui JobUi, opts *actUpdateOptions) {
@@ -49,14 +50,14 @@ func act_update(plugins PluginList, ui JobUi, opts *actUpdateOptions) {
 		}
 
 		ui.AddJob(plugin_folder)
-		go acquire_and_postupdate(plugin_folder, opts.dry_run, plugin, ui)
+		go acquire_and_postupdate(plugin_folder, plugin.sha1, opts.dry_run, plugin, ui)
 	}
 
 	ui.Wait()
 	ui.Stop()
 }
 
-func acquire_and_postupdate(dir string, dry_run bool, plugin Plugin, ui JobUi) {
+func acquire_and_postupdate(dir, sha1 string, dry_run bool, plugin Plugin, ui JobUi) {
 
 	defer ui.JobDone(dir)
 
@@ -65,13 +66,13 @@ func acquire_and_postupdate(dir string, dry_run bool, plugin Plugin, ui JobUi) {
 		path string
 		out  []byte
 
-		acquire_f func(string, string, int) error = acquire
+		acquire_f func(string, string, int, string) error = acquire
 	)
 
 	if dry_run {
 		acquire_f = dry_acquire
 	}
-	if err = acquire_f(dir, plugin.url.String(), plugin.strip_dir); err != nil {
+	if err = acquire_f(dir, plugin.url.String(), plugin.strip_dir, sha1); err != nil {
 		log.Printf("%s: %v", dir, err)
 		return
 	}

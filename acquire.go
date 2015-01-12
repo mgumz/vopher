@@ -3,6 +3,8 @@ package main
 import (
 	"archive/zip"
 	"bytes"
+	"crypto/sha1"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"log"
@@ -14,14 +16,14 @@ import (
 // fetch 'url' and extract it into 'base'. skip 'skip_dirs'
 // leading directories in filenames in zip while extracting
 // the contents.
-func acquire(base, url string, skip_dirs int) error {
+func acquire(base, url string, skip_dirs int, checkSha1 string) error {
 
 	if err := os.MkdirAll(base, 0777); err != nil {
 		return fmt.Errorf("mkdir %q: %s", base, err)
 	}
 
 	name := base + ".zip"
-	if err := httpget(name, url); err != nil {
+	if err := httpget(name, url, checkSha1); err != nil {
 		return err
 	}
 	zfile, err := zip.OpenReader(name)
@@ -77,7 +79,7 @@ func acquire(base, url string, skip_dirs int) error {
 // TODO: dry_acquire is not nice with ui 'oneline' (or future 'curses' based
 // ones)
 //
-func dry_acquire(base, url string, skip_dirs int) error {
+func dry_acquire(base, url string, skip_dirs int, checkSha1 string) error {
 
 	var (
 		err    error
@@ -94,11 +96,20 @@ func dry_acquire(base, url string, skip_dirs int) error {
 	}
 	defer resp.Body.Close()
 
+	hasher := sha1.New()
+	tee := io.TeeReader(resp.Body, hasher)
+
 	buffer = bytes.NewBuffer(nil)
-	if _, err = io.Copy(buffer, resp.Body); err != nil {
+	if _, err = io.Copy(buffer, tee); err != nil {
 		return err
 	}
 	defer buffer.Reset()
+
+	sha1Sum := hex.EncodeToString(hasher.Sum(nil))
+
+	if checkSha1 != "" && checkSha1 != sha1Sum {
+		return fmt.Errorf("sha1 does not match: got %s, expected %s", sha1Sum, checkSha1)
+	}
 
 	if zfile, err = zip.NewReader(bytes.NewReader(buffer.Bytes()), int64(buffer.Len())); err != nil {
 		return err

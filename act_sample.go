@@ -18,12 +18,17 @@ https://github.com/tpope/vim-fugitive#v2.1
 # acquire tpope's 'vim-fugitive' plugin and place it under -dir <folder>/foo
 foo https://github.com/tpope/vim-fugitive
 
+# fetch tpope's 'vim-fugitive' plugin, but do not strip any directories
+# from the filenames in the zip. the default is to strip the first directory
+# name, but sometimes you need to have more control.
+vim-fugitive https://github.com/tpope/vim-fugitive strip=0
+
 # acquire tpope's 'vim-fugitive' plugin directly via a link to the zip. it's
 # wise to name the plugin, otherwise the plugin-folder would be 'v2.1'
 vim-fugitive https://github.com/tpope/vim-fugitive/archive/v2.1.zip
 
-# fetch tpope's 'vim-fugitive' plugin, but do not strip any directories
-# from the filenames in the zip. the default is to strip the first directory
-# name, but sometimes you need to have more control.
-vim-fugitive https://github.com/tpope/vim-fugitive strip=0`)
+# same as before, but check the zip against the sha1 given
+https://github.com/tpope/vim-fugitive/archive/v2.1.zip sha1=90437a3bd5f248bf5061f9afd3cc4a22fca4a11c
+
+`)
 }

@@ -2,6 +2,8 @@ package main
 
 import (
 	"bufio"
+	"crypto/sha1"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"log"
@@ -28,12 +30,14 @@ const (
 	OPT_STRIP_DIR     = 0
 	OPT_POSTUPDATE    = 1
 	OPT_POSTUPDATE_OS = 2
+	OPT_SHA1          = 3
 )
 
 var PLUGIN_OPTS = []string{
 	"strip=",
 	"postupdate=",
-	"postupdate." + runtime.GOOS,
+	"postupdate." + runtime.GOOS + "=",
+	"sha1=",
 }
 
 type Plugin struct {
@@ -41,6 +45,7 @@ type Plugin struct {
 	url        *neturl.URL
 	strip_dir  int    // strip n dir-parts from archive-entries
 	postupdate string // execute after 'update'-action
+	sha1       string
 }
 
 func (pl *Plugin) String() string {
@@ -129,6 +134,8 @@ func (p *Plugin) OptionsFromFields(fields []string) error {
 			p.postupdate = fields[i][len(PLUGIN_OPTS[OPT_POSTUPDATE]):]
 		} else if strings.HasPrefix(fields[i], PLUGIN_OPTS[OPT_POSTUPDATE_OS]) {
 			p.postupdate = fields[i][len(PLUGIN_OPTS[OPT_POSTUPDATE_OS]):]
+		} else if strings.HasPrefix(fields[i], PLUGIN_OPTS[OPT_SHA1]) {
+			p.sha1 = strings.ToLower(fields[i][len(PLUGIN_OPTS[OPT_SHA1]):])
 		}
 	}
 
@@ -138,6 +145,10 @@ func (p *Plugin) OptionsFromFields(fields []string) error {
 			return err
 		}
 		p.postupdate = decoded
+	}
+
+	if p.sha1 != "" && len(p.sha1) != hex.EncodedLen(sha1.Size) {
+		return fmt.Errorf("'sha1' field does not match size of a sha1")
 	}
 
 	return nil
