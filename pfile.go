@@ -53,7 +53,7 @@ func (pl *Plugin) String() string {
 		pl.name, pl.url.String(), pl.strip_dir)
 }
 
-type PluginList map[string]Plugin
+type PluginList map[string]*Plugin
 
 func ScanPluginFile(name string) (PluginList, error) {
 
@@ -115,7 +115,7 @@ func ScanPluginReader(reader io.ReadCloser) (plugins PluginList, err error) {
 			return nil, fmt.Errorf("parsing optional fields: %q, plugin %q on line %d", err, name, lnumber)
 		}
 
-		plugins[name] = plugin
+		plugins[name] = &plugin
 	}
 	return
 }

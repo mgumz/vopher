@@ -57,7 +57,7 @@ func act_update(plugins PluginList, ui JobUi, opts *actUpdateOptions) {
 	ui.Stop()
 }
 
-func acquire_and_postupdate(dir, sha1 string, dry_run bool, plugin Plugin, ui JobUi) {
+func acquire_and_postupdate(dir, sha1 string, dry_run bool, plugin *Plugin, ui JobUi) {
 
 	defer ui.JobDone(dir)
 

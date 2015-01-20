@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -65,6 +66,7 @@ func main() {
 		file   string
 		dir    string
 		ui     string
+		filter stringList
 	}{action: "update", dir: ".", ui: "oneline"}
 
 	flag.BoolVar(&cli.force, "force", cli.force, "force certain actions")
@@ -73,6 +75,7 @@ func main() {
 	flag.StringVar(&cli.file, "f", cli.file, "path to list of plugins")
 	flag.StringVar(&cli.dir, "dir", cli.dir, "directory to extract the plugins to")
 	flag.StringVar(&cli.ui, "ui", cli.ui, "ui mode")
+	flag.Var(&cli.filter, "filter", "only use plugins filtered")
 
 	flag.Usage = usage
 	flag.Parse()
@@ -119,42 +122,69 @@ func main() {
 
 	switch cli.action {
 	case "update", "u", "up":
-		plugins := must_read_plugins(cli.file)
+		plugins := must_read_plugins(cli.file, cli.filter)
 		opts := actUpdateOptions{dir: cli.dir, force: cli.force, dry_run: cli.dry}
 		act_update(plugins, ui, &opts)
 	case "check", "c":
-		plugins := must_read_plugins(cli.file)
+		plugins := must_read_plugins(cli.file, cli.filter)
 		act_check(plugins, cli.dir, ui)
 	case "clean":
-		plugins := must_read_plugins(cli.file)
+		plugins := must_read_plugins(cli.file, cli.filter)
 		act_clean(plugins, cli.dir, cli.force)
 	case "prune":
-		plugins := must_read_plugins(cli.file)
+		plugins := must_read_plugins(cli.file, cli.filter)
 		act_prune(plugins, cli.dir, cli.force, cli.all)
 	case "status", "st":
-		plugins := may_read_plugins(cli.file)
+		plugins := may_read_plugins(cli.file, cli.filter)
 		act_status(plugins, cli.dir)
 	case "search":
 		act_search(flag.Args()[1:]...)
 	}
 }
 
-func may_read_plugins(path string) PluginList {
+func may_read_plugins(path string, filter stringList) PluginList {
 	plugins, err := ScanPluginFile(path)
 	if err != nil {
 		plugins = make(PluginList)
 	}
+
+	plugins = filter_plugins(plugins, filter)
+
 	return plugins
 }
 
-func must_read_plugins(path string) PluginList {
+func must_read_plugins(path string, filter stringList) PluginList {
 	plugins, err := ScanPluginFile(path)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	plugins = filter_plugins(plugins, filter)
 
 	if len(plugins) == 0 {
 		log.Fatalf("empty plugin-file %q", path)
 	}
 	return plugins
 }
+
+func filter_plugins(plugins PluginList, filter stringList) PluginList {
+
+	if len(filter) == 0 {
+		return plugins
+	}
+
+	filtered := make(PluginList)
+	for k, v := range plugins {
+		for i := range filter {
+			if k == filter[i] {
+				filtered[k] = v
+			}
+		}
+	}
+	return filtered
+}
+
+type stringList []string
+
+func (sl *stringList) String() string     { return strings.Join(*sl, ", ") }
+func (sl *stringList) Set(v string) error { *sl = append(*sl, v); return nil }
