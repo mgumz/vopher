@@ -37,19 +37,19 @@ func usage() {
 usage: vopher [flags] <action>
 
 actions
-  update - acquire the given plugins from the -f <list>
-  search - use http://vimawesome.com/ to list some plugins
-  check  - check plugins from -f <list> against a more
+  update - acquires the given plugins from the -f <list>
+  search - uses http://vimawesome.com/ to list some plugins
+  check  - checks plugins from -f <list> against a more
            recent version
-  clean  - remove given plugins from the -f <list>
-  prune  - remove all entries from -dir <folder>
+  clean  - removes given plugins from the -f <list>
+  prune  - removes all entries from -dir <folder>
            which are not referenced in -f <list>.
            use -force=true to actually delete entries.
            use -all=true to also delete <plugin>.zip
            entries.
   status - lists plugins in -dir <folder> and marks missing or
            referenced and unreferenced plugins accordingly
-  sample - print sample vopher.list to stdout
+  sample - prints sample vopher.list to stdout
 
 flags`)
 	flag.PrintDefaults()
