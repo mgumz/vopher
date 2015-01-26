@@ -51,6 +51,11 @@ The vopher-file is pretty simple:
     # parser/extractor
     https://github.com/tpope/vim-fugitive option1=foo option2=bar
 
+## Supported archive types
+
+* .zip
+* .vba and .vba.gz (see [Charles E. Campbell](http://www.drchip.org/astronaut/vim/doc/pi_vimball.txt.html))
+* .tar.gz, .tar.bz2, .tar.bzip2, .tar.lzma, .tar.xz
 
 
 ## Sample session
@@ -60,7 +65,7 @@ The vopher-file is pretty simple:
 Acquire all of the plugins referenced in 'vopher.list':
 
     $> vopher -f vopher.list -dir bundles up
-    vopher: (25/25) [=================== 100% ====================]
+    vopher: (10/10) [=================== 100% ====================]
 
 Let's check for updates / new stuff:
 
@@ -107,29 +112,14 @@ vopher.list-file?
     $> vopher -f vopher.list -dir bundles status
     v  EasyDigraph.vim
        buftabs
-    v  calendar-vim
-    v  csv.vim
-       ctrlp.vim
-       emmet-vim
     v  goldenview
-    v  gundo.vim
-       lightline.vim
-       pyflakes-vim
-    v  scrollfix
-       syntastic
-    v  tagbar
-    v  taglist-46
     v  unicode.vim
        vim-bbye
        vim-bufferline
-       vim-colors-solarized
     vm vim-fugitive
        vim-gitgutter
     v  vim-go
        vim-jinja
-    v  vim-largefile
-    v  vim-markdown
-    v  vim-ps1
 
 Lines marked with 'v' are plugins referenced in the vopher.list. 'vm' marked
 lines are referenced plugins which are missing (acquire them by using the
@@ -207,7 +197,7 @@ Nope. There is no central repository for plugins which all of the
 plugin-writers agree on (in contrast, SublimeText3 has the defacto standard
 https://packagecontrol.io/installation ). Ontop of that something like a
 file-format for dependencies is lacking. Again, setting up the vopher.list
-file is something rare, I expect it to change it from time to time.
+file is something rare; I expect to change it from time to time.
 Dependencies for the plugins won't change that often either. So, a lot of
 effort and nothing substantial to gain from.
 
