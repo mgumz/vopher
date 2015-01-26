@@ -1,7 +1,6 @@
 package main
 
 import (
-	"archive/zip"
 	"bytes"
 	"crypto/sha1"
 	"encoding/hex"
@@ -16,61 +15,29 @@ import (
 // fetch 'url' and extract it into 'base'. skip 'skip_dirs'
 // leading directories in filenames in zip while extracting
 // the contents.
-func acquire(base, url string, skip_dirs int, checkSha1 string) error {
+func acquire(base, ext, url string, archive PluginArchive, skip_dirs int, checkSha1 string) error {
 
-	if err := os.MkdirAll(base, 0777); err != nil {
+	var (
+		name = base
+		err  = os.MkdirAll(name, 0777)
+	)
+
+	if err != nil {
 		return fmt.Errorf("mkdir %q: %s", base, err)
 	}
-
-	name := base + ".zip"
-	if err := httpget(name, url, checkSha1); err != nil {
+	if filepath.Ext(name) == "" {
+		name += ext
+	}
+	if err = httpget(name, url, checkSha1); err != nil {
 		return err
 	}
-	zfile, err := zip.OpenReader(name)
+	file, err := os.Open(name)
 	if err != nil {
 		return err
 	}
-	defer zfile.Close()
-	for _, f := range zfile.File {
-		idx := index_byte_n(f.Name, '/', skip_dirs)
+	defer file.Close()
 
-		oname := f.Name[idx+1:]
-
-		// root-directory
-		//   pname/      <- root-directory
-		//   pname/a.vim
-		if oname == "" {
-			continue
-		}
-
-		oname = filepath.Join(base, filepath.Clean(oname))
-
-		if f.FileInfo().IsDir() {
-			os.MkdirAll(oname, 0777)
-			continue
-		}
-
-		// TODO: call only if needed
-		os.MkdirAll(filepath.Dir(oname), 0777)
-
-		zreader, err := f.Open()
-		if err != nil {
-			log.Println(oname, err)
-		}
-		ofile, err := os.Create(oname)
-		if err != nil {
-			log.Println(oname, err)
-		}
-		_, err = io.Copy(ofile, zreader)
-		if err != nil {
-			log.Println(oname, err)
-		}
-
-		ofile.Close()
-		zreader.Close()
-	}
-
-	return nil
+	return archive.Extract(base, file, skip_dirs)
 }
 
 // download 'url' and try to parse the zip-file. print out
@@ -79,20 +46,21 @@ func acquire(base, url string, skip_dirs int, checkSha1 string) error {
 // TODO: dry_acquire is not nice with ui 'oneline' (or future 'curses' based
 // ones)
 //
-func dry_acquire(base, url string, skip_dirs int, checkSha1 string) error {
+func dry_acquire(base, url string, archive PluginArchive, skip_dirs int, checkSha1 string) ([]string, error) {
 
 	var (
-		err    error
-		resp   *http.Response
-		buffer *bytes.Buffer
-		zfile  *zip.Reader
+		err     error
+		resp    *http.Response
+		buffer  *bytes.Buffer
+		br      *bytes.Reader
+		entries []string
 	)
 
 	if resp, err = http.Get(url); err != nil {
-		return err
+		return nil, err
 	} else if resp.StatusCode != 200 {
 		log.Println(resp)
-		return fmt.Errorf("%d for %q", resp.StatusCode, url)
+		return nil, fmt.Errorf("%d for %q", resp.StatusCode, url)
 	}
 	defer resp.Body.Close()
 
@@ -101,36 +69,24 @@ func dry_acquire(base, url string, skip_dirs int, checkSha1 string) error {
 
 	buffer = bytes.NewBuffer(nil)
 	if _, err = io.Copy(buffer, tee); err != nil {
-		return err
+		return nil, err
 	}
 	defer buffer.Reset()
 
 	sha1Sum := hex.EncodeToString(hasher.Sum(nil))
 
 	if checkSha1 != "" && checkSha1 != sha1Sum {
-		return fmt.Errorf("sha1 does not match: got %s, expected %s", sha1Sum, checkSha1)
+		return nil, fmt.Errorf("sha1 does not match: got %s, expected %s", sha1Sum, checkSha1)
+	}
+	br = bytes.NewReader(buffer.Bytes())
+	entries, err = archive.Entries(br, skip_dirs)
+
+	if err != nil {
+		return nil, fmt.Errorf("gettting contents: %v", err)
+	}
+	if len(entries) == 0 {
+		return nil, fmt.Errorf("empty archive for %q", url)
 	}
 
-	if zfile, err = zip.NewReader(bytes.NewReader(buffer.Bytes()), int64(buffer.Len())); err != nil {
-		return err
-	}
-
-	for _, f := range zfile.File {
-
-		idx := index_byte_n(f.Name, '/', skip_dirs)
-		oname := f.Name[idx+1:]
-
-		// root-directory
-		//   pname/      <- root-directory
-		//   pname/a.vim
-		if oname == "" {
-			continue
-		}
-
-		oname = filepath.Join(base, filepath.Clean(oname))
-
-		fmt.Printf("%s\t%d\n", oname, f.FileHeader.UncompressedSize)
-	}
-
-	return nil
+	return entries, nil
 }

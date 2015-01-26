@@ -18,19 +18,7 @@ import (
 )
 
 const (
-	// most plugins are fetched from github. the github zip-files
-	// put the files into a subfolder like this:
-	//   vim-plugin/doc/plugin.txt
-	//   vim-plugin/README.txt
-	//
-	DEFAULT_STRIP = 1
-
 	BYTE_ORDER_MARK = '\uFEFF'
-
-	OPT_STRIP_DIR     = 0
-	OPT_POSTUPDATE    = 1
-	OPT_POSTUPDATE_OS = 2
-	OPT_SHA1          = 3
 )
 
 var PLUGIN_OPTS = []string{
@@ -38,19 +26,6 @@ var PLUGIN_OPTS = []string{
 	"postupdate=",
 	"postupdate." + runtime.GOOS + "=",
 	"sha1=",
-}
-
-type Plugin struct {
-	name       string
-	url        *neturl.URL
-	strip_dir  int    // strip n dir-parts from archive-entries
-	postupdate string // execute after 'update'-action
-	sha1       string
-}
-
-func (pl *Plugin) String() string {
-	return fmt.Sprintf("Plugin{%q, %q, strip=%d}",
-		pl.name, pl.url.String(), pl.strip_dir)
 }
 
 type PluginList map[string]*Plugin
@@ -106,11 +81,12 @@ func ScanPluginReader(reader io.ReadCloser) (plugins PluginList, err error) {
 		}
 
 		// strip away .zip (or other archive-formats)
-		if strings.HasSuffix(name, ".zip") {
-			name = name[:len(name)-4]
+		if ok, len_suffix := IsSupportedArchive(name); ok {
+			name = name[:len(name)-len_suffix]
 		}
 
-		plugin := Plugin{name: name, url: url, strip_dir: DEFAULT_STRIP}
+		plugin := Plugin{name: name, url: url}
+		plugin.opts.strip_dir = DEFAULT_STRIP
 		if err = plugin.OptionsFromFields(fields[1:]); err != nil {
 			return nil, fmt.Errorf("parsing optional fields: %q, plugin %q on line %d", err, name, lnumber)
 		}
@@ -122,32 +98,32 @@ func ScanPluginReader(reader io.ReadCloser) (plugins PluginList, err error) {
 
 func (p *Plugin) OptionsFromFields(fields []string) error {
 
-	for i := range fields {
-		if strings.HasPrefix(fields[i], PLUGIN_OPTS[OPT_STRIP_DIR]) {
-			strip, err := strconv.ParseUint((fields[i])[len(PLUGIN_OPTS[OPT_STRIP_DIR]):], 10, 8)
+	for _, field := range fields {
+		if strings.HasPrefix(field, PLUGIN_OPTS[OPT_STRIP_DIR]) {
+			strip, err := strconv.ParseUint(field[len(PLUGIN_OPTS[OPT_STRIP_DIR]):], 10, 8)
 			if err == nil {
-				p.strip_dir = int(strip)
+				p.opts.strip_dir = int(strip)
 			} else {
 				return fmt.Errorf("strange 'strip' field")
 			}
-		} else if strings.HasPrefix(fields[i], PLUGIN_OPTS[OPT_POSTUPDATE]) && p.postupdate == "" {
-			p.postupdate = fields[i][len(PLUGIN_OPTS[OPT_POSTUPDATE]):]
-		} else if strings.HasPrefix(fields[i], PLUGIN_OPTS[OPT_POSTUPDATE_OS]) {
-			p.postupdate = fields[i][len(PLUGIN_OPTS[OPT_POSTUPDATE_OS]):]
-		} else if strings.HasPrefix(fields[i], PLUGIN_OPTS[OPT_SHA1]) {
-			p.sha1 = strings.ToLower(fields[i][len(PLUGIN_OPTS[OPT_SHA1]):])
+		} else if strings.HasPrefix(field, PLUGIN_OPTS[OPT_POSTUPDATE]) && p.opts.postupdate == "" {
+			p.opts.postupdate = field[len(PLUGIN_OPTS[OPT_POSTUPDATE]):]
+		} else if strings.HasPrefix(field, PLUGIN_OPTS[OPT_POSTUPDATE_OS]) {
+			p.opts.postupdate = field[len(PLUGIN_OPTS[OPT_POSTUPDATE_OS]):]
+		} else if strings.HasPrefix(field, PLUGIN_OPTS[OPT_SHA1]) {
+			p.opts.sha1 = strings.ToLower(field[len(PLUGIN_OPTS[OPT_SHA1]):])
 		}
 	}
 
-	if p.postupdate != "" {
-		decoded, err := neturl.QueryUnescape(p.postupdate)
+	if p.opts.postupdate != "" {
+		decoded, err := neturl.QueryUnescape(p.opts.postupdate)
 		if err != nil {
 			return err
 		}
-		p.postupdate = decoded
+		p.opts.postupdate = decoded
 	}
 
-	if p.sha1 != "" && len(p.sha1) != hex.EncodedLen(sha1.Size) {
+	if p.opts.sha1 != "" && len(p.opts.sha1) != hex.EncodedLen(sha1.Size) {
 		return fmt.Errorf("'sha1' field does not match size of a sha1")
 	}
 

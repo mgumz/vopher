@@ -21,72 +21,98 @@ func act_update(plugins PluginList, ui JobUi, opts *actUpdateOptions) {
 
 	ui.Start()
 
+	var err error
+
 	for _, plugin := range plugins {
 
 		plugin_folder := filepath.Join(opts.dir, plugin.name)
 
-		if _, err := os.Stat(plugin_folder); err == nil { // plugin_folder exists
+		if _, err = os.Stat(plugin_folder); err == nil { // plugin_folder exists
 			if !opts.force {
 				continue
 			}
 		}
 
-		if !strings.HasSuffix(plugin.url.Path, ".zip") {
+		archive_name := filepath.Base(plugin.url.Path)
+		plugin.ext = filepath.Ext(archive_name)
+
+		// apply heuristics aka ""guess""
+		if plugin.ext == "" {
 			switch plugin.url.Host {
 			case "github.com":
 				remote_zip := first_not_empty(plugin.url.Fragment, "master") + ".zip"
 				plugin.url.Path = path.Join(plugin.url.Path, "archive", remote_zip)
+				archive_name = filepath.Base(remote_zip)
+				plugin.ext = ".zip"
+				plugin.archive = &ZipArchive{}
 			default:
-				ext, err := httpdetect_ftype(plugin.url.String())
+				plugin.ext, err = httpdetect_ftype(plugin.url.String())
 				if err != nil {
 					log.Printf("error: %q: %s", plugin.url, err)
 					continue
 				}
-				if ext != ".zip" {
-					log.Printf("error: %q: not a zip", plugin.url)
-					continue
-				}
+				archive_name += plugin.ext
+			}
+		}
+
+		if ok, suffix_len := IsSupportedArchive(archive_name); ok {
+			plugin.ext = archive_name[len(archive_name)-suffix_len:]
+		}
+
+		if plugin.archive == nil {
+			plugin.archive, err = GuessPluginArchive(archive_name)
+			if err != nil {
+				log.Printf("error: %q: not supported archive format", plugin.url)
+				continue
 			}
 		}
 
 		ui.AddJob(plugin_folder)
-		go acquire_and_postupdate(plugin_folder, plugin.sha1, opts.dry_run, plugin, ui)
+		go acquire_and_postupdate(plugin_folder, opts.dry_run, plugin, ui)
 	}
 
 	ui.Wait()
 	ui.Stop()
 }
 
-func acquire_and_postupdate(dir, sha1 string, dry_run bool, plugin *Plugin, ui JobUi) {
+func acquire_and_postupdate(dir string, dry_run bool, plugin *Plugin, ui JobUi) {
 
 	defer ui.JobDone(dir)
 
 	var (
-		err  error
-		path string
-		out  []byte
+		err     error
+		path    string
+		out     []byte
+		entries []string
 
-		acquire_f func(string, string, int, string) error = acquire
+		url       = plugin.url.String()
+		strip_dir = plugin.opts.strip_dir
+		sha1      = plugin.opts.sha1
 	)
 
 	if dry_run {
-		acquire_f = dry_acquire
+		entries, err = dry_acquire(dir, url, plugin.archive, strip_dir, sha1)
+	} else {
+		err = acquire(dir, plugin.ext, url, plugin.archive, strip_dir, sha1)
 	}
-	if err = acquire_f(dir, plugin.url.String(), plugin.strip_dir, sha1); err != nil {
+	if err != nil {
 		log.Printf("%s: %v", dir, err)
 		return
+	}
+	if dry_run {
+		ui.Print(dir, strings.Join(entries, "\n"))
 	}
 
 	//
 	// handle the .postupdate hook
 	//
-	if plugin.postupdate == "" {
+	if plugin.opts.postupdate == "" {
 		return
 	}
 
-	path, err = expand_path(plugin.postupdate)
+	path, err = expand_path(plugin.opts.postupdate)
 	if err != nil {
-		log.Printf("%s: expanding .postupdate %q: %s", dir, plugin.postupdate, err)
+		log.Printf("%s: expanding .postupdate %q: %s", dir, plugin.opts.postupdate, err)
 		return
 	}
 	path = expand_path_environment(path, dir)
@@ -103,12 +129,13 @@ func acquire_and_postupdate(dir, sha1 string, dry_run bool, plugin *Plugin, ui J
 		Path: path,
 		Env: append(os.Environ(),
 			"VOPHER_NAME="+plugin.name,
+			"VOPHER_ARCHIVE="+plugin.name+plugin.ext,
 			"VOPHER_DIR="+dir,
-			"VOPHER_URL="+plugin.url.String()),
+			"VOPHER_URL="+url),
 	}
 
 	if dry_run {
-		fmt.Printf("# postupdate: %q (env: %v)\n", cmd.Path, cmd.Env)
+		ui.Print(dir, fmt.Sprintf("# postupdate: %q (env: %v)\n", cmd.Path, cmd.Env))
 		return
 	}
 
