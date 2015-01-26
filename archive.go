@@ -14,6 +14,7 @@ import (
 var supported_archives = [...]string{
 	".zip",
 	".vba", ".vba.gz",
+	".tar",
 	".tar.gz",
 	".tar.lzma",
 	".tar.bz2", ".tar.bzip2",
@@ -49,6 +50,8 @@ func GuessPluginArchive(name string) (PluginArchive, error) {
 		return &VimballArchive{}, nil
 	} else if strings.HasSuffix(n, ".vba.gz") {
 		return &GzArchive{&VimballArchive{}}, nil
+	} else if strings.HasSuffix(n, ".tar") {
+		return &TarArchive{}, nil
 	} else if strings.HasSuffix(n, ".tar.gz") {
 		return &GzArchive{&TarArchive{}}, nil
 	} else if strings.HasSuffix(n, ".tar.bz2") || strings.HasSuffix(n, ".tar.bzip2") {
