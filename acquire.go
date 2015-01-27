@@ -9,7 +9,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"path/filepath"
 )
 
 // fetch 'url' and extract it into 'base'. skip 'skip_dirs'
@@ -17,16 +16,11 @@ import (
 // the contents.
 func acquire(base, ext, url string, archive PluginArchive, skip_dirs int, checkSha1 string) error {
 
-	var (
-		name = base
-		err  = os.MkdirAll(name, 0777)
-	)
+	name := base + ext
+	err := os.MkdirAll(base, 0777)
 
 	if err != nil {
 		return fmt.Errorf("mkdir %q: %s", base, err)
-	}
-	if filepath.Ext(name) == "" {
-		name += ext
 	}
 	if err = httpget(name, url, checkSha1); err != nil {
 		return err

@@ -34,10 +34,9 @@ func act_update(plugins PluginList, ui JobUi, opts *actUpdateOptions) {
 		}
 
 		archive_name := filepath.Base(plugin.url.Path)
-		plugin.ext = filepath.Ext(archive_name)
 
 		// apply heuristics aka ""guess""
-		if plugin.ext == "" {
+		if is_archive, _ := IsSupportedArchive(archive_name); !is_archive {
 			switch plugin.url.Host {
 			case "github.com":
 				remote_zip := first_not_empty(plugin.url.Fragment, "master") + ".zip"
