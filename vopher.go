@@ -59,19 +59,21 @@ func main() {
 
 	log.SetPrefix("vopher.")
 	cli := struct {
-		action string
-		force  bool
-		dry    bool
-		all    bool
-		file   string
-		dir    string
-		ui     string
-		filter stringList
+		action    string
+		force     bool
+		dry       bool
+		all       bool
+		file      string
+		dir       string
+		ui        string
+		filter    stringList
+		supported bool
 	}{action: "update", dir: ".", ui: "oneline"}
 
 	flag.BoolVar(&cli.force, "force", cli.force, "force certain actions")
 	flag.BoolVar(&cli.dry, "dry", cli.dry, "dry-run, show what would happen")
 	flag.BoolVar(&cli.all, "all", cli.force, "don't keep <plugin>.zip around")
+	flag.BoolVar(&cli.supported, "list-supported-archives", false, "list all supported archive types")
 	flag.StringVar(&cli.file, "f", cli.file, "path to list of plugins")
 	flag.StringVar(&cli.dir, "dir", cli.dir, "directory to extract the plugins to")
 	flag.StringVar(&cli.ui, "ui", cli.ui, "ui mode")
@@ -79,6 +81,13 @@ func main() {
 
 	flag.Usage = usage
 	flag.Parse()
+
+	if cli.supported {
+		for _, suf := range supported_archives {
+			fmt.Println(suf)
+		}
+		return
+	}
 
 	if len(flag.Args()) > 0 {
 		cli.action = flag.Args()[0]

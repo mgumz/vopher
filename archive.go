@@ -7,18 +7,33 @@ import (
 	"io"
 	"path/filepath"
 	"strings"
-
-	"code.google.com/p/lzma"
 )
 
-var supported_archives = [...]string{
+var supported_archives = []string{
 	".zip",
 	".vba", ".vba.gz",
 	".tar",
 	".tar.gz",
-	".tar.lzma",
 	".tar.bz2", ".tar.bzip2",
-	".tar.xz",
+}
+
+var archive_guesser = []func(string) PluginArchive{
+	func(n string) PluginArchive {
+		if strings.HasSuffix(n, ".zip") {
+			return &ZipArchive{}
+		} else if strings.HasSuffix(n, ".vba") {
+			return &VimballArchive{}
+		} else if strings.HasSuffix(n, ".vba.gz") {
+			return &GzArchive{&VimballArchive{}}
+		} else if strings.HasSuffix(n, ".tar") {
+			return &TarArchive{}
+		} else if strings.HasSuffix(n, ".tar.gz") {
+			return &GzArchive{&TarArchive{}}
+		} else if strings.HasSuffix(n, ".tar.bz2") || strings.HasSuffix(n, ".tar.bzip2") {
+			return &BzipArchive{&TarArchive{}}
+		}
+		return nil
+	},
 }
 
 // returns true/false if "name" is a supported archive type
@@ -44,20 +59,11 @@ type PluginArchive interface {
 
 func GuessPluginArchive(name string) (PluginArchive, error) {
 	n := strings.ToLower(name)
-	if strings.HasSuffix(n, ".zip") {
-		return &ZipArchive{}, nil
-	} else if strings.HasSuffix(n, ".vba") {
-		return &VimballArchive{}, nil
-	} else if strings.HasSuffix(n, ".vba.gz") {
-		return &GzArchive{&VimballArchive{}}, nil
-	} else if strings.HasSuffix(n, ".tar") {
-		return &TarArchive{}, nil
-	} else if strings.HasSuffix(n, ".tar.gz") {
-		return &GzArchive{&TarArchive{}}, nil
-	} else if strings.HasSuffix(n, ".tar.bz2") || strings.HasSuffix(n, ".tar.bzip2") {
-		return &BzipArchive{&TarArchive{}}, nil
-	} else if strings.HasSuffix(n, ".tar.xz") {
-		return &LzmaArchive{&TarArchive{}}, nil
+	for i := range archive_guesser {
+		archive := archive_guesser[i](n)
+		if archive != nil {
+			return archive, nil
+		}
 	}
 	return nil, fmt.Errorf("unsupported archive type for %q\n", name)
 }
@@ -92,21 +98,6 @@ func (ba *BzipArchive) Extract(folder string, r io.Reader, skip_dir int) error {
 func (ba *BzipArchive) Entries(r io.Reader, skip_dir int) ([]string, error) {
 	bzreader := bzip2.NewReader(r)
 	return ba.orig.Entries(bzreader, skip_dir)
-}
-
-// wrapper to decompress lzma
-type LzmaArchive struct{ orig PluginArchive }
-
-func (la *LzmaArchive) Extract(folder string, r io.Reader, skip_dir int) error {
-	lzma_reader := lzma.NewReader(r)
-	defer lzma_reader.Close()
-	return la.orig.Extract(folder, lzma_reader, skip_dir)
-}
-
-func (la *LzmaArchive) Entries(r io.Reader, skip_dir int) ([]string, error) {
-	lzma_reader := lzma.NewReader(r)
-	defer lzma_reader.Close()
-	return la.Entries(lzma_reader, skip_dir)
 }
 
 // strip away the leading 'strip_dirs' directories from 'name'. returns
