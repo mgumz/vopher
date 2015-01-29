@@ -30,6 +30,21 @@
     -force=false: force certain actions
     -ui="oneline": ui mode
 
+## Building / Installation
+
+To build *vopher* a working Go compiler is needed. Then
+do this:
+
+    $> cd /somewhere
+    $> env GOPATH=`pwd` go get -v github.com/mgumz/vopher
+
+This will fetch and build *vopher* in the "somewhere/bin" directory.
+Copy it to any place you need it.
+
+To build *vopher* with support for Lzma:
+
+    $> env GOPATH=`pwd` go get -v -tags lzma github.com/mgumz/vopher
+
 
 ## The vopher-file format
 
@@ -55,7 +70,8 @@ The vopher-file is pretty simple:
 
 * .zip
 * .vba and .vba.gz (see [Charles E. Campbell](http://www.drchip.org/astronaut/vim/doc/pi_vimball.txt.html))
-* .tar.gz, .tar.bz2, .tar.bzip2, .tar.lzma, .tar.xz
+* .tar.gz, .tar.bz2, .tar.bzip2
+* optional: .tar.lzma, .tar.xz
 
 
 ## Sample session
