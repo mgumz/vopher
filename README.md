@@ -2,49 +2,58 @@
 
 ## Usage
 
-![](screenshots/vopher.png)
+![A screenshot showing a list of plugins managed by vopher](screenshots/vopher.png)
 
-    usage: vopher [flags] <action>
+    Usage: vopher [flags] <action>
 
-    actions
-      update - acquires the given plugins from the -f <list>
-      search - uses http://vimawesome.com/ to list some plugins
-      check  - checks plugins from -f <list> against a more
-               recent version
-      clean  - removes given plugins from the -f <list>
-      prune  - removes all entries from -dir <folder>
-               which are not referenced in -f <list>.
-               use -force=true to actually delete entries.
-               use -all=true to also delete <plugin>.zip
-               entries.
-      status - lists plugins in -dir <folder> and marks missing or
-               referenced and unreferenced plugins accordingly
-      sample - prints sample vopher.list to stdout
+    Flags:
 
-    flags
-    -all=false: don't keep <plugin>.zip around
-    -dir=".": directory to extract the plugins to
-    -dry=false: dry-run, show what would happen
-    -f="": path to list of plugins
-    -filter=: only use plugins filtered
-    -force=false: force certain actions
-    -ui="oneline": ui mode
+      -all=false: don't keep <plugin>.zip around [prune]
+      -dir=".": directory to extract the plugins to
+      -dry=false: dry-run, show what would happen [prune, clean]
+      -f="": path to list of plugins
+      -filter=: operate on given plugins only; can be given multiple times
+      -force=false: force certain actions [prune, clean]
+      -list-supported-archives=false: list all supported archive types
+      -ui="oneline": ui mode ('simple' or 'oneline', works with `update` action)
+
+    Actions:
+
+      update - acquires the given plugins from '-f <list>'
+      search - searches http://vimawesome.com/ to list some plugins. Anything
+               after this is considered the query
+      check  - checks plugins from '-f <list>' for newer versions
+      clean  - removes given plugins from the '-f <list>'
+               * use '-force' to delete plugins.
+      prune  - removes all entries from -dir <folder> which are not referenced in
+               '-f <list>'.
+               * use '-force' to delete plugins.
+               * use '-all=true' to delete <plugin>.zip files.
+      status - lists plugins in '-dir <folder>' and marks them accordingly
+               * 'v' means vopher is tracking the plugin in your '-f <list>'
+               * 'm' means vopher is tracking the plugin and it's missing. You can
+                 fetch it with the 'update' action.
+               * no mark means that the plugin is not tracked by vopher
+      sample - prints a sample vopher.list to stdout
 
 ## Building / Installation
 
-To build *vopher* a working Go compiler is needed. Then
-do this:
+To build `vopher`, a working Go compiler is needed. Then do this:
 
     $> cd /somewhere
     $> env GOPATH=`pwd` go get -v github.com/mgumz/vopher
 
-This will fetch and build *vopher* in the "somewhere/bin" directory.
+This will fetch and build `vopher` in the "somewhere/bin" directory.
 Copy it to any place you need it.
 
-To build *vopher* with support for Lzma:
+To build `vopher` with support for LZMA:
 
     $> env GOPATH=`pwd` go get -v -tags lzma github.com/mgumz/vopher
 
+If you've already cloned `vopher` and are rebuilding for tests or contributing, 
+do the following:
+
+    $> go build
 
 ## The vopher-file format
 
@@ -116,7 +125,7 @@ Let's check for updates / new stuff:
       V1.3.0 2013-04-22T21:57:01Z V1.3.0
       ...
 
-'GoldenView.Vim#V1.3.5' is referenced in the vopher.list-file. vopher tries to
+`GoldenView.Vim#V1.3.5` is referenced in the vopher.list-file. vopher tries to
 guess what commit this actually is and marks that line with a '\*'. so, you can
 easily see that there seems to be no new release for 'GoldenView', allthough
 there are some new commits.
@@ -170,36 +179,36 @@ I need more color! Are there any colorschemes available?
 
 Yep, nothing to see on this front here .. yet. I need some means to exchange
 messages between vim and vopher in an asyncronous way, without the need for
-+clientserver. I am also not so sure that the effort on integrating *vopher*
-into the Vim-ui is really worth it: I use *vim* as my text editor, not as a
++clientserver. I am also not so sure that the effort on integrating `vopher`
+into the Vim-ui is really worth it: I use `vim` as my text editor, not as a
 means to constantly updating and managing the plugins I use. Thus, I consider
-using *vopher* a rare case. Using the command line outside of *vim* is fine
+using `vopher` a rare case. Using the command line outside of `vim` is fine
 for me right now.
 
 > Why??
 
-*pathogen* (which is what I use) has no means on it's own to acquire plugins.
+`pathogen` (which is what I use) has no means on it's own to acquire plugins.
 
-*vundle* needs *git*. It fetches the whole history of any plugin. I am not
+`vundle` needs `git`. It fetches the whole history of any plugin. I am not
 interested in the history, I am just interested in a certain snapshot for
-a certain vim-plugin. In addition to that: the installation of *git* on Windows
+a certain vim-plugin. In addition to that: the installation of `git` on Windows
 takes up ~ 250mb. The sum of my vim-plugins take up ~ 4mb.
 
-*Neobundle* depends on *git* or *svn*.
+*Neobundle* depends on `git` or `svn`.
 
-> But why not use curl?? Or python??? Or ruby???
+> Why not use curl/python/ruby???
 
-*curl* is easy to install and available everywhere. But it's a bit stupid on
-it's own. I would have to write a lot of what *vopher* does on it's own in a
+`curl` is easy to install and available everywhere. But it's a bit stupid on
+it's own. I would have to write a lot of what `vopher` does on it's own in a
 real programming language 'x'. Or VimL (vimscript). Which would lead to even more
 code and maybe an additional interpreter which might need even more stuff. On
 Windows the curl-binary which supports https weighs ~ 1.6mb. A python
 installer for Windows weighs ~ 17mb, installed ~ 60mb. Yeah, one could create
 a standalone binary with something like *PyInstaller*. This does not give
-anything substantially better than the *golang* binary and it's builtin network-
-and concurrent powers.
+anything substantially better than the `golang`-produced binary and it's builtin
+networking and concurrency powers.
 
-> But Python and Ruby are just a `brew install` away?
+> But Python and Ruby are just a `brew install` away!
 
 Yep. If you are working mostly on the same platform you can get very
 comfortable with your nice and cosy environment. If you switch platform
@@ -207,7 +216,7 @@ borders on a regular basis, things become a bit more complicated. I want to
 place one .zip file on my server, containing all my vim-files, vopher-binaries
 and then I am ready to go (pun) in no time.
 
-> Will *vopher* handle all the dependencies for me?
+> Will `vopher` handle all the dependencies for me?
 
 Nope. There is no central repository for plugins which all of the
 plugin-writers agree on (in contrast, SublimeText3 has the defacto standard

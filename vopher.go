@@ -32,27 +32,32 @@ var allowed_actions = []string{
 
 func usage() {
 
-	fmt.Fprintln(os.Stderr, `vopher - acquire vim-plugins the gopher-way
+	fmt.Fprintln(os.Stderr, `vopher - acquire vim plugins the gopher-way
 
-usage: vopher [flags] <action>
+Usage: vopher [flags] <action>
 
-actions
-  update - acquires the given plugins from the -f <list>
-  search - uses http://vimawesome.com/ to list some plugins
-  check  - checks plugins from -f <list> against a more
-           recent version
-  clean  - removes given plugins from the -f <list>
-  prune  - removes all entries from -dir <folder>
-           which are not referenced in -f <list>.
-           use -force=true to actually delete entries.
-           use -all=true to also delete <plugin>.zip
-           entries.
-  status - lists plugins in -dir <folder> and marks missing or
-           referenced and unreferenced plugins accordingly
-  sample - prints sample vopher.list to stdout
-
-flags`)
+Flags:
+`)
 	flag.PrintDefaults()
+	fmt.Fprintln(os.Stderr, `
+Actions:
+
+  update - acquires the given plugins from '-f <list>'
+  search - searches http://vimawesome.com/ to list some plugins. Anything
+           after this is considered the query
+  check  - checks plugins from '-f <list>' for newer versions
+  clean  - removes given plugins from the '-f <list>'
+           * use '-force' to delete plugins.
+  prune  - removes all entries from -dir <folder> which are not referenced in
+           '-f <list>'.
+           * use '-force' to delete plugins.
+           * use '-all=true' to delete <plugin>.zip files.
+  status - lists plugins in '-dir <folder>' and marks them accordingly
+           * 'v' means vopher is tracking the plugin in your '-f <list>'
+           * 'm' means vopher is tracking the plugin and it's missing. You can
+             fetch it with the 'update' action.
+           * no mark means that the plugin is not tracked by vopher
+  sample - prints a sample vopher.list to stdout`)
 }
 
 func main() {
@@ -70,13 +75,13 @@ func main() {
 		supported bool
 	}{action: "update", dir: ".", ui: "oneline"}
 
-	flag.BoolVar(&cli.force, "force", cli.force, "force certain actions")
-	flag.BoolVar(&cli.dry, "dry", cli.dry, "dry-run, show what would happen")
-	flag.BoolVar(&cli.all, "all", cli.force, "don't keep <plugin>.zip around")
+	flag.BoolVar(&cli.force, "force", cli.force, "force certain actions [prune, clean]")
+	flag.BoolVar(&cli.dry, "dry", cli.dry, "dry-run, show what would happen [prune, clean]")
+	flag.BoolVar(&cli.all, "all", cli.force, "don't keep <plugin>.zip around [prune]")
 	flag.BoolVar(&cli.supported, "list-supported-archives", false, "list all supported archive types")
 	flag.StringVar(&cli.file, "f", cli.file, "path to list of plugins")
 	flag.StringVar(&cli.dir, "dir", cli.dir, "directory to extract the plugins to")
-	flag.StringVar(&cli.ui, "ui", cli.ui, "ui mode")
+	flag.StringVar(&cli.ui, "ui", cli.ui, "ui mode ('simple' or 'oneline', works with `update` action)")
 	flag.Var(&cli.filter, "filter", "operate on given plugins only; can be given multiple times")
 
 	flag.Usage = usage
@@ -134,19 +139,19 @@ func main() {
 		plugins := must_read_plugins(cli.file, cli.filter)
 		opts := actUpdateOptions{dir: cli.dir, force: cli.force, dry_run: cli.dry}
 		act_update(plugins, ui, &opts)
-	case "check", "c":
+	case "check", "ch":
 		plugins := must_read_plugins(cli.file, cli.filter)
 		act_check(plugins, cli.dir, ui)
-	case "clean":
+	case "clean", "cl":
 		plugins := must_read_plugins(cli.file, cli.filter)
 		act_clean(plugins, cli.dir, cli.force)
-	case "prune":
+	case "prune", "p", "pr":
 		plugins := must_read_plugins(cli.file, cli.filter)
 		act_prune(plugins, cli.dir, cli.force, cli.all)
 	case "status", "st":
 		plugins := may_read_plugins(cli.file, cli.filter)
 		act_status(plugins, cli.dir)
-	case "search":
+	case "search", "se":
 		act_search(flag.Args()[1:]...)
 	}
 }
