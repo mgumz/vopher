@@ -18,7 +18,6 @@ import (
 const SEARCH_URL = "http://vimawesome.com/api/plugins"
 
 func act_search(args ...string) {
-
 	buf := bytes.NewBuffer(nil)
 	for i := range args {
 		// TODO: filter out special arguments such as 'page=xyz'
@@ -118,8 +117,7 @@ type _VimAwesome struct {
 }
 
 func _parse_vimawesome(r io.Reader) (*_VimAwesome, error) {
-
-	vimawesome := _VimAwesome{}
+	var vimawesome _VimAwesome
 	jsondec := json.NewDecoder(r)
 	err := jsondec.Decode(&vimawesome)
 	if err != nil {

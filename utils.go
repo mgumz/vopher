@@ -18,10 +18,8 @@ func first_not_empty(parts ...string) (result string) {
 }
 
 func index_byte_n(path string, needle byte, n int) int {
-
 	idx, s := 0, 0
 	for ; s < n; s++ {
-
 		i := strings.IndexByte(path[idx:], needle)
 		if i < 0 { // not found
 			break
@@ -55,7 +53,6 @@ func expand_path(p string) (string, error) {
 		user, err := stduser.Current()
 		if err != nil {
 			return p, err
-			log.Fatal("error: optaining current user?? %s", err)
 		}
 		p = filepath.Join(user.HomeDir, p[1:])
 	}

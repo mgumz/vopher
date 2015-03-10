@@ -15,7 +15,6 @@ import (
 )
 
 func act_check(plugins PluginList, base string, ui JobUi) {
-
 	for _, plugin := range plugins {
 		switch plugin.url.Host {
 		case "github.com":
@@ -36,7 +35,7 @@ func act_check(plugins PluginList, base string, ui JobUi) {
 				{[]string{"tags"}, nil, "\n - tags:\n"},
 			}
 
-			wg := sync.WaitGroup{}
+			var wg sync.WaitGroup
 			wg.Add(len(commits))
 			for i := range commits {
 				if i == 0 && head == "master" { // don't check 'master' two times
@@ -113,7 +112,6 @@ type _GhAtom struct {
 }
 
 func _gh_get_commits(repo *url.URL, parts ...string) *_GhAtom {
-
 	atom_url := *repo
 	atom_url.Path = path.Join(atom_url.Path, path.Join(parts...)) + ".atom"
 
@@ -130,7 +128,7 @@ func _gh_get_commits(repo *url.URL, parts ...string) *_GhAtom {
 	}
 
 	xmldec := xml.NewDecoder(resp.Body)
-	gh := _GhAtom{}
+	var gh _GhAtom
 
 	if err = xmldec.Decode(&gh); err != nil {
 		log.Printf("error: %q %v", atom_url.String(), err)
@@ -155,7 +153,6 @@ func _gh_get_commits(repo *url.URL, parts ...string) *_GhAtom {
 // the comment in a github-zip file refers to the git-commit-id
 // used by github to create the zip.
 func _gh_guess_commit_by_zip(name, base string) string {
-
 	path := filepath.Join(base, name+".zip")
 	zfile, err := zip.OpenReader(path)
 	if err != nil {

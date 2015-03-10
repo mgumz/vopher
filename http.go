@@ -14,7 +14,6 @@ import (
 
 // HEAD url, find out "Content-Disposition: attachment; filename=foo.EXT"
 func httpdetect_ftype(url string) (string, error) {
-
 	resp, err := http.Head(url)
 	if err != nil {
 		return "", err
@@ -36,15 +35,14 @@ func httpdetect_ftype(url string) (string, error) {
 }
 
 func httpget(out, url, checkSha1 string) (err error) {
-
 	var file *os.File
-	var resp *http.Response
 
 	if file, err = os.Create(out); err != nil {
 		return err
 	}
 	defer file.Close()
 
+	var resp *http.Response
 	if resp, err = http.Get(url); err != nil {
 		return err
 	}
