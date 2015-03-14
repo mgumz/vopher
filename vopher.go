@@ -73,7 +73,7 @@ func main() {
 		ui        string
 		filter    stringList
 		supported bool
-	}{action: "update", dir: ".", ui: "oneline"}
+	}{action: "update", dir: "."}
 
 	flag.BoolVar(&cli.force, "force", cli.force, "force certain actions [prune, clean]")
 	flag.BoolVar(&cli.dry, "dry", cli.dry, "dry-run, show what would happen [prune, clean]")
@@ -107,6 +107,15 @@ func main() {
 		return
 	} else if cli.action == "search" && len(flag.Args()) < 2 {
 		log.Fatal("error: missing arguments for 'search'")
+	}
+
+	if cli.ui == "" {
+		switch cli.action {
+		case "update", "u", "up":
+			cli.ui = "oneline"
+		default:
+			cli.ui = "simple"
+		}
 	}
 
 	var ui JobUi

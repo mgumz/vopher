@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"os"
 	stduser "os/user"
 	"path/filepath"
