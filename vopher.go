@@ -16,6 +16,12 @@ import (
 	"time"
 )
 
+var (
+	Version   = "0.5"
+	GitHash   = ""
+	BuildDate = ""
+)
+
 var allowed_actions = []string{
 	"u",
 	"up",
@@ -73,12 +79,14 @@ func main() {
 		ui        string
 		filter    stringList
 		supported bool
+		version   bool
 	}{action: "update", dir: "."}
 
 	flag.BoolVar(&cli.force, "force", cli.force, "force certain actions [prune, clean]")
 	flag.BoolVar(&cli.dry, "dry", cli.dry, "dry-run, show what would happen [prune, clean]")
 	flag.BoolVar(&cli.all, "all", cli.force, "don't keep <plugin>.zip around [prune]")
 	flag.BoolVar(&cli.supported, "list-supported-archives", false, "list all supported archive types")
+	flag.BoolVar(&cli.version, "v", false, "show version")
 	flag.StringVar(&cli.file, "f", cli.file, "path to list of plugins")
 	flag.StringVar(&cli.dir, "dir", cli.dir, "directory to extract the plugins to")
 	flag.StringVar(&cli.ui, "ui", cli.ui, "ui mode ('simple' or 'oneline', works with `update` action)")
@@ -86,6 +94,17 @@ func main() {
 
 	flag.Usage = usage
 	flag.Parse()
+
+	if cli.version {
+		fmt.Println("vopher:\t" + Version)
+		if GitHash != "" {
+			fmt.Println("git:\t" + GitHash)
+		}
+		if BuildDate != "" {
+			fmt.Println("build-date:\t" + BuildDate)
+		}
+		return
+	}
 
 	if cli.supported {
 		for _, suf := range supported_archives {
