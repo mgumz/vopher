@@ -5,6 +5,7 @@
 // which does it all.
 //
 // plugins: http://vimawesome.com/
+
 package main
 
 import (
@@ -147,6 +148,8 @@ func main() {
 		}
 	case "simple":
 		ui = &UiSimple{jobs: make(map[string]_ri)}
+	case "quiet":
+		ui = &UiQuiet{}
 	}
 
 	if cli.dir == "" {
