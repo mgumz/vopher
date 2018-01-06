@@ -7,20 +7,7 @@ import (
 	"sort"
 )
 
-type PluginDirEntry struct {
-	name      string
-	exists    int
-	is_plugin int
-	is_dir    int
-}
-
-type PluginDirEntryByName []*PluginDirEntry
-
-func (a PluginDirEntryByName) Len() int           { return len(a) }
-func (a PluginDirEntryByName) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a PluginDirEntryByName) Less(i, j int) bool { return a[i].name < a[j].name }
-
-func act_status(plugins PluginList, base string) {
+func actStatus(plugins PluginList, base string) {
 
 	dir, err := os.Open(base)
 	if err != nil {
@@ -29,60 +16,59 @@ func act_status(plugins PluginList, base string) {
 	}
 	defer dir.Close()
 
-	dir_entries, err := dir.Readdir(-1)
+	dirEntries, err := dir.Readdir(-1)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
+	boolAsInt := func(b bool) int {
+		if b {
+			return 1
+		}
+		return 0
+	}
+
 	entries := make(map[string]*PluginDirEntry)
 
-	for i := range dir_entries {
+	for i := range dirEntries {
 
-		if !dir_entries[i].IsDir() {
+		if !dirEntries[i].IsDir() {
 			continue
 		}
 
-		_, is_plugin := plugins[dir_entries[i].Name()]
-
-		entry := PluginDirEntry{
-			name:      dir_entries[i].Name(),
-			exists:    1,
-			is_plugin: bool_as_int(is_plugin),
+		name := dirEntries[i].Name()
+		isPlugin := plugins.exists(name)
+		entry := &PluginDirEntry{
+			name:     name,
+			exists:   1,
+			isPlugin: boolAsInt(isPlugin),
 		}
 
-		entries[entry.name] = &entry
+		entries[name] = entry
 	}
 
-	for name, _ := range plugins {
+	for name := range plugins {
 		if _, exists := entries[name]; !exists {
 			entries[name] = &PluginDirEntry{
-				name:      name,
-				exists:    0,
-				is_plugin: 1,
+				name:     name,
+				exists:   0,
+				isPlugin: 1,
 			}
 		}
 	}
 
-	ordered := make(PluginDirEntryByName, len(entries))
-	i := 0
+	ordered := PluginDirEntryByName{}
 	for _, entry := range entries {
-		ordered[i] = entry
-		i++
+		ordered = append(ordered, entry)
 	}
 	sort.Sort(ordered)
 
-	const state = " vm "
+	state := " vm " // v-vopher handled; m-missing
 	for i := range ordered {
-		fmt.Printf("%c%c %s\n", state[ordered[i].is_plugin],
-			state[2+ordered[i].exists], ordered[i].name)
+		fmt.Printf("%c%c %s\n",
+			state[ordered[i].isPlugin],
+			state[2+ordered[i].exists],
+			ordered[i].name)
 	}
-
-}
-
-func bool_as_int(b bool) int {
-	if b {
-		return 1
-	}
-	return 0
 }

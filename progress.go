@@ -13,16 +13,16 @@ import (
 type ProgressTicker struct {
 	WriteMeter
 	ticker *time.Ticker
-	stop   chan bool
+	stopCh chan bool
 }
 
-func NewProgressTicker(max int64) *ProgressTicker {
-	return &ProgressTicker{WriteMeter: WriteMeter{Max: max}}
+func newProgressTicker(max int64) *ProgressTicker {
+	return &ProgressTicker{WriteMeter: WriteMeter{max: max}}
 }
 
-func (pt *ProgressTicker) Start(prefix string, dur time.Duration) {
+func (pt *ProgressTicker) start(prefix string, dur time.Duration) {
 
-	pt.stop = make(chan bool)
+	pt.stopCh = make(chan bool)
 	pt.ticker = time.NewTicker(dur)
 
 	go func() {
@@ -30,10 +30,10 @@ func (pt *ProgressTicker) Start(prefix string, dur time.Duration) {
 		for {
 			select {
 			case <-pt.ticker.C:
-				pt.Print(prefix)
-			case <-pt.stop:
+				pt.print(prefix)
+			case <-pt.stopCh:
 				pt.ticker.Stop()
-				pt.Print(prefix)
+				pt.print(prefix)
 				fmt.Println()
 				return
 			}
@@ -41,28 +41,28 @@ func (pt *ProgressTicker) Start(prefix string, dur time.Duration) {
 	}()
 }
 
-func (pt *ProgressTicker) Stop() {
-	pt.stop <- true
+func (pt *ProgressTicker) stop() {
+	pt.stopCh <- true
 }
 
-func (pt *ProgressTicker) Print(prefix string) {
+func (pt *ProgressTicker) print(prefix string) {
 
-	if pt.Max == 0 {
+	if pt.max == 0 {
 		return
 	}
 
-	cols, _, _ := TerminalSize(os.Stdout)
+	cols, _, _ := terminalSize(os.Stdout)
 
 	if cols <= 0 {
 		log.Fatal("can't get TerminalSize(), use other -ui type")
 		return
 	}
 
-	info := fmt.Sprintf("%s: (%d/%d)", prefix, pt.WriteCounter, pt.Max)
+	info := fmt.Sprintf("%s: (%d/%d)", prefix, pt.counter, pt.max)
 	full := bytes.Repeat([]byte("."), cols-len(info)-2)
-	n_ticks := int(math.Max(1.0, math.Floor(float64(len(full))*pt.Progress())))
+	ticks := int(math.Max(1.0, math.Floor(float64(len(full))*pt.progress())))
 	i := 0
-	for ; i < n_ticks; i++ {
+	for ; i < ticks; i++ {
 		full[i] = '='
 	}
 	full[0] = '['
@@ -72,33 +72,33 @@ func (pt *ProgressTicker) Print(prefix string) {
 	full[len(full)-1] = ']'
 
 	if len(full) > 10 {
-		progress := fmt.Sprintf(" %d%% ", int(100.0*pt.Progress()))
+		progress := fmt.Sprintf(" %d%% ", int(100.0*pt.progress()))
 		copy(full[(len(full)/2)-(len(progress)/2):], progress)
 	}
 
 	// using cursor-up+progress+newline works more stable than to \r
 	// the cursor.
-	CursorNUp(os.Stdout, 1)
+	cursorNUp(os.Stdout, 1)
 	fmt.Println(info, string(full))
 }
 
-func (pt *ProgressTicker) MaxOut() {
-	pt.WriteCounter = WriteCounter(pt.Max)
+func (pt *ProgressTicker) maxOut() {
+	pt.counter = WriteCounter(pt.max)
 }
 
 // ========================================================================
 
 type WriteMeter struct {
-	WriteCounter
-	Max int64
+	counter WriteCounter
+	max     int64
 }
 
-func (meter *WriteMeter) Progress() float64 {
-	return float64(meter.WriteCounter) / float64(meter.Max)
+func (meter *WriteMeter) progress() float64 {
+	return float64(meter.counter) / float64(meter.max)
 }
 
 func (meter *WriteMeter) String() string {
-	return strconv.FormatFloat(meter.Progress(), 'f', 2, 64)
+	return strconv.FormatFloat(meter.progress(), 'f', 2, 64)
 }
 
 // ========================================================================

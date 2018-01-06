@@ -5,17 +5,19 @@ import (
 	"time"
 )
 
-type UiOneLine struct {
+// UIOneLine implements a UI which draws the progress in "one line"
+// onto the terminal.
+type UIOneLine struct {
 	sync.WaitGroup
-	*ProgressTicker
+	pt       *ProgressTicker
 	prefix   string
 	duration time.Duration
 }
 
-func (ui *UiOneLine) Start()               { ui.ProgressTicker.Start(ui.prefix, ui.duration) }
-func (ui *UiOneLine) Stop()                { ui.ProgressTicker.Stop() }
-func (ui *UiOneLine) AddJob(string)        { ui.WaitGroup.Add(1); ui.ProgressTicker.WriteMeter.Max++ }
-func (ui *UiOneLine) JobDone(string)       { ui.ProgressTicker.WriteCounter += 1; ui.WaitGroup.Done() }
-func (ui *UiOneLine) Wait()                { ui.WaitGroup.Wait(); ui.ProgressTicker.MaxOut(); ui.Refresh() }
-func (ui *UiOneLine) Refresh()             { ui.ProgressTicker.Print(ui.prefix) }
-func (ui *UiOneLine) Print(string, string) {}
+func (ui *UIOneLine) Start()               { ui.pt.start(ui.prefix, ui.duration) }
+func (ui *UIOneLine) Stop()                { ui.pt.stop() }
+func (ui *UIOneLine) AddJob(string)        { ui.WaitGroup.Add(1); ui.pt.max++ }
+func (ui *UIOneLine) JobDone(string)       { ui.pt.counter += 1; ui.WaitGroup.Done() }
+func (ui *UIOneLine) Wait()                { ui.WaitGroup.Wait(); ui.pt.maxOut(); ui.Refresh() }
+func (ui *UIOneLine) Refresh()             { ui.pt.print(ui.prefix) }
+func (ui *UIOneLine) Print(string, string) {}

@@ -71,7 +71,7 @@ func _GetConsoleScreenBufferInfo(t *os.File, buffer_info *_CONSOLE_SCREEN_BUFFER
 	return nil
 }
 
-func TerminalSize(t *os.File) (int, int, error) {
+func terminalSize(t *os.File) (int, int, error) {
 
 	bi := _CONSOLE_SCREEN_BUFFER_INFO{}
 	if err := _GetConsoleScreenBufferInfo(t, &bi); err != nil {
@@ -81,7 +81,7 @@ func TerminalSize(t *os.File) (int, int, error) {
 	return int(bi.size.x), int(bi.size.y), nil
 }
 
-func CursorNUp(t *os.File, n int) (err error) {
+func cursorNUp(t *os.File, n int) (err error) {
 
 	bi := _CONSOLE_SCREEN_BUFFER_INFO{}
 	if err := _GetConsoleScreenBufferInfo(t, &bi); err != nil {

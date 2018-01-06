@@ -9,32 +9,28 @@ import (
 	"time"
 )
 
-type _ri struct {
-	start time.Time
-	end   time.Time
-}
-
-type UiSimple struct {
+// UISimple is an UI which prints the list of fetched plugins onto the
+// terminal
+type UISimple struct {
+	jobs map[string]Runtime
+	Runtime
 	sync.WaitGroup
-	runtime _ri
-	jobs    map[string]_ri
 	sync.Mutex
 }
 
-func (ui *UiSimple) Start() {
+func (ui *UISimple) Start() {
 	fmt.Println("started")
-	ui.runtime.start = time.Now()
+	ui.Runtime.start = time.Now()
 }
 
-func (ui *UiSimple) Stop() {
-	ui.runtime.end = time.Now()
+func (ui *UISimple) Stop() {
+	ui.Runtime.end = time.Now()
 	var d time.Duration
-	for id := range ui.jobs {
-		rt := ui.jobs[id]
-		d += rt.end.Sub(rt.start)
+	for _, rt := range ui.jobs {
+		d += rt.duration()
 	}
 
-	dt := ui.runtime.end.Sub(ui.runtime.start)
+	dt := ui.duration()
 
 	ui.Lock()
 	fmt.Println("done", strconv.FormatFloat(dt.Seconds(), 'f', 2, 64)+"s",
@@ -44,31 +40,30 @@ func (ui *UiSimple) Stop() {
 	ui.Unlock()
 }
 
-func (ui *UiSimple) AddJob(id string) {
-	ui.jobs[id] = _ri{start: time.Now()}
+func (ui *UISimple) AddJob(id string) {
+	ui.jobs[id] = Runtime{start: time.Now()}
 	ui.WaitGroup.Add(1)
 }
 
-func (ui *UiSimple) JobDone(id string) {
+func (ui *UISimple) JobDone(id string) {
 	ui.WaitGroup.Done()
 	rt := ui.jobs[id]
 	rt.end = time.Now()
 	ui.jobs[id] = rt
-	d := ui.jobs[id].end.Sub(ui.jobs[id].start)
 	ui.Lock()
-	fmt.Println(" job", strconv.FormatFloat(d.Seconds(), 'f', 2, 64)+"s", id)
+	fmt.Printf(" job %.2fs %s\n", ui.jobs[id].duration().Seconds(), id)
 	ui.Unlock()
 }
 
-func (ui *UiSimple) Print(id, msg string) {
+func (ui *UISimple) Print(id, msg string) {
 	scanner := bufio.NewScanner(strings.NewReader(msg))
 	scanner.Split(bufio.ScanLines)
 	ui.Lock()
 	for scanner.Scan() {
-		fmt.Println(" job", id, scanner.Text())
+		fmt.Println(id, scanner.Text())
 	}
 	ui.Unlock()
 }
 
-func (ui *UiSimple) Wait()    { ui.WaitGroup.Wait() }
-func (ui *UiSimple) Refresh() {}
+func (ui *UISimple) Wait()    { ui.WaitGroup.Wait() }
+func (ui *UISimple) Refresh() {}

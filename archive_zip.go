@@ -9,19 +9,20 @@ import (
 	"path/filepath"
 )
 
+// ZipArchive handles zip archive
 type ZipArchive struct{}
 
-func (za *ZipArchive) Extract(folder string, r io.Reader, strip_dirs int) error {
+func (za *ZipArchive) Extract(folder string, r io.Reader, stripDirs int) error {
 
-	zfile, err := zip_openReader(r)
+	zfile, err := za.openReader(r)
 	if err != nil {
 		return err
 	}
 
 	for _, f := range zfile.File {
 
-		oname, is_root := StripArchiveEntry(f.Name, strip_dirs)
-		if is_root {
+		oname, isRoot := stripArchiveEntry(f.Name, stripDirs)
+		if isRoot {
 			continue
 		}
 
@@ -55,19 +56,19 @@ func (za *ZipArchive) Extract(folder string, r io.Reader, strip_dirs int) error 
 	return nil
 }
 
-func (*ZipArchive) Entries(r io.Reader, strip_dirs int) ([]string, error) {
+func (za *ZipArchive) Entries(r io.Reader, stripDirs int) ([]string, error) {
 
 	var (
 		entries    = make([]string, 0)
-		zfile, err = zip_openReader(r)
+		zfile, err = za.openReader(r)
 	)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, f := range zfile.File {
-		oname, is_root := StripArchiveEntry(f.Name, strip_dirs)
-		if is_root {
+		oname, isRoot := stripArchiveEntry(f.Name, stripDirs)
+		if isRoot {
 			continue
 		}
 		entries = append(entries, filepath.Clean(oname))
@@ -76,7 +77,7 @@ func (*ZipArchive) Entries(r io.Reader, strip_dirs int) ([]string, error) {
 	return entries, nil
 }
 
-func zip_openReader(r io.Reader) (*zip.Reader, error) {
+func (*ZipArchive) openReader(r io.Reader) (*zip.Reader, error) {
 	switch rt := r.(type) {
 	default:
 		buffer := bytes.NewBuffer(nil)

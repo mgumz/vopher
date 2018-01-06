@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func first_not_empty(parts ...string) (result string) {
+func firstNotEmpty(parts ...string) (result string) {
 	for i := range parts {
 		if len(parts[i]) > 0 {
 			return parts[i]
@@ -16,7 +16,7 @@ func first_not_empty(parts ...string) (result string) {
 	return
 }
 
-func index_byte_n(path string, needle byte, n int) int {
+func indexByteN(path string, needle byte, n int) int {
 	idx, s := 0, 0
 	for ; s < n; s++ {
 		i := strings.IndexByte(path[idx:], needle)
@@ -34,7 +34,7 @@ func index_byte_n(path string, needle byte, n int) int {
 	return idx - 1
 }
 
-func prefix_in_stringslice(lst []string, s string) int {
+func prefixInStringSlice(lst []string, s string) int {
 	for i := range lst {
 		if strings.HasPrefix(lst[i], s) {
 			return i
@@ -43,7 +43,7 @@ func prefix_in_stringslice(lst []string, s string) int {
 	return -1
 }
 
-func expand_path(p string) (string, error) {
+func expandPath(p string) (string, error) {
 	if p == "" {
 		return p, nil
 	}
@@ -66,10 +66,10 @@ func expand_path(p string) (string, error) {
 // if no match is found, $VAR is returned.
 //
 // NOTE: this behavior is different from os.ExpandEnv()
-func expand_var_environment(v, vopher_dir string) string {
+func expandVarEnvironment(v, vopherDir string) string {
 	switch v {
 	case "VOPHER_DIR":
-		return vopher_dir
+		return vopherDir
 	default:
 		for _, env := range os.Environ() {
 			if strings.HasPrefix(env, v) && (env[len(v)] == '=') && (len(env)-len(v) > 1) {
@@ -83,8 +83,8 @@ func expand_var_environment(v, vopher_dir string) string {
 }
 
 // wrapper around os.Expand() and expand_var_environment
-func expand_path_environment(path, vopher_dir string) string {
+func expandPathEnvironment(path, vopherDir string) string {
 	return os.Expand(path, func(p string) string {
-		return expand_var_environment(p, vopher_dir)
+		return expandVarEnvironment(p, vopherDir)
 	})
 }

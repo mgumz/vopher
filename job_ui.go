@@ -1,6 +1,5 @@
 package main
 
-//
 // ui-ideas
 //
 // * https://godoc.org/github.com/jroimartin/gocui
@@ -22,15 +21,15 @@ package main
 // cons: horizontal space
 //        plugin-name fehlt
 
-// the ui-interface
-type JobUi interface {
+// JobUI defines the interface for all vopher-UIs
+type JobUI interface {
 	Start()
 	Stop()
 
 	Refresh()
 
-	AddJob(job_id string)
-	Print(job_id, msg string)
-	JobDone(job_id string)
+	AddJob(jobID string)
+	Print(jobID, msg string)
+	JobDone(jobID string)
 	Wait() // wait for all jobs to be .Done()
 }

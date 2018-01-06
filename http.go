@@ -7,13 +7,12 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"os"
 	"path"
 	"strings"
 )
 
 // HEAD url, find out "Content-Disposition: attachment; filename=foo.EXT"
-func httpdetect_ftype(url string) (string, error) {
+func httpdetectFtype(url string) (string, error) {
 	resp, err := http.Head(url)
 	if err != nil {
 		return "", err
@@ -34,13 +33,7 @@ func httpdetect_ftype(url string) (string, error) {
 	return path.Ext(content[idx+len(fn):]), nil
 }
 
-func httpget(out, url, checkSha1 string) (err error) {
-	var file *os.File
-
-	if file, err = os.Create(out); err != nil {
-		return err
-	}
-	defer file.Close()
+func httpGET(w io.Writer, url, checkSha1 string) (err error) {
 
 	var resp *http.Response
 	if resp, err = http.Get(url); err != nil {
@@ -69,7 +62,7 @@ func httpget(out, url, checkSha1 string) (err error) {
 		}
 	*/
 
-	if _, err = io.Copy(file, tee); err != nil {
+	if _, err = io.Copy(w, tee); err != nil {
 		return err
 	}
 

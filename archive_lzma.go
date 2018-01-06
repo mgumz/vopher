@@ -10,10 +10,9 @@ import (
 )
 
 func init() {
-	supported_archives = append(supported_archives, ".tar.lzma")
-	supported_archives = append(supported_archives, ".tar.xz")
+	supportedArchives = append(supportedArchives, ".tar.lzma", ".tar.xz")
 
-	archive_guesser = append(archive_guesser, func(n string) PluginArchive {
+	archiveGuesser = append(archiveGuesser, func(n string) PluginArchive {
 		if strings.HasSuffix(n, ".tar.lzma") {
 			return &LzmaArchive{&TarArchive{}}
 		} else if strings.HasSuffix(n, ".tar.xz") {
@@ -24,16 +23,16 @@ func init() {
 }
 
 // wrapper to decompress lzma
-type LzmaArchive struct{ orig PluginArchive }
+type lzmaArchive struct{ orig PluginArchive }
 
-func (la *LzmaArchive) Extract(folder string, r io.Reader, skip_dir int) error {
-	lzma_reader := lzma.NewReader(r)
-	defer lzma_reader.Close()
-	return la.orig.Extract(folder, lzma_reader, skip_dir)
+func (la *lzmaArchive) extract(folder string, r io.Reader, skipDir int) error {
+	lzmaReader := lzma.NewReader(r)
+	defer lzmaReader.Close()
+	return la.orig.extract(folder, lzmaReader, skipDir)
 }
 
-func (la *LzmaArchive) Entries(r io.Reader, skip_dir int) ([]string, error) {
-	lzma_reader := lzma.NewReader(r)
-	defer lzma_reader.Close()
-	return la.Entries(lzma_reader, skip_dir)
+func (la *lzmaArchive) entries(r io.Reader, skipDir int) ([]string, error) {
+	lzmaReader := lzma.NewReader(r)
+	defer lzmaReader.Close()
+	return la.orig.entries(lzmaReader, skipDir)
 }

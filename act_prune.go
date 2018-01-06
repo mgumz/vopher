@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func act_prune(plugins PluginList, base string, force bool, all bool) {
+func actPrune(plugins PluginList, base string, force, all bool) {
 
 	dir, err := os.Open(base)
 	if err != nil {
@@ -29,12 +29,12 @@ func act_prune(plugins PluginList, base string, force bool, all bool) {
 
 		// spare plugin.zip from pruning
 		if !all && strings.HasSuffix(name, ".zip") {
-			if _, is_plugin_zip := plugins[name[:len(name)-4]]; is_plugin_zip {
+			if _, isPlugin := plugins[name[:len(name)-4]]; isPlugin {
 				continue
 			}
 		}
 
-		if _, is_plugin := plugins[name]; !is_plugin {
+		if _, isPlugin := plugins[name]; !isPlugin {
 			suffix := "dry-run."
 			name = filepath.Join(base, name)
 			fmt.Printf("prune %q: ", name)

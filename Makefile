@@ -2,7 +2,7 @@ VERSION=0.5.0
 BUILD_DATE=$(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 GIT_HASH=$(shell git rev-parse HEAD)
 
-RELEASES=bin/vopher-$(VERSION).linux.amd64 \
+BINARIES=bin/vopher-$(VERSION).linux.amd64 \
 		 bin/vopher-$(VERSION).linux.arm64 \
 		 bin/vopher-$(VERSION).linux.mips64 \
 		 bin/vopher-$(VERSION).windows.amd64.exe \
@@ -13,7 +13,10 @@ RELEASES=bin/vopher-$(VERSION).linux.amd64 \
 LDFLAGS=-ldflags "-X main.Version=$(VERSION) -X main.BuildDate=$(BUILD_DATE) -X main.GitHash=$(GIT_HASH)"
 
 
-releases: $(RELEASES)
+simple:
+	go build -v
+
+release: $(BINARIES)
 
 bin/vopher-$(VERSION).linux.mips64: bin
 	env GOOS=linux GOARCH=mips64 CGO_ENABLED=0 go build $(LDFLAGS) -o $@

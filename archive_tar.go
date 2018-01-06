@@ -7,27 +7,29 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
+// TarArchive handles tar archives
 type TarArchive struct{}
 
-func (ta *TarArchive) Extract(folder string, r io.Reader, strip_dirs int) error {
-	_, err := ta.handle(folder, r, strip_dirs, tar_extract_entry)
+func (ta *TarArchive) Extract(folder string, r io.Reader, stripDirs int) error {
+	_, err := ta.handle(folder, r, stripDirs, tarExtractEntry)
 	return err
 }
 
-func (ta *TarArchive) Entries(r io.Reader, strip_dirs int) ([]string, error) {
-	return ta.handle("", r, strip_dirs, tar_ignore_entry)
+func (ta *TarArchive) Entries(r io.Reader, stripDirs int) ([]string, error) {
+	return ta.handle("", r, stripDirs, tarIgnoreEntry)
 }
 
 // small helper to operate on a tar-entry. reader r points directly
 // to the data for 'name' in the tar file.
-type tar_efunc func(name string, r io.Reader) error
+type tarExtractFunc func(name string, r io.Reader) error
 
 // handle all file-like entries in the tar represented by 'r' due the 'extract'
 // function.
 // TODO: make sure "file-like" is the correct criteria.
-func (ta *TarArchive) handle(folder string, r io.Reader, strip_dirs int, extract tar_efunc) ([]string, error) {
+func (ta *TarArchive) handle(folder string, r io.Reader, stripDirs int, extract tarExtractFunc) ([]string, error) {
 
 	var (
 		entries = make([]string, 0)
@@ -50,12 +52,12 @@ func (ta *TarArchive) handle(folder string, r io.Reader, strip_dirs int, extract
 		if fi.IsDir() {
 			// TODO: decide, if we skip dirs or not
 			continue
-		} else if header.Name != "" && header.Name[0] == '/' {
+		} else if strings.HasPrefix(header.Name, "/") {
 			return nil, fmt.Errorf("entry with absolute filename %q", header.Name)
 		}
 
-		oname, is_root := StripArchiveEntry(header.Name, strip_dirs)
-		if is_root {
+		oname, isRoot := stripArchiveEntry(header.Name, stripDirs)
+		if isRoot {
 			continue
 		}
 		entries = append(entries, oname)
@@ -66,7 +68,7 @@ func (ta *TarArchive) handle(folder string, r io.Reader, strip_dirs int, extract
 	return entries, nil
 }
 
-func tar_extract_entry(name string, r io.Reader) error {
+func tarExtractEntry(name string, r io.Reader) error {
 	if err := os.MkdirAll(filepath.Dir(name), 0777); err != nil {
 		return err
 	}
@@ -77,7 +79,7 @@ func tar_extract_entry(name string, r io.Reader) error {
 	_, err = io.Copy(file, r)
 	return err
 }
-func tar_ignore_entry(name string, r io.Reader) error {
+func tarIgnoreEntry(name string, r io.Reader) error {
 	_, err := io.Copy(ioutil.Discard, r)
 	return err
 }

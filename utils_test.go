@@ -19,7 +19,7 @@ func TestIndexByteN(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		idx := index_byte_n(test.text, '/', 2)
+		idx := indexByteN(test.text, '/', 2)
 		t.Logf("test-%d: index of %d. '%c' in %q: %d",
 			i, 2, '/', test.text, idx)
 		if idx != test.idx {
@@ -30,8 +30,8 @@ func TestIndexByteN(t *testing.T) {
 
 func TestExpandVar(t *testing.T) {
 	var (
-		vopher_dir = "YIPI"
-		tests      = []struct {
+		vopherDir = "YIPI"
+		tests     = []struct {
 			in, expected string
 		}{
 			{"foo", "foo"},
@@ -50,10 +50,10 @@ func TestExpandVar(t *testing.T) {
 
 	for i := range tests {
 
-		out := expand_path_environment(tests[i].in, vopher_dir)
+		out := expandPathEnvironment(tests[i].in, vopherDir)
 
 		t.Logf("%d: expand (VOPHER_DIR=%q, $ENV:%v) %q => %q",
-			i, vopher_dir, os.Environ(), tests[i].in, out)
+			i, vopherDir, os.Environ(), tests[i].in, out)
 
 		if out != tests[i].expected {
 			log.Fatalf("%d: error expanding %q, got %q, expected %q\n%v",

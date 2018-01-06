@@ -1,7 +1,5 @@
 package main
 
-// http://www.drchip.org/astronaut/vim/doc/pi_vimball.txt.html
-
 import (
 	"bufio"
 	"fmt"
@@ -12,11 +10,13 @@ import (
 	"strings"
 )
 
-type vimball_efunc func(name string, lines int, s *bufio.Scanner) error
-
+// VimballArchive handles vimball archives, see
+// http://www.drchip.org/astronaut/vim/doc/pi_vimball.txt.html
 type VimballArchive struct{}
 
-func (vimball *VimballArchive) Extract(folder string, r io.Reader, skip_dir int) error {
+type _VimballExtractFunc func(name string, lines int, s *bufio.Scanner) error
+
+func (vimball *VimballArchive) Extract(folder string, r io.Reader, skipDir int) error {
 
 	f := func(n string, l int, s *bufio.Scanner) error {
 		return vimball.extractFile(n, l, s)
@@ -25,7 +25,7 @@ func (vimball *VimballArchive) Extract(folder string, r io.Reader, skip_dir int)
 	return err
 }
 
-func (vimball *VimballArchive) Entries(r io.Reader, skip_dir int) ([]string, error) {
+func (vimball *VimballArchive) Entries(r io.Reader, skipDir int) ([]string, error) {
 	f := func(n string, l int, s *bufio.Scanner) error {
 		return vimball.skipFile(n, l, s)
 	}
@@ -48,23 +48,23 @@ func (vimball *VimballArchive) Entries(r io.Reader, skip_dir int) ([]string, err
 //     number_of_lines2
 //     ...
 //     ...
-func (*VimballArchive) handle(folder string, r io.Reader, extract vimball_efunc) ([]string, error) {
+func (*VimballArchive) handle(folder string, r io.Reader, extract _VimballExtractFunc) ([]string, error) {
 
 	var (
 		contents = make([]string, 0)
 		scanner  = bufio.NewScanner(r)
 
-		pre = struct{ use_vimball, finish bool }{} // 'preamble'
+		pre = struct{ useVimball, finish bool }{} // 'preamble'
 	)
 
 	scanner.Split(bufio.ScanLines)
 
 	// scan for lines 'UseVimball', followed by 'finish'
-	for scanner.Scan() && !pre.use_vimball && !pre.finish {
+	for scanner.Scan() && !pre.useVimball && !pre.finish {
 		line := scanner.Text()
-		if !pre.use_vimball && line == "UseVimball" {
-			pre.use_vimball = true
-		} else if pre.use_vimball && !pre.finish && line == "finish" {
+		if !pre.useVimball && line == "UseVimball" {
+			pre.useVimball = true
+		} else if pre.useVimball && !pre.finish && line == "finish" {
 			pre.finish = true
 		}
 	}
@@ -73,7 +73,7 @@ func (*VimballArchive) handle(folder string, r io.Reader, extract vimball_efunc)
 		return nil, scanner.Err()
 	}
 
-	if !pre.use_vimball && !pre.finish {
+	if !pre.useVimball && !pre.finish {
 		return nil, fmt.Errorf("error vimball: strange preamble")
 	}
 

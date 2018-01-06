@@ -17,7 +17,7 @@ import (
 
 const SEARCH_URL = "http://vimawesome.com/api/plugins"
 
-func act_search(args ...string) {
+func actSearch(args ...string) {
 	buf := bytes.NewBuffer(nil)
 	for i := range args {
 		// TODO: filter out special arguments such as 'page=xyz'
@@ -25,13 +25,13 @@ func act_search(args ...string) {
 		buf.WriteByte(' ')
 	}
 
-	search_values := url.Values{}
-	search_values.Add("query", buf.String())
+	vals := url.Values{}
+	vals.Add("query", buf.String())
 
-	search_url, _ := url.Parse(SEARCH_URL)
-	search_url.RawQuery = search_values.Encode()
+	searchURL, _ := url.Parse(SEARCH_URL)
+	searchURL.RawQuery = vals.Encode()
 
-	query, err := http.Get(search_url.String())
+	query, err := http.Get(searchURL.String())
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -39,8 +39,8 @@ func act_search(args ...string) {
 
 	// TODO: handle status code
 
-	vimawesome, err := _parse_vimawesome(query.Body)
-	if err != nil {
+	vimawesome := &_VimAwesome{}
+	if err := vimawesome.parse(query.Body); err != nil {
 		fmt.Println("found nothing")
 		return
 	}
@@ -50,18 +50,18 @@ func act_search(args ...string) {
 		// TODO: think about using http://godoc.org/github.com/kr/text
 		// to improve rendering of search results
 		fmt.Println(plugin.GithubUsage, plugin.Name, plugin.Desc)
-		if plugin.VimUrl != "" {
-			fmt.Println("      vim:", plugin.VimUrl)
+		if plugin.VimURL != "" {
+			fmt.Println("      vim:", plugin.VimURL)
 		}
-		if plugin.GithubUrl != "" {
-			fmt.Println("   github:", plugin.GithubUrl)
+		if plugin.GithubURL != "" {
+			fmt.Println("   github:", plugin.GithubURL)
 		}
 	}
 	if len(vimawesome.Plugin) > 0 {
-		search_url.Path = ""
-		search_url.RawQuery = ""
+		searchURL.Path = ""
+		searchURL.RawQuery = ""
 		fmt.Println()
-		fmt.Println("more plugins at", search_url.String())
+		fmt.Println("more plugins at", searchURL.String())
 	}
 }
 
@@ -110,18 +110,13 @@ type _VimAwesome struct {
 		Rating      int    `json:"vimorg_rating"`
 		Name        string `json:"name"`
 		Desc        string `json:"short_desc"`
-		VimUrl      string `json:"vimorg_url"`
-		GithubUrl   string `json:"github_url"`
+		VimURL      string `json:"vimorg_url"`
+		GithubURL   string `json:"github_url"`
 		GithubUsage int    `json:"github_bundles"`
 	} `json:"plugins"`
 }
 
-func _parse_vimawesome(r io.Reader) (*_VimAwesome, error) {
-	var vimawesome _VimAwesome
+func (vimAwesome *_VimAwesome) parse(r io.Reader) error {
 	jsondec := json.NewDecoder(r)
-	err := jsondec.Decode(&vimawesome)
-	if err != nil {
-		return nil, err
-	}
-	return &vimawesome, nil
+	return jsondec.Decode(vimAwesome)
 }

@@ -9,7 +9,7 @@ import (
 	"unsafe"
 )
 
-func TerminalSize(t *os.File) (cols, rows int, err error) {
+func terminalSize(t *os.File) (cols, rows int, err error) {
 
 	var ws = struct {
 		row, col       uint16
@@ -30,7 +30,7 @@ func TerminalSize(t *os.File) (cols, rows int, err error) {
 	return int(ws.col), int(ws.row), nil
 }
 
-func CursorNUp(t *os.File, n int) (err error) {
+func cursorNUp(t *os.File, n int) (err error) {
 	t.WriteString("\x1b[")
 	t.WriteString(strconv.Itoa(n))
 	t.WriteString("A")
