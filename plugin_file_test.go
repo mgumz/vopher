@@ -10,7 +10,7 @@ import (
 
 func Test_ScanPluginFile(t *testing.T) {
 
-	const N_PLUGINS = 7
+	const N_PLUGINS = 8
 	sample := `
 # ignore this
 http://example.com/plugin1
@@ -20,7 +20,9 @@ plugin4 http://example.com/pluginx#tag-a
 
 http://example.com/plugin5 opt1=0 opt2=0 strip=2
 plugin6 http://example.com/pluginx opt1=0 opt2=0 strip=2
-http://example.com/plugin7 postupdate=a`
+http://example.com/plugin7 postupdate=a 
+  plugin8 http://example.com/leading-ws  
+`
 
 	scanned := make(PluginList)
 	sr := strings.NewReader(sample)
