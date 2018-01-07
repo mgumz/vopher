@@ -95,7 +95,7 @@ func main() {
 	flag.StringVar(&cli.file, "f", cli.file, "path to list of plugins")
 	flag.StringVar(&cli.dir, "dir", cli.dir, "directory to extract the plugins to")
 	flag.StringVar(&cli.ui, "ui", cli.ui, "ui mode ('simple' or 'oneline', works with `update` action)")
-	flag.Var(&cli.filter, "filter", "operate on given plugins only; can be given multiple times")
+	flag.Var(&cli.filter, "filter", "operate on given plugins only; matches substrings, can be given multiple times")
 
 	flag.Usage = usage
 	flag.Parse()

@@ -1,6 +1,9 @@
 package main
 
-import "sort"
+import (
+	"sort"
+	"strings"
+)
 
 type PluginList map[string]*Plugin
 
@@ -13,7 +16,7 @@ func (plugins PluginList) filter(filter stringList) PluginList {
 	filtered := make(PluginList)
 	for k, v := range plugins {
 		for i := range filter {
-			if k == filter[i] {
+			if strings.Contains(k, filter[i]) {
 				filtered[k] = v
 			}
 		}

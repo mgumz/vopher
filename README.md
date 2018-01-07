@@ -17,7 +17,7 @@
       -f string
             path to list of plugins (default "vopher.list")
       -filter value
-            operate on given plugins only; can be given multiple times
+            operate on given plugins only; matches substrings, can be given multiple times
       -force
             force certain actions [prune, clean]
       -list-supported-archives
