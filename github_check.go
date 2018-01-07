@@ -9,7 +9,10 @@ import (
 func (gh Github) checkPlugin(plugin *Plugin, base string) string {
 
 	name, head := gh.getRepository(plugin.url)
-	altHead := gh.guessCommitByZIP(plugin.name, base)
+	altHead := gh.guessCommitByFile(plugin.name, base)
+	if altHead == "" {
+		altHead = gh.guessCommitByZIP(plugin.name, base)
+	}
 
 	u := *plugin.url
 	u.Path = name

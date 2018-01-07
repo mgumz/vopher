@@ -42,7 +42,7 @@ func actUpdate(plugins PluginList, ui JobUI, opts *ActUpdateOpts) {
 				remoteZip := firstNotEmpty(plugin.url.Fragment, "master") + ".zip"
 				plugin.url.Path = path.Join(plugin.url.Path, "archive", remoteZip)
 				archiveName = filepath.Base(remoteZip)
-				plugin.ext, plugin.archive = ".zip", &ZipArchive{}
+				plugin.ext, plugin.archive = ".zip", &ZipArchive{gitCommit: true}
 			default:
 				plugin.ext, err = httpdetectFtype(plugin.url.String())
 				if err != nil {

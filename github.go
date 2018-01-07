@@ -3,6 +3,7 @@ package main
 import (
 	"archive/zip"
 	"encoding/xml"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -52,6 +53,18 @@ func (gh Github) guessCommitByZIP(name, base string) string {
 		return zfile.Comment
 	}
 	return ""
+}
+
+func (gh Github) guessCommitByFile(name, base string) string {
+	path := filepath.Join(base, name, "github-commit")
+	commit, err := ioutil.ReadFile(path)
+	if err != nil {
+		return ""
+	}
+	if len(commit) != 40 {
+		return ""
+	}
+	return string(commit)
 }
 
 // GithubFeed is a minimal atom-parser sufficient to extract only what we need

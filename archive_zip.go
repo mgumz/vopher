@@ -10,7 +10,9 @@ import (
 )
 
 // ZipArchive handles zip archive
-type ZipArchive struct{}
+type ZipArchive struct {
+	gitCommit bool // if true: assume the .zip comment contains the git-commit
+}
 
 func (za *ZipArchive) Extract(folder string, r io.Reader, stripDirs int) error {
 
@@ -51,6 +53,19 @@ func (za *ZipArchive) Extract(folder string, r io.Reader, stripDirs int) error {
 
 		ofile.Close()
 		zreader.Close()
+	}
+
+	// github stores the git-commit in the comment of the .zip file
+	// so, we store a file called "github-commit" in the plugin-folder
+	// to be able to check for updates
+	if za.gitCommit && len(zfile.Comment) == 40 {
+		name := filepath.Join(folder, "github-commit")
+		file, err := os.Create(name)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+		io.WriteString(file, zfile.Comment)
 	}
 
 	return nil
