@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-// fetch 'url' and extract it into 'base'. skip 'skip_dirs'
+// fetch 'url' and extract it into 'base'. skip 'skipDirs'
 // leading directories in filenames in zip while extracting
 // the contents.
 func acquire(base, ext, url string, archive PluginArchive, skipDirs int, checkSha1 string) error {
