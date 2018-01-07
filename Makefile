@@ -1,4 +1,4 @@
-VERSION=0.5.0
+VERSION=0.6.0
 BUILD_DATE=$(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 GIT_HASH=$(shell git rev-parse HEAD)
 
@@ -15,6 +15,9 @@ LDFLAGS=-ldflags "-X main.Version=$(VERSION) -X main.BuildDate=$(BUILD_DATE) -X 
 
 simple:
 	go build -v
+
+test:
+	go test -v
 
 release: $(BINARIES)
 
