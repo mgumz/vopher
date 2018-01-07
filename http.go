@@ -48,7 +48,10 @@ func httpGET(w io.Writer, url, checkSha1 string) (err error) {
 
 	reader := io.Reader(resp.Body)
 	hasher := sha1.New()
-	tee := io.TeeReader(reader, hasher)
+
+	if checkSha1 != "" {
+		reader = io.TeeReader(reader, hasher)
+	}
 
 	/*
 		// NOTE: idea to report sub-progress, but maybe not worth the
@@ -62,7 +65,7 @@ func httpGET(w io.Writer, url, checkSha1 string) (err error) {
 		}
 	*/
 
-	if _, err = io.Copy(w, tee); err != nil {
+	if _, err := io.Copy(w, reader); err != nil {
 		return err
 	}
 
