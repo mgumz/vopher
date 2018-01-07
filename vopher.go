@@ -11,8 +11,10 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -20,6 +22,8 @@ var allowedActions = []string{
 	"u",
 	"up",
 	"update",
+	"f",
+	"fetch",
 	"clean",
 	"c",
 	"check",
@@ -44,6 +48,8 @@ Flags:
 Actions:
 
   update - acquires the given plugins from '-f <list>'
+  fetch  - fetch a remote archive and extract it. the arguments are like fields
+           in a vopher.list file
   search - searches http://vimawesome.com/ to list some plugins. Anything
            after this is considered the query
   check  - checks plugins from '-f <list>' for newer versions
@@ -119,6 +125,8 @@ func main() {
 		return
 	} else if cli.action == "search" && len(flag.Args()) < 2 {
 		log.Fatal("error: missing arguments for 'search'")
+	} else if cli.action == "fetch" && len(flag.Args()) < 2 {
+		log.Fatal("error: missing arguments for 'fetch'")
 	}
 
 	cli.ui = defaultUI(cli.ui, cli.action)
@@ -137,6 +145,10 @@ func main() {
 	switch cli.action {
 	case "update", "u", "up":
 		plugins := mustReadPlugins(cli.file, cli.filter)
+		opts := ActUpdateOpts{dir: cli.dir, force: cli.force, dryRun: cli.dry}
+		actUpdate(plugins, ui, &opts)
+	case "fetch", "f":
+		plugins := fetchSinglePlugin(strings.Join(flag.Args()[1:], " "))
 		opts := ActUpdateOpts{dir: cli.dir, force: cli.force, dryRun: cli.dry}
 		actUpdate(plugins, ui, &opts)
 	case "check", "ch":
@@ -163,7 +175,8 @@ func defaultUI(ui, action string) string {
 		return ui
 	}
 	switch action {
-	case "update", "u", "up":
+	case "update", "u", "up",
+		"fetch", "f":
 		return "oneline"
 	default:
 		return "simple"
@@ -202,6 +215,19 @@ func mustReadPlugins(path string, filter stringList) PluginList {
 
 	if len(plugins) == 0 {
 		log.Fatalf("empty plugin-file %q", path)
+	}
+	return plugins
+}
+
+func fetchSinglePlugin(url string) PluginList {
+
+	r := ioutil.NopCloser(strings.NewReader(url))
+	plugins := make(PluginList)
+	if err := plugins.Parse(r); err != nil {
+		log.Fatal(err)
+	}
+	if len(plugins) == 0 {
+		log.Fatalf("not a valid plugin %q", url)
 	}
 	return plugins
 }
