@@ -23,17 +23,18 @@ func (gh Github) checkPlugin(plugin *Plugin, base string) string {
 		section string
 	}{
 		{[]string{"commits", "master"}, nil, "\n - master commits:\n"},
-		{[]string{"commits", head}, nil, "\n - commits:\n"},
 		{[]string{"tags"}, nil, "\n - tags:\n"},
+	}
+	if head != "master" {
+		commit := commits[0]
+		commit.parts = []string{"commits", head}
+		commit.section = "\n - commits:\n"
+		commits = append(commits, commit)
 	}
 
 	var wg sync.WaitGroup
 	wg.Add(len(commits))
 	for i := range commits {
-		if i == 0 && head == "master" { // don't check 'master' two times
-			wg.Done()
-			continue
-		}
 		go func(j int) {
 			commits[j].feed = gh.getCommits(&u, commits[j].parts...)
 			wg.Done()
@@ -45,20 +46,19 @@ func (gh Github) checkPlugin(plugin *Plugin, base string) string {
 
 	fmt.Fprintf(buf, "\n\n## %s - %s\n", plugin.name, plugin.url)
 
-	prefix := " "
 	for i := range commits {
 		c := &commits[i]
-		if c.feed == nil || len(c.feed.Entry) <= 0 {
+		if c.feed == nil || len(c.feed.Entry) == 0 {
 			continue
 		}
 
 		fmt.Fprintln(buf, c.section)
 		for _, entry := range c.feed.Entry {
-			prefix = " "
+			mark := " "
 			if entry.ID == head || entry.ID == altHead {
-				prefix = "*"
+				mark = "*"
 			}
-			fmt.Fprintf(buf, "  %s%.10s %s %s\n", prefix, entry.ID, entry.Updated, entry.Title)
+			fmt.Fprintf(buf, "  %s%.10s %s %s\n", mark, entry.ID, entry.Updated, entry.Title)
 		}
 	}
 
