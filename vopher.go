@@ -82,7 +82,7 @@ func main() {
 		supported bool
 		version   bool
 	}{
-		action: "update",
+		action: "status",
 		file:   "vopher.list",
 		dir:    "./pack/vopher/start", // vim8 default "package" folder
 	}
