@@ -6,7 +6,7 @@ import (
 	"io"
 	"strings"
 
-	"code.google.com/p/lzma"
+	"github.com/smira/lzma"
 )
 
 func init() {
@@ -23,16 +23,16 @@ func init() {
 }
 
 // wrapper to decompress lzma
-type lzmaArchive struct{ orig PluginArchive }
+type LzmaArchive struct{ orig PluginArchive }
 
-func (la *lzmaArchive) extract(folder string, r io.Reader, skipDir int) error {
+func (la *LzmaArchive) Extract(folder string, r io.Reader, skipDir int) error {
 	lzmaReader := lzma.NewReader(r)
 	defer lzmaReader.Close()
-	return la.orig.extract(folder, lzmaReader, skipDir)
+	return la.orig.Extract(folder, lzmaReader, skipDir)
 }
 
-func (la *lzmaArchive) entries(r io.Reader, skipDir int) ([]string, error) {
+func (la *LzmaArchive) Entries(r io.Reader, skipDir int) ([]string, error) {
 	lzmaReader := lzma.NewReader(r)
 	defer lzmaReader.Close()
-	return la.orig.entries(lzmaReader, skipDir)
+	return la.orig.Entries(lzmaReader, skipDir)
 }
