@@ -48,36 +48,17 @@ func (vimball *VimballArchive) Entries(r io.Reader, skipDir int) ([]string, erro
 //     number_of_lines2
 //     ...
 //     ...
-func (*VimballArchive) handle(folder string, r io.Reader, extract _VimballExtractFunc) ([]string, error) {
+func (vba *VimballArchive) handle(folder string, r io.Reader, extract _VimballExtractFunc) ([]string, error) {
 
-	var (
-		contents = make([]string, 0)
-		scanner  = bufio.NewScanner(r)
-
-		pre = struct{ useVimball, finish bool }{} // 'preamble'
-	)
-
+	scanner := bufio.NewScanner(r)
 	scanner.Split(bufio.ScanLines)
 
-	// scan for lines 'UseVimball', followed by 'finish'
-	for scanner.Scan() && !pre.useVimball && !pre.finish {
-		line := scanner.Text()
-		if !pre.useVimball && line == "UseVimball" {
-			pre.useVimball = true
-		} else if pre.useVimball && !pre.finish && line == "finish" {
-			pre.finish = true
-		}
-	}
-
-	if scanner.Err() != nil {
-		return nil, scanner.Err()
-	}
-
-	if !pre.useVimball && !pre.finish {
-		return nil, fmt.Errorf("error vimball: strange preamble")
+	if err := vba.skipPreamble(scanner); err != nil {
+		return nil, err
 	}
 
 	// now scan the file-entries
+	contents := make([]string, 0)
 	for scanner.Scan() {
 		line := scanner.Text()
 		fields := strings.SplitN(line, "\t", 2)
@@ -105,6 +86,32 @@ func (*VimballArchive) handle(folder string, r io.Reader, extract _VimballExtrac
 	}
 
 	return contents, scanner.Err()
+}
+
+func (*VimballArchive) skipPreamble(scanner *bufio.Scanner) error {
+
+	useVimball := false
+	finish := false
+
+	// scan for lines 'UseVimball', followed by 'finish'
+	for scanner.Scan() && !useVimball && !finish {
+		line := scanner.Text()
+		if !useVimball && line == "UseVimball" {
+			useVimball = true
+		} else if useVimball && !finish && line == "finish" {
+			finish = true
+		}
+	}
+
+	if scanner.Err() != nil {
+		return scanner.Err()
+	}
+
+	if !useVimball && !finish {
+		return fmt.Errorf("error vimball: strange preamble")
+	}
+
+	return nil
 }
 
 //
