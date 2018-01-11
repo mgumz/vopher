@@ -3,6 +3,7 @@ BUILD_DATE=$(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 GIT_HASH=$(shell git rev-parse HEAD)
 
 BINARIES=bin/vopher-$(VERSION).linux.amd64 \
+		 bin/vopher-$(VERSION).linux.386 \
 		 bin/vopher-$(VERSION).linux.arm64 \
 		 bin/vopher-$(VERSION).linux.mips64 \
 		 bin/vopher-$(VERSION).windows.amd64.exe \
@@ -26,6 +27,9 @@ bin/vopher-$(VERSION).linux.mips64: bin
 
 bin/vopher-$(VERSION).linux.amd64: bin
 	env GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build $(LDFLAGS) -o $@
+
+bin/vopher-$(VERSION).linux.386: bin
+	env GOOS=linux GOARCH=386 CGO_ENABLED=0 go build $(LDFLAGS) -o $@
 
 bin/vopher-$(VERSION).linux.arm64: bin
 	env GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build $(LDFLAGS) -o $@
