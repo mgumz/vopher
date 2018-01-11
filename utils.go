@@ -59,7 +59,7 @@ func expandPath(p string) (string, error) {
 	return p, nil
 }
 
-// expands 'v' by replacing occurences of  by their
+// expands 'v' by replacing occurrences of  by their
 // os.Environ() equivalent, except for $VOPHER_DIR which is
 // replaced by 'vopher_dir'
 //
