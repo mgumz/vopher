@@ -85,16 +85,17 @@ func (*VimballArchive) handle(folder string, r io.Reader, extract _VimballExtrac
 		name := strings.TrimSpace(fields[0])
 		name = filepath.Clean(name)
 
+		errorMsg := "error vimball: while scanning line-number for %q: %v"
 		if !scanner.Scan() {
-			return nil, fmt.Errorf("error vimball: while scanning line-number for %q: %v", name, scanner.Err())
+			return nil, fmt.Errorf(errorMsg, name, scanner.Err())
 		}
 
 		nlines, err := strconv.Atoi(scanner.Text())
 		if err != nil {
-			return nil, fmt.Errorf("error vimball: while parsing line-number for %q: %v", name, err)
+			return nil, fmt.Errorf(errorMsg, name, err)
 		}
 		if nlines < 0 {
-			return nil, fmt.Errorf("error vimball: got negative line-number for %q: %v", name, nlines)
+			return nil, fmt.Errorf(errorMsg, name, nlines)
 		}
 
 		if err = extract(filepath.Join(folder, name), nlines, scanner); err != nil {
@@ -122,6 +123,7 @@ func (*VimballArchive) extractFile(name string, lines int, scanner *bufio.Scanne
 
 	for lines > 0 && scanner.Scan() {
 		file.Write(scanner.Bytes())
+		file.Write([]byte{'\n'})
 		lines--
 	}
 
