@@ -15,6 +15,6 @@ func printVersion() {
 		fmt.Println("git:\t" + GitHash)
 	}
 	if BuildDate != "" {
-		fmt.Println("build-date:\t" + BuildDate)
+		fmt.Println("build:\t" + BuildDate)
 	}
 }
