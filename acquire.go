@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"time"
 )
 
 // fetch 'url' and extract it into 'base'. skip 'skipDirs'
@@ -17,21 +18,28 @@ func acquire(base, ext, url string, archive PluginArchive, skipDirs int, checkSh
 		return fmt.Errorf("mkdir %q: %s", base, err)
 	}
 
-	name := base + ext
-	file, err := os.Create(name)
+	ts := time.Now().UTC().Format("-2006-01-02T03:04:05Z")
+	name, tmpName := base+ext, base+ts+ext
+	file, err := os.Create(tmpName)
 	if err != nil {
 		return err
 	}
-	defer file.Close()
 
 	if err = httpGET(file, url, checkSha1); err != nil {
+		file.Close()
+		os.Remove(tmpName)
 		return err
 	}
 
 	file.Sync()
 	file.Seek(0, 0)
 
-	return archive.Extract(base, file, skipDirs)
+	err = archive.Extract(base, file, skipDirs)
+	file.Close()
+	if err == nil {
+		err = os.Rename(tmpName, name)
+	}
+	return err
 }
 
 // download 'url' and try to parse the zip-file. print out
