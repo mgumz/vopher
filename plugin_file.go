@@ -96,7 +96,7 @@ func (plugins PluginList) Parse(reader io.ReadCloser) error {
 			continue
 		}
 		name, fields = eventualName(fields)
-		if url, err = neturl.Parse(fields[0]); err != nil {
+		if url, err = parsePluginURL(fields[0]); err != nil {
 			log.Println("error:", name, ":", lnumber, "not an url", line)
 			continue
 		}
@@ -115,7 +115,8 @@ func (plugins PluginList) Parse(reader io.ReadCloser) error {
 		if len(fields) > 1 {
 			fields = fields[1:]
 			if err = plugin.optionsFromFields(fields); err != nil {
-				return fmt.Errorf("parsing optional fields: %q, plugin %q on line %d", err, name, lnumber)
+				errMsg := "parsing optional fields: %q, plugin %q on line %d"
+				return fmt.Errorf(errMsg, err, name, lnumber)
 			}
 		}
 

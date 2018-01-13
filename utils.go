@@ -1,6 +1,7 @@
 package main
 
 import (
+	"net/url"
 	"os"
 	stduser "os/user"
 	"path/filepath"
@@ -87,4 +88,17 @@ func expandPathEnvironment(path, vopherDir string) string {
 	return os.Expand(path, func(p string) string {
 		return expandVarEnvironment(p, vopherDir)
 	})
+}
+
+// parsePluginURL will parse a given URL into a *url.URL
+// Since people are lazy and lazy people will just hand over
+// "github.com/tpope/vim-fugitive" - we want to support lazy typing by
+// prepending a protocol
+func parsePluginURL(u string) (*url.URL, error) {
+
+	if strings.HasPrefix(u, "github.com/") {
+		u = "https://" + u
+	}
+
+	return url.Parse(u)
 }
