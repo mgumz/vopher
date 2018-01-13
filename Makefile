@@ -22,6 +22,12 @@ test:
 
 release: $(BINARIES)
 
+build-docker:
+	docker build -f docker/Dockerfile -t vopher \
+		--build-arg BUILD_DIR=/vopher/src/vopher \
+		--build-arg VOPHER=bin/vopher-$(VERSION).linux.amd64 .
+
+
 bin/vopher-$(VERSION).linux.mips64: bin
 	env GOOS=linux GOARCH=mips64 CGO_ENABLED=0 go build $(LDFLAGS) -o $@
 
