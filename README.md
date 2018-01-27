@@ -15,7 +15,7 @@
       -dry
             dry-run, show what would happen [prune, clean]
       -f string
-            path to list of plugins (default "vopher.list")
+            path|url to list of plugins (default "vopher.list")
       -filter value
             operate on given plugins only; matches substrings, can be given multiple times
       -force

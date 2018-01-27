@@ -11,7 +11,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"strings"
@@ -49,7 +48,7 @@ Flags:
 	fmt.Fprintln(os.Stderr, `
 Actions:
 
-  update  - acquires the given plugins from '-f <list>'
+  update  - acquires the given plugins from '-f <list-file|url>'
   fetch   - fetch a remote archive and extract it. the arguments are like fields
             in a vopher.list file
   search  - searches http://vimawesome.com/ to list some plugins. Anything
@@ -78,7 +77,7 @@ func main() {
 		force     bool
 		dry       bool
 		all       bool
-		file      string
+		from      string
 		dir       string
 		ui        string
 		filter    stringList
@@ -86,7 +85,7 @@ func main() {
 		version   bool
 	}{
 		action: "status",
-		file:   "vopher.list",
+		from:   "vopher.list",
 		dir:    "./pack/vopher/start", // vim8 default "package" folder
 	}
 
@@ -95,7 +94,7 @@ func main() {
 	flag.BoolVar(&cli.all, "all", cli.force, "don't keep <plugin>.zip around [prune]")
 	flag.BoolVar(&cli.supported, "list-supported-archives", false, "list all supported archive types")
 	flag.BoolVar(&cli.version, "v", cli.version, "show version")
-	flag.StringVar(&cli.file, "f", cli.file, "path to list of plugins")
+	flag.StringVar(&cli.from, "f", cli.from, "path|url to list of plugins")
 	flag.StringVar(&cli.dir, "dir", cli.dir, "directory to extract the plugins to")
 	flag.StringVar(&cli.ui, "ui", cli.ui, "ui mode ('simple' or 'oneline', works with `update` action)")
 	flag.Var(&cli.filter, "filter", "operate on given plugins only; matches substrings, can be given multiple times")
@@ -147,24 +146,30 @@ func main() {
 
 	switch cli.action {
 	case "update", "u", "up":
-		plugins := mustReadPlugins(cli.file, cli.filter)
+		parser := localOrRemoteParser(cli.from)
+		plugins := mustReadPlugins(cli.from, parser, cli.filter)
 		opts := ActUpdateOpts{dir: cli.dir, force: cli.force, dryRun: cli.dry}
 		actUpdate(plugins, ui, &opts)
 	case "fetch", "f":
-		plugins := fetchSinglePlugin(strings.Join(flag.Args()[1:], " "))
+		from := strings.Join(flag.Args()[1:], " ")
+		plugins := mustReadPlugins(from, PluginList.ParseLine, []string{})
 		opts := ActUpdateOpts{dir: cli.dir, force: cli.force, dryRun: cli.dry}
 		actUpdate(plugins, ui, &opts)
 	case "check", "ch":
-		plugins := mustReadPlugins(cli.file, cli.filter)
+		parser := localOrRemoteParser(cli.from)
+		plugins := mustReadPlugins(cli.from, parser, cli.filter)
 		actCheck(plugins, cli.dir, ui)
 	case "clean", "cl":
-		plugins := mustReadPlugins(cli.file, cli.filter)
+		parser := localOrRemoteParser(cli.from)
+		plugins := mustReadPlugins(cli.from, parser, cli.filter)
 		actClean(plugins, cli.dir, cli.force)
 	case "prune", "p", "pr":
-		plugins := mustReadPlugins(cli.file, cli.filter)
+		parser := localOrRemoteParser(cli.from)
+		plugins := mustReadPlugins(cli.from, parser, cli.filter)
 		actPrune(plugins, cli.dir, cli.force, cli.all)
 	case "status", "st":
-		plugins := mayReadPlugins(cli.file, cli.filter)
+		parser := localOrRemoteParser(cli.from)
+		plugins := mayReadPlugins(cli.from, parser, cli.filter)
 		actStatus(plugins, cli.dir)
 	case "search", "se":
 		actSearch(flag.Args()[1:]...)
@@ -204,35 +209,31 @@ func generateUI(ui string) JobUI {
 	return nil
 }
 
-func mayReadPlugins(path string, filter stringList) PluginList {
+func mayReadPlugins(path string, parse PluginParser, filter stringList) PluginList {
 	plugins := make(PluginList)
-	plugins.ParseFile(path)
+	parse(plugins, path)
 	plugins = plugins.filter(filter)
 	return plugins
 }
 
-func mustReadPlugins(path string, filter stringList) PluginList {
+func mustReadPlugins(resource string, parse PluginParser, filter stringList) PluginList {
 	plugins := make(PluginList)
-	if err := plugins.ParseFile(path); err != nil {
+	if err := parse(plugins, resource); err != nil {
 		log.Fatal(err)
 	}
 	plugins = plugins.filter(filter)
 
 	if len(plugins) == 0 {
-		log.Fatalf("empty plugin-file %q", path)
+		log.Fatalf("no plugins in %q", resource)
 	}
 	return plugins
 }
 
-func fetchSinglePlugin(url string) PluginList {
-
-	r := ioutil.NopCloser(strings.NewReader(url))
-	plugins := make(PluginList)
-	if err := plugins.Parse(r); err != nil {
-		log.Fatal(err)
+func localOrRemoteParser(from string) PluginParser {
+	if strings.HasPrefix(from, "http://") {
+		return PluginList.ParseRemoteFile
+	} else if strings.HasPrefix(from, "https://") {
+		return PluginList.ParseRemoteFile
 	}
-	if len(plugins) == 0 {
-		log.Fatalf("not a valid plugin %q", url)
-	}
-	return plugins
+	return PluginList.ParseFile
 }

@@ -7,6 +7,8 @@ import (
 
 type PluginList map[string]*Plugin
 
+type PluginParser func(PluginList, string) error
+
 func (plugins PluginList) filter(filter stringList) PluginList {
 
 	if len(filter) == 0 {
