@@ -3,7 +3,7 @@ FROM alpine:3.7 as build
 ARG  VOPHER
 ARG  BUILD_DIR
 
-RUN  apk --update add go make musl-dev
+RUN  apk --update add go make musl-dev git
 COPY . $BUILD_DIR
 RUN  make -C $BUILD_DIR $VOPHER
 
