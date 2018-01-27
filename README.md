@@ -232,6 +232,21 @@ If the archive type can not be guessed by looking at the filename, *vopher*
 probes the HTTP server to get a clue about the archive type.
 
 
+## Tricks
+
+### Bootstrap your Vim folder
+
+Since `vopher` is able to fetch and extract data all on it's own, you can also
+use it to boostrap your own `.vim` (or `.config/nvim`) folder:
+
+    $> vopher -dir . fetch .vim github.com/mgumz/bones-vim
+    vopher: (1/1) [================ 100% =================]
+    $> ln -s .vim/init.vim .vimrc
+    $> cd .vim && vopher up
+    vopher: (38/38) [============== 100% =================]
+
+And done. I am ready to use Vim with all my plugins installed.
+
 ## FAQ
 
 > There is no UI integration into *vim*!!
