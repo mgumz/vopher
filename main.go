@@ -34,6 +34,9 @@ var allowedActions = []string{
 	"search",
 	"version",
 	"v",
+	"archives",
+	"list-archives",
+	"la",
 }
 
 func usage() {
@@ -48,41 +51,41 @@ Flags:
 	fmt.Fprintln(os.Stderr, `
 Actions:
 
-  update  - acquires the given plugins from '-f <list-file|url>'
-  fetch   - fetch a remote archive and extract it. the arguments are like fields
-            in a vopher.list file
-  search  - searches http://vimawesome.com/ to list some plugins. Anything
-            after this is considered as "the search arguments"
-  check   - checks plugins from '-f <list>' for newer versions
-  clean   - removes given plugins from the '-f <list>'
-            * use '-force' to delete plugins.
-  prune   - removes all entries from -dir <folder> which are not referenced in
-            '-f <list>'.
-            * use '-force' to delete plugins.
-            * use '-all=true' to delete <plugin>.zip files.
-  status  - lists plugins in '-dir <folder>' and marks them accordingly
-            * 'v' means vopher is tracking the plugin in your '-f <list>'
-            * 'm' means vopher is tracking the plugin and it's missing. You can
-              fetch it with the 'update' action.
-            * no mark means that the plugin is not tracked by vopher
-  sample  - prints a sample vopher.list to stdout
-  version - prints version of vopher`)
+  update   - acquires the given plugins from '-f <list-file|url>'
+  fetch    - fetch a remote archive and extract it. the arguments are like fields
+             in a vopher.list file
+  search   - searches http://vimawesome.com/ to list some plugins. Anything
+             after this is considered as "the search arguments"
+  check    - checks plugins from '-f <list>' for newer versions
+  clean    - removes given plugins from the '-f <list>'
+             * use '-force' to delete plugins.
+  prune    - removes all entries from -dir <folder> which are not referenced in
+             '-f <list>'.
+             * use '-force' to delete plugins.
+             * use '-all=true' to delete <plugin>.zip files.
+  status   - lists plugins in '-dir <folder>' and marks them accordingly
+             * 'v' means vopher is tracking the plugin in your '-f <list>'
+             * 'm' means vopher is tracking the plugin and it's missing. You can
+               fetch it with the 'update' action.
+             * no mark means that the plugin is not tracked by vopher
+  sample   - prints a sample vopher.list to stdout
+  version  - prints version of vopher
+  archives - list supported archives`)
 }
 
 func main() {
 
 	log.SetPrefix("vopher.")
 	cli := struct {
-		action    string
-		force     bool
-		dry       bool
-		all       bool
-		from      string
-		dir       string
-		ui        string
-		filter    stringList
-		supported bool
-		version   bool
+		action  string
+		force   bool
+		dry     bool
+		all     bool
+		from    string
+		dir     string
+		ui      string
+		filter  stringList
+		version bool
 	}{
 		action: "status",
 		from:   "vopher.list",
@@ -92,7 +95,6 @@ func main() {
 	flag.BoolVar(&cli.force, "force", cli.force, "force certain actions [prune, clean]")
 	flag.BoolVar(&cli.dry, "dry", cli.dry, "dry-run, show what would happen [prune, clean]")
 	flag.BoolVar(&cli.all, "all", cli.force, "don't keep <plugin>.zip around [prune]")
-	flag.BoolVar(&cli.supported, "list-supported-archives", false, "list all supported archive types")
 	flag.BoolVar(&cli.version, "v", cli.version, "show version")
 	flag.StringVar(&cli.from, "f", cli.from, "path|url to list of plugins")
 	flag.StringVar(&cli.dir, "dir", cli.dir, "directory to extract the plugins to")
@@ -107,13 +109,6 @@ func main() {
 		return
 	}
 
-	if cli.supported {
-		for _, suf := range supportedArchives {
-			fmt.Println(suf)
-		}
-		return
-	}
-
 	if len(flag.Args()) > 0 {
 		cli.action = flag.Args()[0]
 	}
@@ -122,10 +117,19 @@ func main() {
 		log.Fatal("error: unknown action")
 	}
 
-	if cli.action == "sample" {
+	switch cli.action {
+	case "sample":
 		actSample()
 		return
-	} else if cli.action == "search" && len(flag.Args()) < 2 {
+	case "version", "v":
+		printVersion()
+		return
+	case "archives", "la", "list-archives":
+		actListArchives()
+		return
+	}
+
+	if cli.action == "search" && len(flag.Args()) < 2 {
 		log.Fatal("error: missing arguments for 'search'")
 	} else if cli.action == "fetch" && len(flag.Args()) < 2 {
 		log.Fatal("error: missing arguments for 'fetch'")
@@ -173,8 +177,6 @@ func main() {
 		actStatus(plugins, cli.dir)
 	case "search", "se":
 		actSearch(flag.Args()[1:]...)
-	case "version", "v":
-		printVersion()
 	case "ping", "pong":
 		actPingPong(ui)
 	}
