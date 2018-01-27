@@ -1,5 +1,7 @@
 package main
 
+import "time"
+
 // ui-ideas
 //
 // * https://godoc.org/github.com/jroimartin/gocui
@@ -32,4 +34,20 @@ type JobUI interface {
 	Print(jobID, msg string)
 	JobDone(jobID string)
 	Wait() // wait for all jobs to be .Done()
+}
+
+func newUI(ui string) JobUI {
+	switch ui {
+	case "oneline":
+		return &UIOneLine{
+			pt:       newProgressTicker(0),
+			prefix:   "vopher",
+			duration: 25 * time.Millisecond,
+		}
+	case "simple":
+		return &UISimple{jobs: make(map[string]Runtime)}
+	case "quiet":
+		return &UIQuiet{}
+	}
+	return nil
 }

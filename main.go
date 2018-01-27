@@ -14,7 +14,6 @@ import (
 	"log"
 	"os"
 	"strings"
-	"time"
 )
 
 var allowedActions = []string{
@@ -131,16 +130,16 @@ func main() {
 
 	if cli.action == "search" && len(flag.Args()) < 2 {
 		log.Fatal("error: missing arguments for 'search'")
-	} else if cli.action == "fetch" && len(flag.Args()) < 2 {
+	}
+	if cli.action == "fetch" && len(flag.Args()) < 2 {
 		log.Fatal("error: missing arguments for 'fetch'")
 	}
-
-	cli.ui = defaultUI(cli.ui, cli.action)
-	var ui JobUI = generateUI(cli.ui)
-
 	if cli.dir == "" {
 		log.Fatal("error: empty -dir")
 	}
+
+	cli.ui = defaultUI(cli.ui, cli.action)
+	ui := newUI(cli.ui)
 
 	path, err := expandPath(cli.dir)
 	if err != nil {
@@ -193,22 +192,6 @@ func defaultUI(ui, action string) string {
 	default:
 		return "simple"
 	}
-}
-
-func generateUI(ui string) JobUI {
-	switch ui {
-	case "oneline":
-		return &UIOneLine{
-			pt:       newProgressTicker(0),
-			prefix:   "vopher",
-			duration: 25 * time.Millisecond,
-		}
-	case "simple":
-		return &UISimple{jobs: make(map[string]Runtime)}
-	case "quiet":
-		return &UIQuiet{}
-	}
-	return nil
 }
 
 func mayReadPlugins(path string, parse PluginParser, filter stringList) PluginList {
