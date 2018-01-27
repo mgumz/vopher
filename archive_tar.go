@@ -6,12 +6,33 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 )
 
 // TarArchive handles tar archives
 type TarArchive struct{}
+
+func init() {
+
+	suffixes := []string{".tar", ".tgz", ".tar.gz", ".tar.bz2"}
+	supportedArchives = append(supportedArchives, suffixes...)
+
+	archiveGuesser = append(archiveGuesser, func(n string) PluginArchive {
+
+		switch path.Ext(n) {
+		case ".tar":
+			return &TarArchive{}
+		case ".tar.gz", ".tgz":
+			return &GzArchive{&TarArchive{}}
+		case ".tar.bz2", ".tar.bzip2":
+			return &BzipArchive{&TarArchive{}}
+		}
+		return nil
+	})
+
+}
 
 func (ta *TarArchive) Extract(folder string, r io.Reader, stripDirs int) error {
 	_, err := ta.handle(folder, r, stripDirs, tarExtractEntry)

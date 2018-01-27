@@ -7,14 +7,6 @@ import (
 	"strings"
 )
 
-var supportedArchives = []string{
-	".zip",
-	".vba", ".vba.gz",
-	".tar",
-	".tar.gz",
-	".tar.bz2", ".tar.bzip2",
-}
-
 // PluginArchive is the interface to show and extract entries
 // from an archived version of a given plugin. this means zipped
 // or tar.gzipped or vimballs
@@ -23,24 +15,8 @@ type PluginArchive interface {
 	Entries(r io.Reader, skipDirs int) ([]string, error)
 }
 
-var archiveGuesser = []func(string) PluginArchive{
-	func(n string) PluginArchive {
-		if strings.HasSuffix(n, ".zip") {
-			return &ZipArchive{}
-		} else if strings.HasSuffix(n, ".vba") {
-			return &VimballArchive{}
-		} else if strings.HasSuffix(n, ".vba.gz") {
-			return &GzArchive{&VimballArchive{}}
-		} else if strings.HasSuffix(n, ".tar") {
-			return &TarArchive{}
-		} else if strings.HasSuffix(n, ".tar.gz") {
-			return &GzArchive{&TarArchive{}}
-		} else if strings.HasSuffix(n, ".tar.bz2") || strings.HasSuffix(n, ".tar.bzip2") {
-			return &BzipArchive{&TarArchive{}}
-		}
-		return nil
-	},
-}
+var supportedArchives = []string{}
+var archiveGuesser = []func(string) PluginArchive{}
 
 // returns true/false if "name" is a supported archive type
 // and the length of the suffix. eg, ".zip" yields 4, ".vba.gz"

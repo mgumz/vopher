@@ -225,7 +225,7 @@ The vopher-file is pretty simple:
 ## Supported archive types
 
 * .zip
-* .vba and .vba.gz (see [Charles E. Campbell](http://www.drchip.org/astronaut/vim/doc/pi_vimball.txt.html))
+* .vba, .vba.gz, .vmb, .vmb.gz (see [Charles E. Campbell](http://www.drchip.org/astronaut/vim/doc/pi_vimball.txt.html))
 * .tar.gz, .tar.bz2, .tar.bzip2
 * optional: .tar.lzma, .tar.xz
 

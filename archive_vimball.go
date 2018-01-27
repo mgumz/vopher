@@ -14,7 +14,25 @@ import (
 // http://www.drchip.org/astronaut/vim/doc/pi_vimball.txt.html
 type VimballArchive struct{}
 
-type _VimballExtractFunc func(name string, lines int, s *bufio.Scanner) error
+func init() {
+
+	suffixes := []string{".vba", ".vba.gz", ".vmb", ".vmb.gz"}
+	supportedArchives = append(supportedArchives, suffixes...)
+
+	archiveGuesser = append(archiveGuesser, func(n string) PluginArchive {
+		for _, s := range suffixes {
+			if strings.HasSuffix(n, s) {
+				if strings.HasSuffix(n, ".gz") {
+					return &GzArchive{&VimballArchive{}}
+				}
+				return &VimballArchive{}
+			}
+		}
+		return nil
+	})
+}
+
+type vimballExtractFunc func(name string, lines int, s *bufio.Scanner) error
 
 func (vimball *VimballArchive) Extract(folder string, r io.Reader, skipDir int) error {
 
@@ -48,7 +66,7 @@ func (vimball *VimballArchive) Entries(r io.Reader, skipDir int) ([]string, erro
 //     number_of_lines2
 //     ...
 //     ...
-func (vba *VimballArchive) handle(folder string, r io.Reader, extract _VimballExtractFunc) ([]string, error) {
+func (vba *VimballArchive) handle(folder string, r io.Reader, extract vimballExtractFunc) ([]string, error) {
 
 	scanner := bufio.NewScanner(r)
 	scanner.Split(bufio.ScanLines)

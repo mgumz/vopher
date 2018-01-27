@@ -7,11 +7,22 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 // ZipArchive handles zip archive
 type ZipArchive struct {
 	gitCommit bool // if true: assume the .zip comment contains the git-commit
+}
+
+func init() {
+	supportedArchives = append(supportedArchives, ".zip")
+	archiveGuesser = append(archiveGuesser, func(n string) PluginArchive {
+		if strings.HasSuffix(n, ".zip") {
+			return &ZipArchive{}
+		}
+		return nil
+	})
 }
 
 func (za *ZipArchive) Extract(folder string, r io.Reader, stripDirs int) error {
