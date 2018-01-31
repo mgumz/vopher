@@ -18,7 +18,7 @@ func acquire(base, ext, url string, archive PluginArchive, skipDirs int, checkSh
 		return fmt.Errorf("mkdir %q: %s", base, err)
 	}
 
-	ts := time.Now().UTC().Format("-2006-01-02T03:04:05Z")
+	ts := time.Now().UTC().Format("-2006-01-02T03-04-05Z")
 	name, tmpName := base+ext, base+ts+ext
 	file, err := os.Create(tmpName)
 	if err != nil {
