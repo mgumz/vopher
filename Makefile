@@ -1,4 +1,4 @@
-VERSION=0.7.0
+VERSION=0.7.1
 BUILD_DATE=$(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 GIT_HASH=$(shell git rev-parse HEAD)
 
