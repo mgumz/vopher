@@ -1,4 +1,4 @@
-VERSION=0.7.1
+VERSION=0.7.2
 BUILD_DATE=$(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 GIT_HASH=$(shell git rev-parse HEAD)
 
@@ -15,10 +15,12 @@ LDFLAGS=-ldflags "-X main.Version=$(VERSION) -X main.BuildDate=$(BUILD_DATE) -X 
 
 
 simple:
-	go build -v
+	cd cmd/vopher && go build -o ../../vopher -v
 
 test:
-	go test -v
+	cd pkg/utils && go test -v
+	cd pkg/plugin && go test -v
+	cd cmd/vopher && go test -v
 
 release: $(BINARIES)
 
