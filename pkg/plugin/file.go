@@ -88,7 +88,7 @@ func (plugins List) Parse(reader io.ReadCloser) error {
 	scanner := bufio.NewScanner(reader)
 	scanner.Split(bufio.ScanLines)
 
-	for lnumber := 1; scanner.Scan(); lnumber++ {
+	for ln := 1; scanner.Scan(); ln++ {
 
 		var line, name string
 		var fields []string
@@ -102,26 +102,27 @@ func (plugins List) Parse(reader io.ReadCloser) error {
 		}
 		name, fields = eventualName(fields)
 		if url, err = utils.ParsePluginURL(fields[0]); err != nil {
-			log.Println("error:", name, ":", lnumber, "not an url", line)
+			log.Println("error:", name, ":", ln, "not an url", line)
 			continue
 		}
 		name = utils.FirstNotEmpty(name, path.Base(url.Path))
 		name = cleanName(name)
 		if _, skip = plugins[name]; skip {
-			return fmt.Errorf("existing plugin %q on line %d", name, lnumber)
+			return fmt.Errorf("existing plugin %q on line %d", name, ln)
 		}
 
 		plugin := Plugin{
 			Name: name,
 			URL:  url,
 			Opts: Opts{StripDir: DefaultStrip},
+			ln:   ln,
 		}
 
 		if len(fields) > 1 {
 			fields = fields[1:]
 			if err = plugin.optionsFromFields(fields); err != nil {
 				errMsg := "parsing optional fields: %q, plugin %q on line %d"
-				return fmt.Errorf(errMsg, err, name, lnumber)
+				return fmt.Errorf(errMsg, err, name, ln)
 			}
 		}
 
@@ -129,6 +130,10 @@ func (plugins List) Parse(reader io.ReadCloser) error {
 	}
 	return nil
 }
+
+// Parser is a function signature to be used by
+// different parsers
+type Parser func(List, string) error
 
 func (plugins List) ParseFile(name string) error {
 	file, err := os.Open(name)

@@ -10,11 +10,13 @@ import (
 
 func Check(plugins plugin.List, base string, ui ui.UI) {
 
+	m := &sync.Map{}
+
 	wg := sync.WaitGroup{}
 	check := func(p *plugin.Plugin) {
 		gh := acquire.Github{}
 		text := gh.CheckPlugin(p, base)
-		ui.Print(p.Name, text)
+		m.Store(p.Name, text)
 		wg.Done()
 	}
 
@@ -22,9 +24,16 @@ func Check(plugins plugin.List, base string, ui ui.UI) {
 		switch p.URL.Host {
 		case "github.com":
 			wg.Add(1)
-			check(p)
+			go check(p)
 		}
 	}
 
 	wg.Wait()
+
+	for _, id := range plugins.SortByLineNumber() {
+		if t, ok := m.Load(id); ok {
+			text, _ := t.(string)
+			ui.Print(id, text)
+		}
+	}
 }

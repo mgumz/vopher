@@ -28,9 +28,9 @@ type Plugin struct {
 	URL     *neturl.URL
 	Opts    Opts
 	Archive vopher.Archive // used to extract/view content of plugin
-}
 
-type Parser func(List, string) error
+	ln int // line in vopher.list, might be used for sorting
+}
 
 func (pl *Plugin) String() string {
 	return fmt.Sprintf("Plugin{%q, %q, strip=%d}",
