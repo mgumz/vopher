@@ -21,8 +21,8 @@ import (
 // Github is a pseudo type to group Github related functions
 type Github struct{}
 
-// the repo-name is usually the first 2 parts of the
-// repo.Path:
+// GetRepository extracts parts of `url`. The repo-name is usually the first 2
+// parts of the repo.Path:
 //    github.com/username/reponame
 //    github.com/username/reponame/archive/master.zip
 //    github.com/username/reponame#v2.1
@@ -45,8 +45,8 @@ func (gh Github) GetRepository(remote *url.URL) (name, head string) {
 	return name, head
 }
 
-// the comment in a github-zip file refers to the git-commit-id
-// used by github to create the zip.
+// GuessCommitByZIP guesses the commit by the comment in a github-zip file. It
+// refers to the git-commit-id used by github to create the zip.
 func (gh Github) GuessCommitByZIP(name, base string) string {
 	path := filepath.Join(base, name+".zip")
 	zfile, err := zip.OpenReader(path)
@@ -61,6 +61,8 @@ func (gh Github) GuessCommitByZIP(name, base string) string {
 	return ""
 }
 
+// GuessCommitByFile "guesses" the git-commit by the content of file named
+// "github-commit"
 func (gh Github) GuessCommitByFile(name, base string) string {
 	path := filepath.Join(base, name, "github-commit")
 	commit, err := ioutil.ReadFile(path)
@@ -84,12 +86,14 @@ type GithubFeed struct {
 	} `xml:"entry"`
 }
 
+// FeedURL builds an URL from the base url of repo and the given parts
 func (gh Github) FeedURL(repo *url.URL, parts ...string) url.URL {
 	feedURL := *repo
 	feedURL.Path = path.Join(feedURL.Path, path.Join(parts...)) + ".atom"
 	return feedURL
 }
 
+// GetCommits returns the GithubFeed of the repository
 func (gh Github) GetCommits(repo *url.URL, parts ...string) *GithubFeed {
 
 	feedURL := gh.FeedURL(repo, parts...)
@@ -128,6 +132,8 @@ func (gh Github) GetCommits(repo *url.URL, parts ...string) *GithubFeed {
 	return feed
 }
 
+// CheckPlugin checks the given plugin for updates and returns printable
+// text as result
 func (gh Github) CheckPlugin(plugin *plugin.Plugin, base string) string {
 
 	name, head := gh.GetRepository(plugin.URL)

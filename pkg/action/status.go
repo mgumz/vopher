@@ -9,6 +9,7 @@ import (
 	"github.com/mgumz/vopher/pkg/plugin"
 )
 
+// Status prints the status of all given plugins
 func Status(plugins plugin.List, base string) {
 
 	dir, err := os.Open(base)

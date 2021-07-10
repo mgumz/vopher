@@ -8,7 +8,7 @@ import (
 	"github.com/mgumz/vopher/pkg/vopher"
 )
 
-// download 'url' and try to parse the zip-file. print out
+// DryAcquire downloads 'url' and tries to parse the zip-file. prints out
 // the files inside the zip while applying 'skip_dirs'.
 //
 // TODO: dryAcquire is not nice with ui 'oneline' (or future 'curses' based

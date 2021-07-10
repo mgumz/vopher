@@ -15,8 +15,10 @@ import (
 	"net/url"
 )
 
+// SearchURL to be used when using the `search` action
 const SearchURL = "http://vimawesome.com/api/plugins"
 
+// Search searches SearchURL for given args to find a (n)vim plugin
 func Search(args ...string) {
 	buf := bytes.NewBuffer(nil)
 	for i := range args {

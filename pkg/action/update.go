@@ -17,6 +17,7 @@ import (
 	"github.com/mgumz/vopher/pkg/utils"
 )
 
+// ActUpdateOpts holds options for action "update"
 type ActUpdateOpts struct {
 	Dir    string // dir to extract the plugins to
 	Force  bool   // enforce acquire, even plugin exists
@@ -24,6 +25,8 @@ type ActUpdateOpts struct {
 	SHA1   string // checksum to check the downloaded file against
 }
 
+// Update fetches available updates for all given `plugins` and prints the
+// result utilising the given ui.
 func Update(plugins plugin.List, ui ui.UI, opts *ActUpdateOpts) {
 
 	ui.Start()

@@ -10,6 +10,7 @@ import (
 	"github.com/mgumz/vopher/pkg/plugin"
 )
 
+// Prune removes all given plugins from the disk.
 func Prune(plugins plugin.List, base string, force, all bool) {
 
 	dir, err := os.Open(base)

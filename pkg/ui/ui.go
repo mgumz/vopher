@@ -49,7 +49,7 @@ func NewUI(ui string) UI {
 			duration: 25 * time.Millisecond,
 		}
 	case "simple":
-		return &Simple{jobs: make(map[string]vopher.Runtime)}
+		return &Simple{jobs: make(map[string]*vopher.Runtime)}
 	case "quiet":
 		return &Quiet{}
 	}

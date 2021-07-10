@@ -8,6 +8,8 @@ import (
 	"github.com/mgumz/vopher/pkg/ui"
 )
 
+// Check checks for updates in the upstream repository of each plugin in the
+// plugins list and uses the ui to output the result
 func Check(plugins plugin.List, base string, ui ui.UI) {
 
 	m := &sync.Map{}

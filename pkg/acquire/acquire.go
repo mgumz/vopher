@@ -9,7 +9,7 @@ import (
 	"github.com/mgumz/vopher/pkg/vopher"
 )
 
-// fetch 'url' and extract it into 'base'. skip 'skipDirs'
+// Acquire fetches 'url' and extracts it into 'base'. skips 'skipDirs'
 // leading directories in filenames in zip while extracting
 // the contents.
 func Acquire(base, ext, url string, archive vopher.Archive, skipDirs int, checkSha1 string) error {

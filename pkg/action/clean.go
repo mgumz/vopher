@@ -8,6 +8,8 @@ import (
 	"github.com/mgumz/vopher/pkg/plugin"
 )
 
+// Clean removes unneeded leftovers inside of `dir` of a fetch/update operation
+// for all the plugins given.
 func Clean(plugins plugin.List, dir string, force bool) {
 
 	if !force {

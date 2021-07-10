@@ -2,6 +2,7 @@ package action
 
 import "fmt"
 
+// Sample prints a sample vopher.list file to STDOUT
 func Sample() {
 	fmt.Println(`# Sample vopher.list file
 # Comments start with '#', blank lines are ignored
@@ -45,6 +46,5 @@ commentary https://github.com/tpope/vim-commentary
 exchange   https://github.com/tommcdo/vim-exchange
 fugitive   https://github.com/tpope/vim-fugitive
 gnupg      https://github.com/jamessan/vim-gnupg
-surround   https://github.com/tpope/vim-surround
-`)
+surround   https://github.com/tpope/vim-surround`)
 }

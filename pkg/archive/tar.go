@@ -36,11 +36,13 @@ func init() {
 
 }
 
+// Extract untars the given archive `ta` into `folder`
 func (ta *TarArchive) Extract(folder string, r io.Reader, stripDirs int) error {
 	_, err := ta.handle(folder, r, stripDirs, tarExtractEntry)
 	return err
 }
 
+// Entries lists the entries inside of given archive `ta`
 func (ta *TarArchive) Entries(r io.Reader, stripDirs int) ([]string, error) {
 	return ta.handle("", r, stripDirs, tarIgnoreEntry)
 }

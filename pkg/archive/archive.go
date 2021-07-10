@@ -12,9 +12,10 @@ import (
 var supportedArchives = []string{}
 var archiveGuesser = []func(string) vopher.Archive{}
 
+// SupportedArchives returns the list of supported archives
 func SupportedArchives() []string { return supportedArchives }
 
-// returns true/false if "name" is a supported archive type
+// IsSupportedArchive returns true/false if "name" is a supported archive type
 // and the length of the suffix. eg, ".zip" yields 4, ".vba.gz"
 // yields 7.
 func IsSupportedArchive(name string) (bool, int) {

@@ -55,7 +55,7 @@ build-docker:
 		--build-arg BUILD_DIR=/vopher/src/vopher \
 		--build-arg VOPHER=bin/vopher-$(VERSION).linux.amd64 .
 
-report: report-cyclo report-lint report-staticcheck report-mispell report-ineffassign report-vet
+report: report-cyclo report-staticcheck report-mispell report-ineffassign report-vet
 report-cyclo:
 	@echo '####################################################################'
 	gocyclo ./cmd/vopher

@@ -77,7 +77,7 @@ func (plugins List) Parse(reader io.ReadCloser) error {
 		return name
 	}
 	stripBom := func(in string) string {
-		if strings.IndexRune(in, ByteOrderMark) == -1 {
+		if !strings.ContainsRune(in, ByteOrderMark) {
 			return in
 		}
 		return in[utf8.RuneLen(ByteOrderMark):]

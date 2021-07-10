@@ -8,6 +8,8 @@ import (
 	"strings"
 )
 
+// FirstNotEmpty checks all given `parts` and returns the first one which is
+// not empty.
 func FirstNotEmpty(parts ...string) (result string) {
 	for i := range parts {
 		if len(parts[i]) > 0 {
@@ -17,6 +19,7 @@ func FirstNotEmpty(parts ...string) (result string) {
 	return
 }
 
+// IndexByteN // FIXME: fix docu, what does this function is intended to do?
 func IndexByteN(path string, needle byte, n int) int {
 	idx, s := 0, 0
 	for ; s < n; s++ {
@@ -35,6 +38,8 @@ func IndexByteN(path string, needle byte, n int) int {
 	return idx - 1
 }
 
+// PrefixInStringSlice checks if prefix `s` is in any of the given strings in
+// `lst`
 func PrefixInStringSlice(lst []string, s string) int {
 	for i := range lst {
 		if strings.HasPrefix(lst[i], s) {
@@ -44,6 +49,7 @@ func PrefixInStringSlice(lst []string, s string) int {
 	return -1
 }
 
+// ExpandPath expands the path p if it starts with a ~ to the users home folder
 func ExpandPath(p string) (string, error) {
 	if p == "" {
 		return p, nil

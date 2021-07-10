@@ -14,7 +14,7 @@ import (
 // UISimple is an UI which prints the list of fetched plugins onto the
 // terminal
 type Simple struct {
-	jobs map[string]vopher.Runtime
+	jobs map[string]*vopher.Runtime
 	vopher.Runtime
 	sync.WaitGroup
 	sync.Mutex
@@ -43,7 +43,7 @@ func (simple *Simple) Stop() {
 }
 
 func (simple *Simple) AddJob(id string) {
-	simple.jobs[id] = vopher.Runtime{}
+	simple.jobs[id] = &vopher.Runtime{}
 	simple.jobs[id].Start()
 	simple.WaitGroup.Add(1)
 }
