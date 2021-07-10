@@ -3,18 +3,18 @@ package main
 import "fmt"
 
 var (
-	Version   = "0.7.2"
-	GitHash   = ""
-	BuildDate = ""
+	version   = "0.7.2"
+	gitHash   = ""
+	buildDate = ""
 )
 
 func printVersion() {
 
-	fmt.Println("vopher:\t" + Version)
-	if GitHash != "" {
-		fmt.Println("git:\t" + GitHash)
+	fmt.Println("vopher:\t" + version)
+	if gitHash != "" {
+		fmt.Println("git:\t" + gitHash)
 	}
-	if BuildDate != "" {
-		fmt.Println("build:\t" + BuildDate)
+	if buildDate != "" {
+		fmt.Println("build:\t" + buildDate)
 	}
 }
