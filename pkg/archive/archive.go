@@ -9,8 +9,10 @@ import (
 	"github.com/mgumz/vopher/pkg/vopher"
 )
 
-var supportedArchives = []string{}
-var archiveGuesser = []func(string) vopher.Archive{}
+var (
+	supportedArchives = []string{}
+	archiveGuesser    = []func(string) vopher.Archive{}
+)
 
 // SupportedArchives returns the list of supported archives
 func SupportedArchives() []string { return supportedArchives }
@@ -43,8 +45,8 @@ func GuessArchive(name string) (vopher.Archive, error) {
 // the stripped named AND a bool indicating, if the entry should be skipped
 // because it's the root-direktory
 //
-//      name/      <- root-directory, will be stripped
-//      name/a.vim
+//	name/      <- root-directory, will be stripped
+//	name/a.vim
 func stripArchiveEntry(name string, stripDirs int) (strippedName string, isRoot bool) {
 	name = filepath.ToSlash(name)
 
