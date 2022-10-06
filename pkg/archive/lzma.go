@@ -1,4 +1,4 @@
-// +build lzma
+//go:build lzma
 
 package archive
 
@@ -24,8 +24,7 @@ func init() {
 	})
 }
 
-// wrapper to decompress lzma
-type LzmaArchive struct{ orig vopherArchive }
+type LzmaArchive struct{ orig vopher.Archive }
 
 func (la *LzmaArchive) Extract(folder string, r io.Reader, skipDir int) error {
 	lzmaReader := lzma.NewReader(r)
