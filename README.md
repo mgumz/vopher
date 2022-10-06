@@ -304,3 +304,12 @@ effort and nothing substantial to gain from.
 
 Copyright (c) Mathias Gumz. Distributed under the same terms as *vim* itself.
 See :help license.
+
+(Optional) Dependencies:
+
+*zstd*: Copyright (c) Klaus Post, check 
+vendor/github.com/klauspost/compress/LICENSE
+
+*lzma*: Copyright (c) 2010, Andrei Vieru, check
+vendor/github.com/smira/lzma/LICENSE
+
