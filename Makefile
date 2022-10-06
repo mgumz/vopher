@@ -2,7 +2,7 @@ VERSION=$(shell cat VERSION)
 BUILD_DATE=$(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 GIT_HASH=$(shell git rev-parse HEAD)
 
-TARGETS=linux.amd64 linux.386 linux.arm64 linux.mips64 windows.amd64.exe darwin.amd64 freebsd.amd64
+TARGETS=linux.amd64 linux.386 linux.arm64 linux.mips64 windows.amd64.exe darwin.amd64 darwin.arm64 freebsd.amd64
 BINARIES=$(addprefix bin/vopher-$(VERSION)., $(TARGETS))
 RELEASES=$(subst windows.amd64.tar.gz,windows.amd64.zip,$(foreach r,$(subst .exe,,$(TARGETS)),releases/vopher-$(VERSION).$(r).tar.gz))
 
