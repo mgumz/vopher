@@ -1,11 +1,14 @@
-VERSION=0.7.2
+VERSION=$(shell cat VERSION)
 BUILD_DATE=$(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 GIT_HASH=$(shell git rev-parse HEAD)
-TARGETS=linux.amd64 linux.386 linux.arm64 linux.mips64 windows.amd64.exe darwin.amd64 freebsd.amd64
 
-LDFLAGS=-ldflags "-X main.version=$(VERSION) -X main.buildDate=$(BUILD_DATE) -X main.gitHash=$(GIT_HASH)"
-BINARIES=$(foreach r,$(TARGETS),bin/vopher-$(VERSION).$(r))
+TARGETS=linux.amd64 linux.386 linux.arm64 linux.mips64 windows.amd64.exe darwin.amd64 freebsd.amd64
+BINARIES=$(addprefix bin/vopher-$(VERSION)., $(TARGETS))
 RELEASES=$(subst windows.amd64.tar.gz,windows.amd64.zip,$(foreach r,$(subst .exe,,$(TARGETS)),releases/vopher-$(VERSION).$(r).tar.gz))
+
+LDFLAGS=-X main.version=$(VERSION) -X main.buildDate=$(BUILD_DATE) -X main.gitHash=$(GIT_HASH)
+TAGS=
+
 
 toc:
 	@echo "list of targets:"
@@ -20,12 +23,18 @@ releases: $(RELEASES)
 	make $(RELEASES)
 
 vopher: bin/vopher
+vopher-full:
+	make TAGS="-tags lzma,zstd" vopher
+vopher-small:
+	make LDFLAGS="$(LDFLAGS) -s -w" vopher
 bin/vopher:
-	go build $(LDFLAGS) -v -o $@ ./cmd/vopher
+	go build $(TAGS) -ldflags "$(LDFLAGS)" -v -o $@ ./cmd/vopher
 
 bin/vopher-$(VERSION).%:
-	env GOARCH=$(subst .,,$(suffix $(subst .exe,,$@))) GOOS=$(subst .,,$(suffix $(basename $(subst .exe,,$@)))) CGO_ENABLED=0 \
-	go build $(LDFLAGS) -o $@ ./cmd/vopher
+	env GOARCH=$(subst .,,$(suffix $(subst .exe,,$@))) \
+		GOOS=$(subst .,,$(suffix $(basename $(subst .exe,,$@)))) \
+		CGO_ENABLED=0 \
+		go build -ldflags "$(LDFLAGS)" -o $@ ./cmd/vopher
 
 releases/vopher-$(VERSION).%.zip: bin/vopher-$(VERSION).%.exe
 	mkdir -p releases
