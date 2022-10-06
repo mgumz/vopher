@@ -1,4 +1,14 @@
-# VOPHER - Acquire vim-plugins the gopher-way
+# VOPHER - Acquire (n)vim-plugins - fast
+
+## Description
+
+**vopher** is a standalone program to acuire plugins for vim/neovim. The user
+provides a vopher.list files which contains references to the desired plugins.
+Based upon that vopher.list file, file downloads the plugins and unpacks them
+in the appropriate folder. **vopher** requires no 3rd party programs to do
+its job.
+
+**vopher** fetches and unpacks the 52 (yes.) plugins of its author in ~ 3s.
 
 ## Usage
 
