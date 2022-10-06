@@ -49,6 +49,17 @@ func PrefixInStringSlice(lst []string, s string) int {
 	return -1
 }
 
+// StringHasSuffix checks if s is in any of the provided
+// suffixes
+func StringHasSuffix(s string, suffix []string) bool {
+	for i := range suffix {
+		if strings.HasSuffix(s, suffix[i]) {
+			return true
+		}
+	}
+	return false
+}
+
 // ExpandPath expands the path p if it starts with a ~ to the users home folder
 func ExpandPath(p string) (string, error) {
 	if p == "" {

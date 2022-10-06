@@ -6,10 +6,10 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 
+	"github.com/mgumz/vopher/pkg/utils"
 	"github.com/mgumz/vopher/pkg/vopher"
 )
 
@@ -18,17 +18,20 @@ type TarArchive struct{}
 
 func init() {
 
-	suffixes := []string{".tar", ".tgz", ".tar.gz", ".tar.bz2"}
+	suffixes := []string{
+		".tar",
+		".tgz", ".tar.gz",
+		".tar.bz2", ".tar.bzip2",
+	}
 	supportedArchives = append(supportedArchives, suffixes...)
 
 	archiveGuesser = append(archiveGuesser, func(n string) vopher.Archive {
 
-		switch path.Ext(n) {
-		case ".tar":
+		if utils.StringHasSuffix(n, []string{".tar"}) {
 			return &TarArchive{}
-		case ".tar.gz", ".tgz":
+		} else if utils.StringHasSuffix(n, []string{".tar.gz", ".tgz"}) {
 			return &GzArchive{&TarArchive{}}
-		case ".tar.bz2", ".tar.bzip2":
+		} else if utils.StringHasSuffix(n, []string{".tar.bz2", ".tar.bzip2"}) {
 			return &BzipArchive{&TarArchive{}}
 		}
 		return nil
