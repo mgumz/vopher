@@ -2,7 +2,7 @@ package plugin
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"runtime"
 	"strings"
 	"testing"
@@ -27,7 +27,7 @@ http://example.com/plugin7 postupdate=a
 	scanned := make(List)
 	sr := strings.NewReader(sample)
 
-	if err := scanned.Parse(ioutil.NopCloser(sr)); err != nil {
+	if err := scanned.Parse(io.NopCloser(sr)); err != nil {
 		t.Fatal(err)
 	}
 

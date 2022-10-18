@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	neturl "net/url"
@@ -152,6 +151,6 @@ func (plugins List) ParseRemoteFile(url string) error {
 }
 
 func (plugins List) ParseLine(line string) error {
-	r := ioutil.NopCloser(strings.NewReader(line))
+	r := io.NopCloser(strings.NewReader(line))
 	return plugins.Parse(r)
 }

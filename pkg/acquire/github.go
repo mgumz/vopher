@@ -5,10 +5,10 @@ import (
 	"bytes"
 	"encoding/xml"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"path"
 	"path/filepath"
 	"strings"
@@ -65,7 +65,7 @@ func (gh Github) GuessCommitByZIP(name, base string) string {
 // "github-commit"
 func (gh Github) GuessCommitByFile(name, base string) string {
 	path := filepath.Join(base, name, "github-commit")
-	commit, err := ioutil.ReadFile(path)
+	commit, err := os.ReadFile(path)
 	if err != nil {
 		return ""
 	}

@@ -4,7 +4,6 @@ import (
 	"archive/tar"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -108,6 +107,6 @@ func tarExtractEntry(name string, r io.Reader) error {
 	return err
 }
 func tarIgnoreEntry(name string, r io.Reader) error {
-	_, err := io.Copy(ioutil.Discard, r)
+	_, err := io.Copy(io.Discard, r)
 	return err
 }
