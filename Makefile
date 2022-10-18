@@ -89,5 +89,6 @@ fetch-report-tools:
 	go install github.com/client9/misspell/cmd/misspell@latest
 	go install github.com/gordonklaus/ineffassign@latest
 	go install honnef.co/go/tools/cmd/staticcheck@latest
+	go install golang.org/x/lint/golint@latest
 
 .PHONY: vopher bin/vopher
