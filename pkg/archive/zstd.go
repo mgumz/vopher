@@ -4,7 +4,7 @@ package archive
 
 import (
 	"io"
-    "strings"
+	"strings"
 
 	"github.com/klauspost/compress/zstd"
 

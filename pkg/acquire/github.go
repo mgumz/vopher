@@ -23,9 +23,10 @@ type Github struct{}
 
 // GetRepository extracts parts of `url`. The repo-name is usually the first 2
 // parts of the repo.Path:
-//    github.com/username/reponame
-//    github.com/username/reponame/archive/master.zip
-//    github.com/username/reponame#v2.1
+//
+//	github.com/username/reponame
+//	github.com/username/reponame/archive/master.zip
+//	github.com/username/reponame#v2.1
 func (gh Github) GetRepository(remote *url.URL) (name, head string) {
 	name = remote.Path
 	if idx := utils.IndexByteN(remote.Path, '/', 3); idx > 0 {

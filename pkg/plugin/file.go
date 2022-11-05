@@ -21,12 +21,12 @@ const (
 )
 
 // Parse parses a vopher-plugin file. The file format is pretty simple:
-// - each plugin is stated on a line
-// - empty lines or lines starting with a '#' are ignored
-// - the main piece is an URL to a plugin
-// - optional: a short-name for the plugin identified by the URL
-// - optional: several options in terms what to do when vopher has fetched
-//   the plugin (stripping paths, executing hooks etc)
+//   - each plugin is stated on a line
+//   - empty lines or lines starting with a '#' are ignored
+//   - the main piece is an URL to a plugin
+//   - optional: a short-name for the plugin identified by the URL
+//   - optional: several options in terms what to do when vopher has fetched
+//     the plugin (stripping paths, executing hooks etc)
 //
 // Sample:
 //
@@ -52,7 +52,6 @@ const (
 // # fetches vim-fugitive, apply some options to the
 // # parser/extractor
 // https://github.com/tpope/vim-fugitive option1=foo option2=bar
-//
 func (plugins List) Parse(reader io.ReadCloser) error {
 
 	defer reader.Close()

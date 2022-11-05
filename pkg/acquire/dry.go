@@ -13,7 +13,6 @@ import (
 //
 // TODO: dryAcquire is not nice with ui 'oneline' (or future 'curses' based
 // ones)
-//
 func DryAcquire(base, url string, archive vopher.Archive, skipDirs int, checkSha1 string) ([]string, error) {
 
 	buffer := bytes.NewBuffer(nil)

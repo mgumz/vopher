@@ -56,18 +56,21 @@ func (vba *VimballArchive) Entries(r io.Reader, skipDir int) ([]string, error) {
 // the format works like this:
 //
 // preamble
-//     " Vimball Archive by Charles E. Campbell, Jr. Ph.D.
-//     UseVimball
-//     finish
+//
+//	" Vimball Archive by Charles E. Campbell, Jr. Ph.D.
+//	UseVimball
+//	finish
+//
 // file-contents
-//     folder/name_of_file
-//     number_of_lines
-//     ...
-//     ...
-//     folder2/other_file
-//     number_of_lines2
-//     ...
-//     ...
+//
+//	folder/name_of_file
+//	number_of_lines
+//	...
+//	...
+//	folder2/other_file
+//	number_of_lines2
+//	...
+//	...
 func (vba *VimballArchive) handle(folder string, r io.Reader, extract vimballExtractFunc) ([]string, error) {
 
 	scanner := bufio.NewScanner(r)
@@ -134,7 +137,6 @@ func (*VimballArchive) skipPreamble(scanner *bufio.Scanner) error {
 	return nil
 }
 
-//
 func (*VimballArchive) extractFile(name string, lines int, scanner *bufio.Scanner) error {
 
 	dir := filepath.Dir(name)
