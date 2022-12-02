@@ -25,6 +25,10 @@ var allowedActions = []string{
 	"u",
 	"up",
 	"update",
+    "fu",
+    "fupdate",
+    "fast-update",
+    "fast",
 	"f",
 	"fetch",
 	"clean",
@@ -152,6 +156,11 @@ func main() {
 	cli.dir = path
 
 	switch cli.action {
+    case "fupdate", "fu", "fast-update", "fup":
+		parser := localOrRemoteParser(cli.from)
+		plugins := mustReadPlugins(cli.from, parser, cli.filter)
+		opts := action.ActUpdateOpts{Dir: cli.dir, Force: cli.force, DryRun: cli.dry}
+		action.FastUpdate(plugins, ui, &opts)
 	case "update", "u", "up":
 		parser := localOrRemoteParser(cli.from)
 		plugins := mustReadPlugins(cli.from, parser, cli.filter)

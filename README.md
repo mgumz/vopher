@@ -37,6 +37,7 @@ its job.
     Actions:
 
       update   - acquires the given plugins from '-f <list>'
+      fupdate  - fast update plugins from '-f <list>'
       fetch    - fetch a remote archive and extract it. the arguments are like fields
                  in a vopher.list file
       search   - searches http://vimawesome.com/ to list some plugins. Anything
