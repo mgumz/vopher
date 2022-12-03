@@ -52,6 +52,16 @@ const (
 // # fetches vim-fugitive, apply some options to the
 // # parser/extractor
 // https://github.com/tpope/vim-fugitive option1=foo option2=bar
+//
+// # fetches vim-fugitive, call a post-update cmd. vophers
+// # sets the following environment variables:
+// # VOPHR_NAME        - plugin name
+// # VOPHER_ARCHIVE    - plugin name.ext
+// # VOPHER_DIR        - plugin folder
+// # VOPHER_URL        - url of plugin
+// https://github.com/tpope/vim-fugitive postupdate=/path/to/cmd
+//
+// # variant of postupdate: postupdate.linux=/path/to/cmd
 func (plugins List) Parse(reader io.ReadCloser) error {
 
 	defer reader.Close()
