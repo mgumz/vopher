@@ -30,6 +30,7 @@ type ActUpdateOpts struct {
 func Update(plugins plugin.List, ui ui.UI, opts *ActUpdateOpts) {
 
 	ui.Start()
+	ui.Print("update", "started")
 
 	var err error
 
