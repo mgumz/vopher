@@ -3,6 +3,6 @@ module github.com/mgumz/vopher
 go 1.19
 
 require (
-	github.com/klauspost/compress v1.15.11
+	github.com/klauspost/compress v1.15.12
 	github.com/smira/lzma v0.0.0-20160124201817-7f0af6269940
 )
