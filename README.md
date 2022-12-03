@@ -179,20 +179,19 @@ I need more color! Are there any colorschemes available?
 
 To build `vopher`, a working Go compiler is needed. Then do this:
 
-    $> mkdir build-vopher && cd build-vopher
-    $> env GOPATH=`pwd` go get -v github.com/mgumz/vopher
+    $> go install -v github.com/mgumz/vopher/cmd/vopher@latest
 
 This will fetch and build `vopher` in the "build-vopher/bin" directory.
 Copy the binary to any place you need it.
 
 To build `vopher` with support for LZMA/XZ:
 
-    $> env GOPATH=`pwd` go get -v -tags lzma github.com/mgumz/vopher
+    $> go install -v -tags lzma github.com/mgumz/vopher/cmd/vopher@latest
 
 If you've already cloned `vopher` and are rebuilding for tests or contributing, 
 do the following:
 
-    $> go build
+    $> make bin/vopher
 
 ## The vopher-file format
 
