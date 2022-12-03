@@ -18,11 +18,16 @@ type Simple struct {
 	vopher.Runtime
 	sync.WaitGroup
 	sync.Mutex
+	hasStarted bool
 }
 
 func (simple *Simple) Start() {
+	if simple.hasStarted {
+		return
+	}
 	fmt.Println("started")
 	simple.Runtime.Start()
+	simple.hasStarted = true
 }
 
 func (simple *Simple) Stop() {
