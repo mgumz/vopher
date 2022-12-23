@@ -45,11 +45,14 @@ releases/vopher-$(VERSION).%.tar.gz: bin/vopher-$(VERSION).%
 		tar -rf $(basename $@) --strip-components 1 $< && \
 		gzip -9 $(basename $@)
 
-
 deps-vendor:
 	go mod vendor
 deps-cleanup:
 	go mod tidy
+deps-ls:
+	go list -m -mod=readonly -f '{{if not .Indirect}}{{.}}{{end}}' all
+deps-ls-updates:
+	go list -m -mod=readonly -f '{{if not .Indirect}}{{.}}{{end}}' -u all
 
 
 test:
