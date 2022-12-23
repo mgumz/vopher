@@ -10,9 +10,7 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
-	"os"
 	"strings"
 
 	"github.com/mgumz/vopher/pkg/action"
@@ -25,10 +23,10 @@ var allowedActions = []string{
 	"u",
 	"up",
 	"update",
-    "fu",
-    "fupdate",
-    "fast-update",
-    "fast",
+	"fu",
+	"fupdate",
+	"fast-update",
+	"fast",
 	"f",
 	"fetch",
 	"clean",
@@ -45,39 +43,6 @@ var allowedActions = []string{
 	"archives",
 	"list-archives",
 	"la",
-}
-
-func usage() {
-
-	fmt.Fprintln(os.Stderr, `vopher - acquire vim plugins the gopher-way
-
-Usage: vopher [flags] <action>
-
-Flags:`)
-	flag.PrintDefaults()
-	fmt.Fprintln(os.Stderr, `
-Actions:
-
-  update   - acquires the given plugins from '-f <list-file|url>'
-  fetch    - fetch a remote archive and extract it. the arguments are like fields
-             in a vopher.list file
-  search   - searches http://vimawesome.com/ to list some plugins. Anything
-             after this is considered as "the search arguments"
-  check    - checks plugins from '-f <list>' for newer versions
-  clean    - removes given plugins from the '-f <list>'
-             * use '-force' to delete plugins.
-  prune    - removes all entries from -dir <folder> which are not referenced in
-             '-f <list>'.
-             * use '-force' to delete plugins.
-             * use '-all=true' to delete <plugin>.zip files.
-  status   - lists plugins in '-dir <folder>' and marks them accordingly
-             * 'v' means vopher is tracking the plugin in your '-f <list>'
-             * 'm' means vopher is tracking the plugin and it's missing. You can
-               fetch it with the 'update' action.
-             * no mark means that the plugin is not tracked by vopher
-  sample   - prints a sample vopher.list to stdout
-  version  - prints version of vopher
-  archives - list supported archives`)
 }
 
 func main() {
@@ -156,7 +121,7 @@ func main() {
 	cli.dir = path
 
 	switch cli.action {
-    case "fupdate", "fu", "fast-update", "fup":
+	case "fupdate", "fu", "fast-update", "fup":
 		parser := localOrRemoteParser(cli.from)
 		plugins := mustReadPlugins(cli.from, parser, cli.filter)
 		opts := action.ActUpdateOpts{Dir: cli.dir, Force: cli.force, DryRun: cli.dry}
@@ -200,7 +165,8 @@ func defaultUI(ui, action string) string {
 	}
 	switch action {
 	case "update", "u", "up",
-		"fetch", "f":
+		"fetch", "f",
+		"fupdate", "fu":
 		return "oneline"
 	default:
 		return "simple"
