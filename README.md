@@ -245,8 +245,8 @@ The vopher-file is pretty simple:
 
 * .zip
 * .vba, .vba.gz, .vmb, .vmb.gz (see [Charles E. Campbell](http://www.drchip.org/astronaut/vim/doc/pi_vimball.txt.html))
-* .tar.gz, .tar.bz2, .tar.bzip2
-* optional: .tar.lzma, .tar.xz
+* .tar.gz, .tgz, .tar.bz2, .tar.bzip2
+* optional: .tar.lzma, .tar.xz, .tar.zst
 
 If the archive type can not be guessed by looking at the filename, *vopher*
 probes the HTTP server to get a clue about the archive type.
