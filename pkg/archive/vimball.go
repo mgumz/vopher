@@ -140,7 +140,7 @@ func (*VimballArchive) skipPreamble(scanner *bufio.Scanner) error {
 func (*VimballArchive) extractFile(name string, lines int, scanner *bufio.Scanner) error {
 
 	dir := filepath.Dir(name)
-	if err := os.MkdirAll(dir, 0777); err != nil {
+	if err := os.MkdirAll(dir, 0700); err != nil {
 		return err
 	}
 

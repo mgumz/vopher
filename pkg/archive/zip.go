@@ -44,12 +44,12 @@ func (za *ZipArchive) Extract(folder string, r io.Reader, stripDirs int) error {
 		oname = filepath.Join(folder, filepath.Clean(oname))
 
 		if f.FileInfo().IsDir() {
-			os.MkdirAll(oname, 0777)
+			_ = os.MkdirAll(oname, 0700)
 			continue
 		}
 
 		// TODO: call only if needed
-		os.MkdirAll(filepath.Dir(oname), 0777)
+		_ = os.MkdirAll(filepath.Dir(oname), 0700)
 
 		zreader, err := f.Open()
 		if err != nil {

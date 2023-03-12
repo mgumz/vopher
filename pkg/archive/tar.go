@@ -96,7 +96,7 @@ func (ta *TarArchive) handle(folder string, r io.Reader, stripDirs int, extract 
 }
 
 func tarExtractEntry(name string, r io.Reader) error {
-	if err := os.MkdirAll(filepath.Dir(name), 0777); err != nil {
+	if err := os.MkdirAll(filepath.Dir(name), 0700); err != nil {
 		return err
 	}
 	file, err := os.Create(name)
