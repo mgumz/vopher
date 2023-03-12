@@ -82,7 +82,7 @@ func (ta *TarArchive) handle(folder string, r io.Reader, stripDirs int, extract 
 			return nil, err
 		}
 
-		if header.Typeflag != tar.TypeReg && header.Typeflag != tar.TypeRegA {
+		if header.Typeflag != tar.TypeReg {
 			continue
 		}
 
