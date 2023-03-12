@@ -16,6 +16,7 @@ func terminalSize(t *os.File) (cols, rows int, err error) {
 		xpixel, ypixel uint16
 	}{}
 
+	/* #nosec */
 	_, _, errno := syscall.Syscall(
 		syscall.SYS_IOCTL,
 		t.Fd(),
