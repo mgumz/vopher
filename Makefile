@@ -75,16 +75,18 @@ run-github-workflow-test:
 run-github-workflow-buildLinux:
 	act -j buildLinux --container-architecture linux/amd64
 
-report: report-cyclo report-staticcheck report-mispell report-ineffassign report-vet
+
+reports: report-vuln report-gosec
+reports: report-staticcheck report-vet report-ineffassign
+reports: report-cyclo 
+reports: report-mispell
+
 report-cyclo:
 	@echo '####################################################################'
 	gocyclo ./cmd/vopher
 report-mispell:
 	@echo '####################################################################'
 	misspell ./cmd/
-report-lint:
-	@echo '####################################################################'
-	golint ./cmd/... ./pkg/...
 report-ineffassign:
 	@echo '####################################################################'
 	ineffassign ./cmd/... ./pkg/...
@@ -95,11 +97,28 @@ report-staticcheck:
 	@echo '####################################################################'
 	staticcheck ./cmd/... ./pkg/...
 
+report-vuln:
+	@echo '####################################################################'
+	govulncheck ./cmd/... ./pkg/...
+
+report-gosec:
+	@echo '####################################################################'
+	gosec -conf .gosec.json ./cmd/... ./pkg/...
+
+report-grype:
+	@echo '####################################################################'
+	grype .
+
 fetch-report-tools:
 	go install github.com/fzipp/gocyclo/cmd/gocyclo@latest
 	go install github.com/client9/misspell/cmd/misspell@latest
 	go install github.com/gordonklaus/ineffassign@latest
 	go install honnef.co/go/tools/cmd/staticcheck@latest
-	go install golang.org/x/lint/golint@latest
+	go install golang.org/x/vuln/cmd/govulncheck@latest
+	go install github.com/securego/gosec/v2/cmd/gosec@latest
+
+fetch-report-tool-grype:
+	go install github.com/anchore/grype@latest
+
 
 .PHONY: vopher bin/vopher
