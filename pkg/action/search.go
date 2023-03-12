@@ -37,7 +37,7 @@ func Search(args ...string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer query.Body.Close()
+	defer (func() { _ = query.Body.Close() })()
 
 	// TODO: handle status code
 

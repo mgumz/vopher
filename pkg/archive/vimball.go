@@ -148,7 +148,7 @@ func (*VimballArchive) extractFile(name string, lines int, scanner *bufio.Scanne
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer (func() { _ = file.Close() })()
 
 	for lines > 0 && scanner.Scan() {
 		_, _ = file.Write(scanner.Bytes())

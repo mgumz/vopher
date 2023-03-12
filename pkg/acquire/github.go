@@ -103,7 +103,7 @@ func (gh Github) GetCommits(repo *url.URL, parts ...string) *GithubFeed {
 		log.Printf("error: %q %v", feedURL.String(), err)
 		return nil
 	}
-	defer resp.Body.Close()
+	defer (func() { _ = resp.Body.Close() })()
 
 	if resp.StatusCode != 200 {
 		log.Printf("error: %q %v", feedURL.String(), err)

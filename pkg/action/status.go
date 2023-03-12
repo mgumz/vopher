@@ -17,7 +17,7 @@ func Status(plugins plugin.List, base string) {
 		log.Println(err)
 		return
 	}
-	defer dir.Close()
+	defer (func() { _ = dir.Close() })()
 
 	dirEntries, err := dir.Readdir(-1)
 	if err != nil {

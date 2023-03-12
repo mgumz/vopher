@@ -64,7 +64,7 @@ const (
 // # variant of postupdate: postupdate.linux=/path/to/cmd
 func (plugins List) Parse(reader io.ReadCloser) error {
 
-	defer reader.Close()
+	defer (func() { _ = reader.Close() })()
 
 	isComment := func(fields []string) ([]string, bool) {
 		return fields, (len(fields) == 0 || strings.HasPrefix(fields[0], "#"))
