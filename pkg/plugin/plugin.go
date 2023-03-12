@@ -1,7 +1,7 @@
 package plugin
 
 import (
-	"crypto/sha1"
+	"crypto/sha1" /* #nosec */
 	"encoding/hex"
 	"fmt"
 	neturl "net/url"

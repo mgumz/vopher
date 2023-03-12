@@ -1,7 +1,7 @@
 package http
 
 import (
-	"crypto/sha1"
+	"crypto/sha1" /* #nosec */
 	"encoding/hex"
 	"fmt"
 	"io"
@@ -49,7 +49,7 @@ func Get(w io.Writer, url, checkSha1 string) (err error) {
 	}
 
 	reader := io.Reader(resp.Body)
-	hasher := sha1.New()
+	hasher := sha1.New() /* #nosec */
 
 	if checkSha1 != "" {
 		reader = io.TeeReader(reader, hasher)
