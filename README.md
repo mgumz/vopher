@@ -1,5 +1,11 @@
 # VOPHER - Acquire (n)vim-plugins - fast
 
+
+[![GitHub Release](https://img.shields.io/github/v/release/mgumz/vopher.svg)](https://github.com/mgumz/vopher/releases/latest)
+[![Status](https://github.com/mgumz/vopher/actions/workflows/actions.yaml/badge.svg)](https://github.com/mgumz/vopher/actions/workflows/actions.yaml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/mgumz/vopher)](https://goreportcard.com/report/github.com/mgumz/vopher)
+[![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/mgumz/vopher.svg)](https://github.com/mgumz/vopher)
+
 ## Description
 
 **vopher** is a standalone program to acuire plugins for vim/neovim. The user
