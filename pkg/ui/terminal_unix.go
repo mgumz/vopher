@@ -31,8 +31,8 @@ func terminalSize(t *os.File) (cols, rows int, err error) {
 }
 
 func cursorNUp(t *os.File, n int) (err error) {
-	t.WriteString("\x1b[")
-	t.WriteString(strconv.Itoa(n))
-	t.WriteString("A")
+	_, _ = t.WriteString("\x1b[")
+	_, _ = t.WriteString(strconv.Itoa(n))
+	_, _ = t.WriteString("A")
 	return
 }

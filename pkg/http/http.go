@@ -17,7 +17,7 @@ func DetectFType(url string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	resp.Body.Close()
+	_ = resp.Body.Close()
 
 	content := resp.Header.Get("Content-Disposition")
 	if content == "" {

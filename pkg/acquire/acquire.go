@@ -28,16 +28,16 @@ func Acquire(base, ext, url string, archive vopher.Archive, skipDirs int, checkS
 	}
 
 	if err = http.Get(file, url, checkSha1); err != nil {
-		file.Close()
-		os.Remove(tmpName)
+		_ = file.Close()
+		_ = os.Remove(tmpName)
 		return err
 	}
 
-	file.Sync()
-	file.Seek(0, 0)
+	_ = file.Sync()
+	_, _ = file.Seek(0, 0)
 
 	err = archive.Extract(base, file, skipDirs)
-	file.Close()
+	_ = file.Close()
 	if err == nil {
 		err = os.Rename(tmpName, name)
 	}

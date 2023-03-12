@@ -175,7 +175,7 @@ func defaultUI(ui, action string) string {
 
 func mayReadPlugins(path string, parse plugin.Parser, filter utils.StringList) plugin.List {
 	plugins := make(plugin.List)
-	parse(plugins, path)
+	_ = parse(plugins, path)
 	plugins = plugins.Filter(filter)
 	return plugins
 }

@@ -78,7 +78,7 @@ func (pt *ProgressTicker) print(prefix string) {
 
 	// using cursor-up+progress+newline works more stable than to \r
 	// the cursor.
-	cursorNUp(os.Stdout, 1)
+	_ = cursorNUp(os.Stdout, 1)
 	fmt.Println(info, string(full))
 }
 

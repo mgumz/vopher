@@ -64,8 +64,8 @@ func (za *ZipArchive) Extract(folder string, r io.Reader, stripDirs int) error {
 			log.Println(oname, err)
 		}
 
-		ofile.Close()
-		zreader.Close()
+		_ = ofile.Close()
+		_ = zreader.Close()
 	}
 
 	// github stores the git-commit in the comment of the .zip file
@@ -77,8 +77,8 @@ func (za *ZipArchive) Extract(folder string, r io.Reader, stripDirs int) error {
 		if err != nil {
 			return err
 		}
-		defer file.Close()
-		io.WriteString(file, zfile.Comment)
+		defer (func() { _ = file.Close() })()
+		_, _ = io.WriteString(file, zfile.Comment)
 	}
 
 	return nil
