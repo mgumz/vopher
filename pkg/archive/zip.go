@@ -12,6 +12,17 @@ import (
 	"github.com/mgumz/vopher/pkg/vopher"
 )
 
+const (
+	// the bytes decompressed from a file read from the internets.
+	// as of now it is set to 100mb which i fancy sufficient. i imagine
+	// the usual plugin/-folder is rather in the low single digit megabyte
+	// range. so, to give some headroom, i decided to increase by
+	// two orders of magnitude.
+	//
+	// CWE-409: Potential DoS vulnerability via decompression bomb
+	maxZipDecompressBytes = 1024 * 1024 * 100
+)
+
 // ZipArchive handles zip archive
 type ZipArchive struct {
 	GitCommit bool // if true: assume the .zip comment contains the git-commit
@@ -59,7 +70,10 @@ func (za *ZipArchive) Extract(folder string, r io.Reader, stripDirs int) error {
 		if err != nil {
 			log.Println(oname, err)
 		}
-		_, err = io.Copy(ofile, zreader)
+
+		maxBytes := za.min(f.UncompressedSize64, maxZipDecompressBytes)
+
+		_, err = io.CopyN(ofile, zreader, int64(maxBytes))
 		if err != nil {
 			log.Println(oname, err)
 		}
@@ -121,4 +135,11 @@ func (*ZipArchive) openReader(r io.Reader) (*zip.Reader, error) {
 		}
 		return zip.NewReader(rt, fi.Size())
 	}
+}
+
+func (*ZipArchive) min(a, b uint64) uint64 {
+	if a < b {
+		return a
+	}
+	return b
 }

@@ -12,6 +12,17 @@ import (
 	"github.com/mgumz/vopher/pkg/vopher"
 )
 
+const (
+	// the bytes decompressed from a file read from the internets.
+	// as of now it is set to 50mb per entry in a tar-archive. i imagine
+	// the usual plugin/-folder is rather in the low single digit megabyte
+	// range. so, to give some headroom, i decided to increase by
+	// one order of magnitude.
+	//
+	// CWE-409: Potential DoS vulnerability via decompression bomb
+	maxTarDecompressEntryBytes = 1024 * 1024 * 50
+)
+
 // TarArchive handles tar archives
 type TarArchive struct{}
 
@@ -51,7 +62,7 @@ func (ta *TarArchive) Entries(r io.Reader, stripDirs int) ([]string, error) {
 
 // small helper to operate on a tar-entry. reader r points directly
 // to the data for 'name' in the tar file.
-type tarExtractFunc func(name string, r io.Reader) error
+type tarExtractFunc func(name string, r io.Reader, maxBytes int64) error
 
 // handle all file-like entries in the tar represented by 'r' due the 'extract'
 // function.
@@ -88,14 +99,18 @@ func (ta *TarArchive) handle(folder string, r io.Reader, stripDirs int, extract 
 			continue
 		}
 		entries = append(entries, oname)
-		if err := extract(filepath.Join(folder, oname), reader); err != nil {
+
+		maxBytes := ta.min(header.Size, maxTarDecompressEntryBytes)
+
+		err = extract(filepath.Join(folder, oname), reader, maxBytes)
+		if err != nil {
 			return nil, err
 		}
 	}
 	return entries, nil
 }
 
-func tarExtractEntry(name string, r io.Reader) error {
+func tarExtractEntry(name string, r io.Reader, maxBytes int64) error {
 	if err := os.MkdirAll(filepath.Dir(name), 0700); err != nil {
 		return err
 	}
@@ -103,10 +118,17 @@ func tarExtractEntry(name string, r io.Reader) error {
 	if err != nil {
 		return err
 	}
-	_, err = io.Copy(file, r)
+	_, err = io.CopyN(file, r, maxBytes)
 	return err
 }
-func tarIgnoreEntry(name string, r io.Reader) error {
-	_, err := io.Copy(io.Discard, r)
+func tarIgnoreEntry(name string, r io.Reader, maxBytes int64) error {
+	_, err := io.CopyN(io.Discard, r, maxBytes)
 	return err
+}
+
+func (*TarArchive) min(a, b int64) int64 {
+	if a < b {
+		return a
+	}
+	return b
 }
