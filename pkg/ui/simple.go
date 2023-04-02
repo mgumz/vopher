@@ -73,5 +73,19 @@ func (simple *Simple) Print(id, msg string) {
 	simple.Unlock()
 }
 
+func (simple *Simple) PrintShort(id, msg string) {
+	scanner := bufio.NewScanner(strings.NewReader(msg))
+	scanner.Split(bufio.ScanLines)
+	simple.Lock()
+	for scanner.Scan() {
+		text := scanner.Text()
+		fmt.Println(id, text)
+		if strings.HasPrefix(strings.TrimSpace(text), "*") {
+			break
+		}
+	}
+	simple.Unlock()
+}
+
 func (simple *Simple) Wait()    { simple.WaitGroup.Wait() }
 func (simple *Simple) Refresh() {}

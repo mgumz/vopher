@@ -36,6 +36,7 @@ type UI interface {
 
 	AddJob(id string)
 	Print(id, msg string)
+	PrintShort(id, msg string)
 	JobDone(id string)
 	Wait() // wait for all jobs to be .Done()
 }

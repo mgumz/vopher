@@ -40,7 +40,7 @@ func Check(plugins plugin.List, base string, ui ui.UI) {
 			text, _ := t.(string)
 			// right aligned Id
 			id := fmt.Sprintf(idFmt, id)
-			ui.Print(id, text)
+			ui.PrintShort(id, text)
 		}
 	}
 }
