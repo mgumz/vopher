@@ -14,11 +14,11 @@ Based upon that vopher.list file, file downloads the plugins and unpacks them
 in the appropriate folder. **vopher** requires no 3rd party programs to do
 its job.
 
-**vopher** fetches and unpacks the 52 (yes.) plugins of its author in ~ 3s.
+**vopher** fetches and unpacks the 53 (yes.) plugins of its author in ~ 2s.
 
 ## Usage
 
-![A screenshot showing a list of plugins managed by vopher](screenshots/vopher.png)
+![A screencast showing a list of plugins managed by vopher](media/vopher-demo.cast.txt.svg)
 
     Usage: vopher [flags] <action>
 
