@@ -7,6 +7,8 @@ github.com/klauspost/compress/internal/cpuinfo
 github.com/klauspost/compress/internal/snapref
 github.com/klauspost/compress/zstd
 github.com/klauspost/compress/zstd/internal/xxhash
-# github.com/smira/lzma v0.0.0-20160124201817-7f0af6269940
-## explicit
-github.com/smira/lzma
+# github.com/ulikunitz/xz v0.5.12
+## explicit; go 1.12
+github.com/ulikunitz/xz/internal/hash
+github.com/ulikunitz/xz/internal/xlog
+github.com/ulikunitz/xz/lzma

@@ -333,9 +333,8 @@ See :help license.
 
 (Optional) Dependencies:
 
-*zstd*: Copyright (c) Klaus Post, check 
-vendor/github.com/klauspost/compress/LICENSE
+**zstd**: Copyright (c) Klaus Post, check
+`vendor/github.com/klauspost/compress/LICENSE`
 
-*lzma*: Copyright (c) 2010, Andrei Vieru, check
-vendor/github.com/smira/lzma/LICENSE
-
+**lzma**: Copyright (c) 2022, Ulrich Kunitz, check
+`vendor/github.com/ulikunitz/xz/lzma/LICENSE`

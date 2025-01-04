@@ -6,7 +6,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/smira/lzma"
+    "github.com/ulikunitz/xz/lzma"
 
 	"github.com/mgumz/vopher/pkg/vopher"
 )
