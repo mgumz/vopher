@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"io"
 	"log"
+	"math"
 	"os"
 	"path/filepath"
 	"strings"
@@ -71,9 +72,13 @@ func (za *ZipArchive) Extract(folder string, r io.Reader, stripDirs int) error {
 			log.Println(oname, err)
 		}
 
-		maxBytes := za.min(f.UncompressedSize64, maxZipDecompressBytes)
+		maxBytes := int64(maxZipDecompressBytes)
+		if f.UncompressedSize64 < math.MaxInt64 {
+			us := int64(f.UncompressedSize64) // #nosec G115
+			maxBytes = za.min(maxBytes, us)
+		}
 
-		_, err = io.CopyN(ofile, zreader, int64(maxBytes))
+		_, err = io.CopyN(ofile, zreader, maxBytes)
 		if err != nil {
 			log.Println(oname, err)
 		}
@@ -137,7 +142,7 @@ func (*ZipArchive) openReader(r io.Reader) (*zip.Reader, error) {
 	}
 }
 
-func (*ZipArchive) min(a, b uint64) uint64 {
+func (*ZipArchive) min(a, b int64) int64 {
 	if a < b {
 		return a
 	}

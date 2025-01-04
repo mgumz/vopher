@@ -4,6 +4,7 @@ import (
 	"crypto/sha1" /* #nosec */
 	"encoding/hex"
 	"fmt"
+	"math"
 	neturl "net/url"
 	"runtime"
 	"strconv"
@@ -45,10 +46,12 @@ func (p *Plugin) optionsFromFields(fields []string) error {
 		if strings.HasPrefix(field, "strip=") {
 			strip, err := strconv.ParseUint(field[len("strip="):], 10, 8)
 			if err == nil {
-				p.Opts.StripDir = int(strip)
-			} else {
-				return fmt.Errorf("strange 'strip' field")
+				if strip > 0 && strip < math.MaxInt32 {
+					p.Opts.StripDir = int(strip)
+					continue
+				}
 			}
+			return fmt.Errorf("strange 'strip' field")
 		} else if strings.HasPrefix(field, "postupdate=") && p.Opts.PostUpdate == "" {
 			p.Opts.PostUpdate = field[len("postupdate="):]
 		} else if strings.HasPrefix(field, postUpdateOS) {
