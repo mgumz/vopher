@@ -121,4 +121,6 @@ fetch-report-tool-grype:
 	go install github.com/anchore/grype@latest
 
 
-.PHONY: vopher bin/vopher
+.PHONY: vopher vopher-full bin/vopher reports binaries releases toc
+.PHONY: deps-cleanup deps-ls deps-ls-updates deps-vendor
+.PHONY: test container-image
