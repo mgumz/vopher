@@ -62,8 +62,8 @@ test:
 
 release: $(BINARIES)
 
-build-docker:
-	docker build -f docker/Dockerfile -t vopher \
+container-image:
+	docker build -f container/Containerfile -t vopher \
 		--build-arg BUILD_DIR=/vopher/src/vopher \
 		--build-arg VOPHER=bin/vopher-$(VERSION).linux.amd64 .
 

@@ -1,4 +1,4 @@
-FROM alpine:3.7 as build
+FROM alpine:3.21 as build
 
 ARG  VOPHER
 ARG  BUILD_DIR
@@ -9,7 +9,7 @@ RUN  make -C $BUILD_DIR $VOPHER
 
 ###
 
-FROM alpine:3.7
+FROM alpine:3.21
 ARG  VOPHER
 ARG  BUILD_DIR
 RUN  apk --update add ca-certificates
