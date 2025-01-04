@@ -13,10 +13,10 @@ import (
 )
 
 const (
-	// the bytes decompressed from a file read from the internets.
-	// as of now it is set to 100mb which i fancy sufficient. i imagine
+	// The bytes decompressed from a file read from the internets.
+	// As of now, it is set to 100mb - which I fancy sufficient. I imagine
 	// the usual plugin/-folder is rather in the low single digit megabyte
-	// range. so, to give some headroom, i decided to increase by
+	// range. So, to give some headroom, I decided to increase by
 	// two orders of magnitude.
 	//
 	// CWE-409: Potential DoS vulnerability via decompression bomb
@@ -82,7 +82,7 @@ func (za *ZipArchive) Extract(folder string, r io.Reader, stripDirs int) error {
 		_ = zreader.Close()
 	}
 
-	// github stores the git-commit in the comment of the .zip file
+	// github stores the git-commit in the comment of the `.zip` file
 	// so, we store a file called "github-commit" in the plugin-folder
 	// to be able to check for updates
 	if za.GitCommit && len(zfile.Comment) == 40 {

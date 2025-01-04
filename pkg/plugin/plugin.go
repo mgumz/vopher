@@ -14,8 +14,8 @@ import (
 
 const (
 
-	// most plugins are fetched from github. the github zip-files
-	// put the files into a subfolder like this:
+	// Most plugins are fetched from github. The github zip-files
+	// put the files into a sub folder like this:
 	//   vim-plugin/doc/plugin.txt
 	//   vim-plugin/README.txt
 	//
@@ -27,9 +27,9 @@ type Plugin struct {
 	Ext     string
 	URL     *neturl.URL
 	Opts    Opts
-	Archive vopher.Archive // used to extract/view content of plugin
+	Archive vopher.Archive // Used to extract/view content of plugin
 
-	ln int // line in vopher.list, might be used for sorting
+	ln int // Line in `vopher.list`, might be used for sorting
 }
 
 func (pl *Plugin) String() string {

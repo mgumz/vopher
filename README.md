@@ -1,6 +1,5 @@
 # VOPHER - Acquire (n)vim-plugins - fast
 
-
 [![GitHub Release](https://img.shields.io/github/v/release/mgumz/vopher.svg)](https://github.com/mgumz/vopher/releases/latest)
 [![Status](https://github.com/mgumz/vopher/actions/workflows/actions.yaml/badge.svg)](https://github.com/mgumz/vopher/actions/workflows/actions.yaml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/mgumz/vopher)](https://goreportcard.com/report/github.com/mgumz/vopher)
@@ -8,13 +7,14 @@
 
 ## Description
 
-**vopher** is a standalone program to acuire plugins for vim/neovim. The user
-provides a vopher.list files which contains references to the desired plugins.
-Based upon that vopher.list file, file downloads the plugins and unpacks them
-in the appropriate folder. **vopher** requires no 3rd party programs to do
-its job.
+**vopher** is a standalone program to acquire plugins for vim/neovim. The user
+provides a `vopher.list` files which contains references to the desired
+plugins. Based upon that `vopher.list` file, file downloads the plugins and
+unpacks them in the appropriate folder. **vopher** requires no 3rd party
+programs to do its job.
 
-**vopher** fetches and unpacks the 53 (yes.) plugins of its author in ~ 2s.
+**vopher** fetches and unpacks the 53 (yes.) plugins of its author in ~ 2
+seconds.
 
 ## Usage
 
@@ -69,14 +69,14 @@ its job.
 
     $> cd ~/.vim
 
-Acquire all of the plugins referenced in 'vopher.list' (the default file) and
-put the fetched plugins into the 'pack/vopher/start' folder where Vim8 picks
+Acquire all the plugins referenced in `vopher.list` (the default file) and
+put the fetched plugins into the `pack/vopher/start` folder where Vim8 picks
 them up without any further work:
 
     $> vopher up
     vopher: (10/10) [=================== 100% ====================]
 
-So, what's in my 'pack/vopher/start' directory and how do they relate to my
+So, what's in my `pack/vopher/start` directory and how do they relate to my
 `vopher.list`-file?
 
     $> vopher status
@@ -93,8 +93,8 @@ So, what's in my 'pack/vopher/start' directory and how do they relate to my
 
 Lines marked with 'v' are plugins referenced in the `vopher.list`. 'vm' marked
 lines are referenced plugins which are missing (acquire them by using the
-'update' action). Lines without a special prefix are folders inside the
-download folder, but they are not referenced by an entry in `vopher.list`.
+'update' action). Lines without a special prefix are folders inside
+the download folder, but they are not referenced by an entry in `vopher.list`.
 
 I want to try out a new plugin I found on the internets:
 
@@ -116,9 +116,9 @@ Did that work? Lets check:
     v  vim-jinja
        vim-merginal
 
-Note the lack of 'v' in the last line: `vim-merginal` was an adhoc-fetch which
-has no reference in a `vopher.list` and thus *vopher* does not know where this
-plugin came from.
+Note the lack of 'v' in the last line: `vim-merginal` was an ad hoc-fetch which
+has no reference in a `vopher.list` and thus **vopher** does not know where
+this plugin came from.
 
 
 Let's check for updates / new stuff:
@@ -154,12 +154,12 @@ Let's check for updates / new stuff:
       V1.3.0 2013-04-22T21:57:01Z V1.3.0
       ...
 
-`GoldenView.Vim#V1.3.5` is referenced in the `vopher.list`-file. *vopher*
+`GoldenView.Vim#V1.3.5` is referenced in the `vopher.list`-file. **vopher**
 tries to guess what commit this actually is and marks that line with a '\*'.
-so, you can easily see that there seems to be no new release for 'GoldenView',
-allthough there are some new commits.
+So, you can easily see that there seems to be no new release for `GoldenView`,
+although there are some new commits.
 
-I need more color! Are there any colorschemes available?
+I need more color! Are there any color schemes available?
 
     $> vopher search colors
     5856 vim-colors-solarized precision colorscheme for the vim text editor
@@ -183,7 +183,7 @@ I need more color! Are there any colorschemes available?
 
 ## Building / Installation
 
-To build `vopher`, a working Go compiler is needed. Then do this:
+To build **vopher**, a working Go compiler is needed. Then do this:
 
     $> go install -v github.com/mgumz/vopher/cmd/vopher@latest
 
@@ -194,8 +194,8 @@ To build `vopher` with support for LZMA/XZ:
 
     $> go install -v -tags lzma github.com/mgumz/vopher/cmd/vopher@latest
 
-If you've already cloned `vopher` and are rebuilding for tests or contributing, 
-do the following:
+If you've already cloned `vopher` and are rebuilding for tests or
+contributing, do the following:
 
     $> make bin/vopher
 
@@ -254,7 +254,7 @@ The vopher-file is pretty simple:
 * .tar.gz, .tgz, .tar.bz2, .tar.bzip2
 * optional: .tar.lzma, .tar.xz, .tar.zst
 
-If the archive type can not be guessed by looking at the filename, *vopher*
+If the archive type cannot be guessed by looking at the filename, **vopher**
 probes the HTTP server to get a clue about the archive type.
 
 
@@ -262,8 +262,8 @@ probes the HTTP server to get a clue about the archive type.
 
 ### Bootstrap your Vim folder
 
-Since `vopher` is able to fetch and extract data all on it's own, you can also
-use it to boostrap your own `.vim` (or `.config/nvim`) folder:
+Since **vopher** is able to fetch and extract data all on it's own, you can
+also use it to bootstrap your own `.vim` (or `.config/nvim`) folder:
 
     $> vopher -dir . fetch .vim github.com/mgumz/bones-vim
     vopher: (1/1) [================ 100% =================]
@@ -277,59 +277,59 @@ And done. I am ready to use Vim with all my plugins installed.
 
 > There is no UI integration into *vim*!!
 
-Yep, nothing to see on this front here .. yet. I need some means to exchange
-messages between *vim* and *vopher* in an asyncronous way, without the need for
-+clientserver. I am also not so sure that the effort on integrating *vopher*
-into the *vim*-UI is really worth it: I use *vim* as my text editor, not as a
-means to constantly updating and managing the plugins I use. Thus, I consider
-using *vopher* a rare case. Using the command line outside of *vim* is fine
-for me right now.
+Yep, nothing to see on this front here … yet. I need some means to exchange
+messages between **vim** and **vopher** in an asyncronous way, without the
+need for `+clientserver`. I am also not so sure that the effort on integrating
+**vopher** into the **vim**-UI is really worth it: I use **vim** as my text
+editor, not as a means to constantly updating and managing the plugins I use.
+Thus, I consider using **vopher** a rare case. Using the command line outside
+of **vim** is fine for me right now.
 
 > Why??
 
-*pathogen* (which is what I use) has no means on it's own to acquire plugins.
+**pathogen** (which is what I use) has no means on it's own to acquire plugins.
 
-*vundle* needs *git*. It fetches the whole history of any plugin. I am not
-interested in the history, I am just interested in a certain snapshot for
-a certain vim-plugin. In addition to that: the installation of *git* on Windows
-takes up ~ 250mb. The sum of my vim-plugins take up ~ 4mb.
+**vundle** needs **git**. It fetches the whole history of any plugin. I am not
+interested in the history, I am just interested in a certain snapshot for a
+certain vim-plugin. In addition to that: the installation of **git** on
+Windows takes up ~ 250mb. The sum of my vim-plugins take up ~ 4mb.
 
-*Neobundle* depends on *git* or *svn*.
+**Neobundle** depends on **git** or **svn**.
 
 > Why not use curl/python/ruby???
 
-*curl* is easy to install and available everywhere. But it's a bit stupid on
-it's own. I would have to write a lot of what *vopher* does on it's own in a
-real programming language 'x'. Or VimL (vimscript). Which would lead to even more
-code and maybe an additional interpreter which might need even more stuff. On
-Windows the curl-binary which supports https weighs ~ 1.6mb. A python
-installer for Windows weighs ~ 17mb, installed ~ 60mb. Yeah, one could create
-a standalone binary with something like *PyInstaller*. This does not give
-anything substantially better than the *Golang*-produced binary and it's builtin
-networking and concurrency powers.
+**curl** is easy to install and available everywhere. But it is a bit stupid
+on its own. I would have to write a lot of what **vopher** does on its own in
+a real programming language 'x'. Or `VimL` (vimscript). Which would lead to
+even more code and maybe an additional interpreter which might need even more
+stuff. On Windows the curl-binary which supports https weighs ~ 1.6mb. A
+python installer for Windows weighs ~ 17mb, installed ~ 60mb. Yeah, one could
+create a standalone binary with something like **PyInstaller**. This does not
+give anything substantially better than the **Golang**-produced binary and
+it's builtin networking and concurrency powers.
 
 > But Python and Ruby are just a `brew install` away!
 
 Yep. If you are working mostly on the same platform you can get very
-comfortable with your nice and cosy environment. If you switch platform
+comfortable within your nice and cosy environment. If you switch platform
 borders on a regular basis, things become a bit more complicated. I want to
-place one .zip file on my server, containing all my *vim* files, vopher binaries
-and then I am ready to go (pun) in no time.
+place one `.zip` file on my server, containing all my **vim** files,
+**vopher** binaries and then I am ready to go (pun) in no time.
 
-> Will *vopher* handle all the dependencies for me?
+> Will **vopher** handle all the dependencies for me?
 
-Nope. There is no central repository for plugins which all of the
-plugin-writers agree on (in contrast, SublimeText3 has the defacto standard
-https://packagecontrol.io/installation ). Ontop of that something like a
-file-format for dependencies is lacking. Again, setting up the vopher.list
-file is something rare; I expect to change it from time to time.
+Nope. There is no central repository for plugins which all the plugin-writers
+agree on (in contrast, **SublimeText3** has the de facto standard
+https://packagecontrol.io/installation ). On top of that, something
+like a file-format for dependencies is lacking. Again, setting up the
+`vopher.list` file is something rare; I expect to change it from time to time.
 Dependencies for the plugins won't change that often either. So, a lot of
 effort and nothing substantial to gain from.
 
 ## License
 
-Copyright (c) Mathias Gumz. Distributed under the same terms as *vim* itself.
-See :help license.
+Copyright (c) Mathias Gumz. Distributed under the same terms as **vim**
+itself. See :help license.
 
 (Optional) Dependencies:
 

@@ -1,9 +1,9 @@
 package main
 
-// *vopher* - acquire and manage vim-plugins by the power of the gopher
+// *vopher* - acquire and manage vim-plugins by the power of the gopher.
 //
-// idea: instead of having python/ruby/curl/wget/fetch/git installed
-// for a vim-plugin-manager to fetch the plugins i just want one binary
+// Idea: instead of having python/ruby/curl/wget/fetch/git installed
+// for a vim-plugin-manager to fetch the plugins, I just want one binary
 // which does it all.
 //
 // plugins: http://vimawesome.com/
