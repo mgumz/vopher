@@ -6,7 +6,7 @@ import (
 	"io"
 	"strings"
 
-    "github.com/ulikunitz/xz/lzma"
+	"github.com/ulikunitz/xz/lzma"
 
 	"github.com/mgumz/vopher/pkg/vopher"
 )
@@ -27,13 +27,17 @@ func init() {
 type LzmaArchive struct{ orig vopher.Archive }
 
 func (la *LzmaArchive) Extract(folder string, r io.Reader, skipDir int) error {
-	lzmaReader := lzma.NewReader(r)
-	defer lzmaReader.Close()
+	lzmaReader, err := lzma.NewReader(r)
+	if err != nil {
+		return err
+	}
 	return la.orig.Extract(folder, lzmaReader, skipDir)
 }
 
 func (la *LzmaArchive) Entries(r io.Reader, skipDir int) ([]string, error) {
-	lzmaReader := lzma.NewReader(r)
-	defer lzmaReader.Close()
+	lzmaReader, err := lzma.NewReader(r)
+	if err != nil {
+		return nil, err
+	}
 	return la.orig.Entries(lzmaReader, skipDir)
 }
