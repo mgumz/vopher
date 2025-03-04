@@ -52,8 +52,8 @@ func (vba *VimballArchive) Entries(r io.Reader, skipDir int) ([]string, error) {
 	return vba.handle("", r, f)
 }
 
-// extracts the contents a vimball formatted 'r' into 'dir'
-// the format works like this:
+// Extracts the contents a vimball formatted `r` into `dir`.
+// The format works like this:
 //
 // preamble
 //
@@ -116,7 +116,7 @@ func (*VimballArchive) skipPreamble(scanner *bufio.Scanner) error {
 	useVimball := false
 	finish := false
 
-	// scan for lines 'UseVimball', followed by 'finish'
+	// scan for lines `UseVimball`, followed by `finish`
 	for scanner.Scan() && !useVimball && !finish {
 		line := scanner.Text()
 		if !useVimball && line == "UseVimball" {

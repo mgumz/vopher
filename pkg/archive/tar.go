@@ -13,10 +13,10 @@ import (
 )
 
 const (
-	// the bytes decompressed from a file read from the internets.
-	// as of now it is set to 50mb per entry in a tar-archive. i imagine
+	// The bytes decompressed from a file read from the internets.
+	// As of now it is set to 50mb per entry in a tar-archive. I imagine
 	// the usual plugin/-folder is rather in the low single digit megabyte
-	// range. so, to give some headroom, i decided to increase by
+	// range. So, to give some headroom, I decided to increase by
 	// one order of magnitude.
 	//
 	// CWE-409: Potential DoS vulnerability via decompression bomb
@@ -49,7 +49,7 @@ func init() {
 
 }
 
-// Extract untars the given archive `ta` into `folder`
+// Extract un-tars the given archive `ta` into `folder`
 func (ta *TarArchive) Extract(folder string, r io.Reader, stripDirs int) error {
 	_, err := ta.handle(folder, r, stripDirs, tarExtractEntry)
 	return err
@@ -60,11 +60,11 @@ func (ta *TarArchive) Entries(r io.Reader, stripDirs int) ([]string, error) {
 	return ta.handle("", r, stripDirs, tarIgnoreEntry)
 }
 
-// small helper to operate on a tar-entry. reader r points directly
-// to the data for 'name' in the tar file.
+// Small helper to operate on a tar-entry: reader r points directly
+// to the data for `name` in the tar file.
 type tarExtractFunc func(name string, r io.Reader, maxBytes int64) error
 
-// handle all file-like entries in the tar represented by 'r' due the 'extract'
+// Handle all file-like entries in the tar represented by `r` due the `extract`
 // function.
 // TODO: make sure "file-like" is the correct criteria.
 func (ta *TarArchive) handle(folder string, r io.Reader, stripDirs int, extract tarExtractFunc) ([]string, error) {
@@ -100,7 +100,7 @@ func (ta *TarArchive) handle(folder string, r io.Reader, stripDirs int, extract 
 		}
 		entries = append(entries, oname)
 
-		maxBytes := ta.min(header.Size, maxTarDecompressEntryBytes)
+		maxBytes := min(header.Size, maxTarDecompressEntryBytes)
 
 		err = extract(filepath.Join(folder, oname), reader, maxBytes)
 		if err != nil {
@@ -126,9 +126,3 @@ func tarIgnoreEntry(name string, r io.Reader, maxBytes int64) error {
 	return err
 }
 
-func (*TarArchive) min(a, b int64) int64 {
-	if a < b {
-		return a
-	}
-	return b
-}

@@ -41,9 +41,9 @@ func GuessArchive(name string) (vopher.Archive, error) {
 	return nil, fmt.Errorf("unsupported archive type for %q", name)
 }
 
-// strip away the leading 'strip_dirs' directories from 'name'. returns
+// Strip away the leading `strip_dir` directories from 'name'. Returns
 // the stripped named AND a bool indicating, if the entry should be skipped
-// because it's the root-direktory
+// because it's the root-directory
 //
 //	name/      <- root-directory, will be stripped
 //	name/a.vim

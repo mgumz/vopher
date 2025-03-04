@@ -75,7 +75,7 @@ func (za *ZipArchive) Extract(folder string, r io.Reader, stripDirs int) error {
 		maxBytes := int64(maxZipDecompressBytes)
 		if f.UncompressedSize64 < math.MaxInt64 {
 			us := int64(f.UncompressedSize64) // #nosec G115
-			maxBytes = za.min(maxBytes, us)
+			maxBytes = min(maxBytes, us)
 		}
 
 		_, err = io.CopyN(ofile, zreader, maxBytes)
@@ -142,9 +142,3 @@ func (*ZipArchive) openReader(r io.Reader) (*zip.Reader, error) {
 	}
 }
 
-func (*ZipArchive) min(a, b int64) int64 {
-	if a < b {
-		return a
-	}
-	return b
-}
