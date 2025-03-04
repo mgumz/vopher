@@ -116,7 +116,8 @@ func (plugins List) Parse(reader io.ReadCloser) error {
 		name = utils.FirstNotEmpty(name, path.Base(url.Path))
 		name = cleanName(name)
 		if _, skip = plugins[name]; skip {
-			return fmt.Errorf("existing plugin %q on line %d", name, ln)
+			log.Printf("existing plugin %q on line %d", name, ln)
+            continue
 		}
 
 		plugin := Plugin{
