@@ -2,6 +2,7 @@ package action
 
 import (
 	"fmt"
+	"io/fs"
 	"log"
 	"os"
 	"sort"
@@ -12,19 +13,6 @@ import (
 // Status prints the status of all given plugins
 func Status(plugins plugin.List, base string) {
 
-	dir, err := os.Open(base)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	defer (func() { _ = dir.Close() })()
-
-	dirEntries, err := dir.Readdir(-1)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
 	boolAsInt := func(b bool) int {
 		if b {
 			return 1
@@ -34,39 +22,70 @@ func Status(plugins plugin.List, base string) {
 
 	entries := make(map[string]*plugin.DirEntry)
 
+	dfs := os.DirFS(base)
+
+	// step-1: check for the presence of plugin-folders. note:
+	// we have to go way down into `base` because the plugins
+	// could be stored in subsubfolders. eg, $base/common/opt/fugitive
+	// so it is insufficient to collect the direntries of $base
+	// to deduce if a plugin exists, is missing or alike.
+	for p := range plugins {
+		fi, err := fs.Stat(dfs, p)
+		entry := &plugin.DirEntry{
+			Name:     p,
+			Exists:   boolAsInt(fi != nil),
+			IsPlugin: 1,
+		}
+
+		if err == fs.ErrNotExist {
+			entry.Exists = 0
+		}
+		if fi != nil && !fi.IsDir() { // non directories are not plugins
+			entry.IsPlugin = 0
+		}
+		entries[entry.Name] = entry
+	}
+
+	// step-2: massage the first-level entries of the
+	// base directory in
+	dirEntries, err := fs.ReadDir(dfs, ".")
+
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
 	for i := range dirEntries {
 
+		// skip files
 		if !dirEntries[i].IsDir() {
 			continue
 		}
 
 		name := dirEntries[i].Name()
-		isPlugin := plugins.Exists(name)
+
+		// skip already checked in step-1 entries
+		if _, already := entries[name]; already {
+			continue
+		}
+
 		entry := &plugin.DirEntry{
 			Name:     name,
 			Exists:   1,
-			IsPlugin: boolAsInt(isPlugin),
+			IsPlugin: boolAsInt(plugins.Exists(name)),
 		}
 
 		entries[name] = entry
 	}
 
-	for name := range plugins {
-		if _, exists := entries[name]; !exists {
-			entries[name] = &plugin.DirEntry{
-				Name:     name,
-				Exists:   0,
-				IsPlugin: 1,
-			}
-		}
-	}
-
-	ordered := plugin.DirEntryByName{}
+	// sort output
+	ordered := make(plugin.DirEntryByName, 0, len(entries))
 	for _, entry := range entries {
 		ordered = append(ordered, entry)
 	}
 	sort.Sort(ordered)
 
+	// print
 	state := " vm " // v-vopher handled; m-missing
 	for i := range ordered {
 		fmt.Printf("%c%c %s\n",
