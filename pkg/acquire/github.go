@@ -18,6 +18,10 @@ import (
 	"github.com/mgumz/vopher/pkg/utils"
 )
 
+const (
+	sha1CheckSumLen = 40
+)
+
 // Github is a pseudo type to group Github related functions
 type Github struct{}
 
@@ -34,7 +38,6 @@ func (gh Github) GetRepository(remote *url.URL) (name, head string) {
 	}
 
 	// TODO: other means to detect the current used 'head'
-	//
 	head = "master"
 	if remote.Fragment != "" {
 		head = remote.Fragment
@@ -56,7 +59,7 @@ func (gh Github) GuessCommitByZIP(name, base string) string {
 	}
 	defer zfile.Close()
 
-	if len(zfile.Comment) == 40 { // FIXME: magic constant
+	if len(zfile.Comment) == sha1CheckSumLen {
 		return zfile.Comment
 	}
 	return ""
@@ -70,7 +73,7 @@ func (gh Github) GuessCommitByFile(name, base string) string {
 	if err != nil {
 		return ""
 	}
-	if len(commit) != 40 {
+	if len(commit) != sha1CheckSumLen {
 		return ""
 	}
 	return string(commit)
@@ -105,7 +108,10 @@ func (gh Github) GetCommits(repo *url.URL, parts ...string) *GithubFeed {
 	}
 	defer (func() { _ = resp.Body.Close() })()
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode == http.StatusNotFound {
+		return nil
+	}
+	if resp.StatusCode != http.StatusOK {
 		log.Printf("error: %q %v", feedURL.String(), err)
 		return nil
 	}
