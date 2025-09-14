@@ -51,43 +51,70 @@ func (pt *ProgressTicker) print(prefix string) {
 		return
 	}
 
-	cols, _, _ := terminalSize(os.Stdout)
+	cols := 0
 
-	if cols <= 0 {
-		log.Fatal("can't get TerminalSize(), use other -ui type")
-		return
+	if colStr, exists := os.LookupEnv("COLUMNS"); exists {
+		val, err := strconv.ParseInt(colStr, 10, 64)
+		if err != nil {
+			errStr := fmt.Sprintf("COLUMNS is not a number: %s: %s", colStr, err)
+			log.Fatal(errStr)
+			return
+		}
+		cols = int(val)
+	} else {
+		cols, _, _ = terminalSize(os.Stdout)
+		if cols <= 0 {
+			log.Fatal("can't get TerminalSize(), use other -ui type")
+			return
+		}
 	}
 
-	const borderWidth = 2 // [=====...====]
+	//
+	// |$prefix: (16/32) [=====>.. 50% .......] |
+	// ^ ^^^^^^^^^^^^^^^                        ^
+	// | info part       ^^^^^^^^^^^^^^^^^^^^^^ |
+	// |                  progress bar          |
+	// \ left screen               right screen /
+	const (
+		borderWidth            = 2  // 1 left/right of progress bar
+		progressThresholdWidth = 10 // "[= 100% =]" <- 10 chars
+		infoFmt                = "%s: (%d/%d)"
+		progressNumberFmt      = " %d%% "
+	)
 
-	info := fmt.Sprintf("%s: (%d/%d)", prefix, pt.counter, pt.max)
-	full := bytes.Repeat([]byte("."), cols-len(info)-borderWidth)
-	ticks := int(math.Max(1.0, math.Floor(float64(len(full))*pt.progress())))
-	i := 0
-	for ; i < ticks; i++ {
-		full[i] = '='
-	}
-	full[0] = '['
-	if i < len(full)-1 {
-		full[i] = '>'
-	}
-	full[len(full)-1] = ']'
+	// the info field / component
+	info := fmt.Sprintf(infoFmt, prefix, pt.counter, pt.max)
 
-	const minWidth = 10 // "[= 100 =]" <- 9 chars
-	showProgressNumber := (len(full) > minWidth)
+	// the progress bar
+	barWidth := cols - len(info) - borderWidth
+	bar := bytes.Repeat([]byte("."), barWidth)
+
+	nticks := int(math.Max(1.0, math.Floor(float64(barWidth)*pt.progress())))
+
+	for i := range nticks {
+		bar[i] = '='
+	}
+	if nticks < barWidth {
+		bar[nticks-1] = '>'
+	}
+	bar[0], bar[barWidth-1] = '[', ']'
+
+	showProgressNumber := (barWidth > progressThresholdWidth)
 	if showProgressNumber {
 		p := int(100.0 * pt.progress())
-		progress := fmt.Sprintf(" %d%% ", p)
-		halfFull := len(full) / 2
+		progress := fmt.Sprintf(progressNumberFmt, p)
+		halfBar := barWidth / 2
 		halfProgress := len(progress) / 2
-		posProgress := (halfFull - halfProgress)
-		copy(full[posProgress:], progress)
+		posProgress := (halfBar - halfProgress)
+		copy(bar[posProgress:], progress)
 	}
 
 	// using cursor-up+progress+newline works more stable than to \r
 	// the cursor.
 	_ = cursorNUp(os.Stdout, 1)
-	fmt.Println(info, string(full))
+
+	// finally: display the progress bar
+	fmt.Println(info, string(bar))
 }
 
 func (pt *ProgressTicker) maxOut() {
