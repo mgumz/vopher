@@ -86,8 +86,8 @@ func (za *ZipArchive) Extract(folder string, r io.Reader, stripDirs int) error {
 			log.Println(oname, err)
 		}
 
-		_ = ofile.Close()
-		_ = zreader.Close()
+		ofile.Close()   // #nosec G104
+		zreader.Close() // #nosec G104
 	}
 
 	return za.maybeStoreGHCommit(zfile.Comment, folder)

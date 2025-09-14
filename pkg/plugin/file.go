@@ -62,7 +62,7 @@ const (
 // # variant of postupdate: postupdate.linux=/path/to/cmd
 func (plugins List) Parse(reader io.ReadCloser) error {
 
-	defer (func() { _ = reader.Close() })()
+	defer reader.Close()
 
 	trimLine := func(in string) string {
 		return strings.TrimSpace(stripBom(in))

@@ -18,7 +18,7 @@ func Prune(plugins plugin.List, base string, force, all bool) {
 		log.Println(err)
 		return
 	}
-	defer (func() { _ = dir.Close() })()
+	defer dir.Close()
 
 	entries, err := dir.Readdir(-1)
 	if err != nil {
