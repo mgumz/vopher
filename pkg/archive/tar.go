@@ -37,14 +37,16 @@ func init() {
 
 	archiveGuesser = append(archiveGuesser, func(n string) vopher.Archive {
 
-		if utils.StringHasSuffix(n, []string{".tar"}) {
+		switch {
+		case utils.StringHasSuffix(n, []string{".tar"}):
 			return &TarArchive{}
-		} else if utils.StringHasSuffix(n, []string{".tar.gz", ".tgz"}) {
+		case utils.StringHasSuffix(n, []string{".tar.gz", ".tgz"}):
 			return &GzArchive{&TarArchive{}}
-		} else if utils.StringHasSuffix(n, []string{".tar.bz2", ".tar.bzip2"}) {
+		case utils.StringHasSuffix(n, []string{".tar.bz2", ".tar.bzip2"}):
 			return &BzipArchive{&TarArchive{}}
+		default:
+			return nil
 		}
-		return nil
 	})
 
 }
@@ -125,4 +127,3 @@ func tarIgnoreEntry(name string, r io.Reader, maxBytes int64) error {
 	_, err := io.CopyN(io.Discard, r, maxBytes)
 	return err
 }
-

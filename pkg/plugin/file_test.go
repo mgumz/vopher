@@ -10,7 +10,7 @@ import (
 
 func Test_ScanPluginFile(t *testing.T) {
 
-	const NPlugins = 8
+	const nPlugins = 8
 	sample := `
 # ignore this
 http://example.com/plugin1
@@ -31,11 +31,11 @@ http://example.com/plugin7 postupdate=a
 		t.Fatal(err)
 	}
 
-	if len(scanned) != NPlugins {
-		t.Fatal("expected", NPlugins, "plugins, got", len(scanned))
+	if len(scanned) != nPlugins {
+		t.Fatal("expected", nPlugins, "plugins, got", len(scanned))
 	}
 
-	for i := 0; i < NPlugins; i++ {
+	for i := range nPlugins {
 		name := fmt.Sprintf("plugin%d", i+1)
 		plugin, ok := scanned[name]
 		if !ok {
@@ -51,15 +51,24 @@ func Test_ScanPluginOptions(t *testing.T) {
 		fields   []string
 		expected Plugin
 	}{
-		{[]string{"a", "b", "c"}, Plugin{Opts: Opts{StripDir: 0}}},
-		{[]string{"strip=1", "b", "c"}, Plugin{Opts: Opts{StripDir: 1}}},
-		{[]string{"a", "strip=1", "c"}, Plugin{Opts: Opts{StripDir: 1}}},
-		{[]string{"postupdate=foo", "strip=1", "c"}, Plugin{Opts: Opts{StripDir: 1, PostUpdate: "foo"}}},
-		{[]string{"postupdate=foo", "strip=1", "postupdate." + runtime.GOOS + "=bar"}, Plugin{Opts: Opts{StripDir: 1, PostUpdate: "bar"}}},
-		{[]string{"postupdate." + runtime.GOOS + "=bar", "strip=1", "postupdate=foo"}, Plugin{Opts: Opts{StripDir: 1, PostUpdate: "bar"}}},
-		{[]string{"postupdate=%22foo%20bar%20blub%22"}, Plugin{Opts: Opts{PostUpdate: "foo bar blub"}}},
-		{[]string{"postupdate=foo/bar/blub"}, Plugin{Opts: Opts{PostUpdate: "foo/bar/blub"}}},
-		{[]string{"postupdate=foo+bar/blub"}, Plugin{Opts: Opts{PostUpdate: "foo bar/blub"}}},
+		{[]string{"a", "b", "c"},
+			Plugin{Opts: Opts{StripDir: 0}}},
+		{[]string{"strip=1", "b", "c"},
+			Plugin{Opts: Opts{StripDir: 1}}},
+		{[]string{"a", "strip=1", "c"},
+			Plugin{Opts: Opts{StripDir: 1}}},
+		{[]string{"postupdate=foo", "strip=1", "c"},
+			Plugin{Opts: Opts{StripDir: 1, PostUpdate: "foo"}}},
+		{[]string{"postupdate=foo", "strip=1", "postupdate." + runtime.GOOS + "=bar"},
+			Plugin{Opts: Opts{StripDir: 1, PostUpdate: "bar"}}},
+		{[]string{"postupdate." + runtime.GOOS + "=bar", "strip=1", "postupdate=foo"},
+			Plugin{Opts: Opts{StripDir: 1, PostUpdate: "bar"}}},
+		{[]string{"postupdate=%22foo%20bar%20blub%22"},
+			Plugin{Opts: Opts{PostUpdate: "foo bar blub"}}},
+		{[]string{"postupdate=foo/bar/blub"},
+			Plugin{Opts: Opts{PostUpdate: "foo/bar/blub"}}},
+		{[]string{"postupdate=foo+bar/blub"},
+			Plugin{Opts: Opts{PostUpdate: "foo bar/blub"}}},
 	}
 
 	for i := range samples {

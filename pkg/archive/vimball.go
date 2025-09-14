@@ -47,7 +47,7 @@ func (vimball *VimballArchive) Extract(folder string, r io.Reader, skipDir int) 
 
 func (vba *VimballArchive) Entries(r io.Reader, skipDir int) ([]string, error) {
 	f := func(n string, l int, s *bufio.Scanner) error {
-		return vba.skipFile(n, l, s)
+		return vba.skipFile(l, s)
 	}
 	return vba.handle("", r, f)
 }
@@ -83,8 +83,11 @@ func (vba *VimballArchive) handle(folder string, r io.Reader, extract vimballExt
 	// now scan the file-entries
 	contents := make([]string, 0)
 	for scanner.Scan() {
+
+		const nParts = 2
+
 		line := scanner.Text()
-		fields := strings.SplitN(line, "\t", 2)
+		fields := strings.SplitN(line, "\t", nParts)
 
 		name := strings.TrimSpace(fields[0])
 		name = filepath.Clean(name)
@@ -159,7 +162,7 @@ func (*VimballArchive) extractFile(name string, lines int, scanner *bufio.Scanne
 	return scanner.Err()
 }
 
-func (*VimballArchive) skipFile(name string, lines int, scanner *bufio.Scanner) error {
+func (*VimballArchive) skipFile(lines int, scanner *bufio.Scanner) error {
 	for lines > 0 && scanner.Scan() {
 		lines--
 	}

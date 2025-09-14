@@ -25,7 +25,7 @@ import (
 //   v
 //
 // cons: horizontal space
-//        plugin-name fehlt
+//       plugin-name missing
 
 // UI defines the interface for all vopher-UIs
 type UI interface {
@@ -44,10 +44,11 @@ type UI interface {
 func NewUI(ui string) UI {
 	switch ui {
 	case "oneline":
+		const oneLineDuration = 25 * time.Millisecond
 		return &OneLine{
 			pt:       newProgressTicker(0),
 			prefix:   "vopher",
-			duration: 25 * time.Millisecond,
+			duration: oneLineDuration,
 		}
 	case "simple":
 		return &Simple{jobs: make(map[string]*vopher.Runtime)}

@@ -58,8 +58,10 @@ func (pt *ProgressTicker) print(prefix string) {
 		return
 	}
 
+	const borderWidth = 2 // [=====...====]
+
 	info := fmt.Sprintf("%s: (%d/%d)", prefix, pt.counter, pt.max)
-	full := bytes.Repeat([]byte("."), cols-len(info)-2)
+	full := bytes.Repeat([]byte("."), cols-len(info)-borderWidth)
 	ticks := int(math.Max(1.0, math.Floor(float64(len(full))*pt.progress())))
 	i := 0
 	for ; i < ticks; i++ {
@@ -71,9 +73,15 @@ func (pt *ProgressTicker) print(prefix string) {
 	}
 	full[len(full)-1] = ']'
 
-	if len(full) > 10 {
-		progress := fmt.Sprintf(" %d%% ", int(100.0*pt.progress()))
-		copy(full[(len(full)/2)-(len(progress)/2):], progress)
+	const minWidth = 10 // "[= 100 =]" <- 9 chars
+	showProgressNumber := (len(full) > minWidth)
+	if showProgressNumber {
+		p := int(100.0 * pt.progress())
+		progress := fmt.Sprintf(" %d%% ", p)
+		halfFull := len(full) / 2
+		halfProgress := len(progress) / 2
+		posProgress := (halfFull - halfProgress)
+		copy(full[posProgress:], progress)
 	}
 
 	// using cursor-up+progress+newline works more stable than to \r

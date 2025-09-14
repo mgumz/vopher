@@ -14,7 +14,8 @@ import (
 // the contents.
 func Acquire(base, ext, url string, archive vopher.Archive, skipDirs int, checkSha1 string) error {
 
-	err := os.MkdirAll(base, 0700)
+	const dirPerms = 0700
+	err := os.MkdirAll(base, dirPerms)
 
 	if err != nil {
 		return fmt.Errorf("mkdir %q: %s", base, err)

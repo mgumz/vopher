@@ -43,7 +43,7 @@ func Get(w io.Writer, url, checkSha1 string) (err error) {
 	}
 	defer (func() { _ = resp.Body.Close() })()
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != nethttp.StatusOK {
 		log.Println(resp)
 		return fmt.Errorf("%d for %q", resp.StatusCode, url)
 	}

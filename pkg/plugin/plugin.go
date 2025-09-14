@@ -13,16 +13,6 @@ import (
 	"github.com/mgumz/vopher/pkg/vopher"
 )
 
-const (
-
-	// Most plugins are fetched from github. The github zip-files
-	// put the files into a sub folder like this:
-	//   vim-plugin/doc/plugin.txt
-	//   vim-plugin/README.txt
-	//
-	DefaultStrip = 1
-)
-
 type Plugin struct {
 	Name    string
 	Ext     string
@@ -43,7 +33,8 @@ func (p *Plugin) optionsFromFields(fields []string) error {
 	postUpdateOS := "postupdate." + runtime.GOOS + "="
 
 	for _, field := range fields {
-		if strings.HasPrefix(field, "strip=") {
+		switch {
+		case strings.HasPrefix(field, "strip="):
 			strip, err := strconv.ParseUint(field[len("strip="):], 10, 8)
 			if err == nil {
 				if strip > 0 && strip < math.MaxInt32 {
@@ -52,11 +43,11 @@ func (p *Plugin) optionsFromFields(fields []string) error {
 				}
 			}
 			return fmt.Errorf("strange 'strip' field")
-		} else if strings.HasPrefix(field, "postupdate=") && p.Opts.PostUpdate == "" {
+		case strings.HasPrefix(field, "postupdate=") && p.Opts.PostUpdate == "":
 			p.Opts.PostUpdate = field[len("postupdate="):]
-		} else if strings.HasPrefix(field, postUpdateOS) {
+		case strings.HasPrefix(field, postUpdateOS):
 			p.Opts.PostUpdate = field[len(postUpdateOS):]
-		} else if strings.HasPrefix(field, "sha1=") {
+		case strings.HasPrefix(field, "sha1="):
 			p.Opts.SHA1 = strings.ToLower(field[len("sha1="):])
 		}
 	}

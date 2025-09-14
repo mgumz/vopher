@@ -25,8 +25,7 @@ func Check(plugins plugin.List, base string, ui ui.UI) {
 	}
 
 	for _, p := range plugins {
-		switch p.URL.Host {
-		case "github.com":
+		if p.URL.Host == "github.com" {
 			wg.Add(1)
 			go check(p)
 		}

@@ -50,11 +50,11 @@ func (simple *Simple) Stop() {
 func (simple *Simple) AddJob(id string) {
 	simple.jobs[id] = &vopher.Runtime{}
 	simple.jobs[id].Start()
-	simple.WaitGroup.Add(1)
+	simple.Add(1)
 }
 
 func (simple *Simple) JobDone(id string) {
-	simple.WaitGroup.Done()
+	simple.Done()
 	rt := simple.jobs[id]
 	rt.Stop()
 	simple.jobs[id] = rt

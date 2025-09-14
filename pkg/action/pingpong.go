@@ -6,13 +6,18 @@ import (
 	"github.com/mgumz/vopher/pkg/ui"
 )
 
+const (
+	uiPing   = 500 * time.Millisecond
+	uiNPings = 10
+)
+
 // PingPong is test-ui
 func PingPong(ui ui.UI) {
 	ui.Start()
 
-	for i := 0; i < 10; i++ {
+	for range uiNPings {
 		ui.AddJob("ping")
-		<-time.After(500 * time.Millisecond)
+		<-time.After(uiPing)
 		ui.JobDone("pong")
 	}
 

@@ -10,9 +10,7 @@ import (
 	"os"
 	"path"
 	"strings"
-	"unicode/utf8"
 
-	"github.com/mgumz/vopher/pkg/archive"
 	"github.com/mgumz/vopher/pkg/utils"
 )
 
@@ -66,33 +64,10 @@ func (plugins List) Parse(reader io.ReadCloser) error {
 
 	defer (func() { _ = reader.Close() })()
 
-	isComment := func(fields []string) ([]string, bool) {
-		return fields, (len(fields) == 0 || strings.HasPrefix(fields[0], "#"))
-	}
-	// the first fields is eventually the plugin name, the
-	// 2nd field is then the URL
-	eventualName := func(fields []string) (string, []string) {
-		if len(fields) > 1 && !strings.Contains(fields[0], "://") {
-			return fields[0], fields[1:]
-		}
-		return "", fields
-	}
-	// strip away .zip (or other archive-formats)
-	cleanName := func(name string) string {
-		if ok, l := archive.IsSupportedArchive(name); ok {
-			return name[:len(name)-l]
-		}
-		return name
-	}
-	stripBom := func(in string) string {
-		if !strings.ContainsRune(in, ByteOrderMark) {
-			return in
-		}
-		return in[utf8.RuneLen(ByteOrderMark):]
-	}
 	trimLine := func(in string) string {
 		return strings.TrimSpace(stripBom(in))
 	}
+
 	scanner := bufio.NewScanner(reader)
 	scanner.Split(bufio.ScanLines)
 
@@ -104,6 +79,8 @@ func (plugins List) Parse(reader io.ReadCloser) error {
 		var url *neturl.URL
 		var err error
 
+		// only first line might contain the Bom. switch to regular
+		// strings.TrimSpace afterwards
 		line, trimLine = trimLine(scanner.Text()), strings.TrimSpace
 		if fields, skip = isComment(strings.Fields(line)); skip {
 			continue
@@ -117,13 +94,13 @@ func (plugins List) Parse(reader io.ReadCloser) error {
 		name = cleanName(name)
 		if _, skip = plugins[name]; skip {
 			log.Printf("existing plugin %q on line %d", name, ln)
-            continue
+			continue
 		}
 
 		plugin := Plugin{
 			Name: name,
 			URL:  url,
-			Opts: Opts{StripDir: DefaultStrip},
+			Opts: defaultOpts,
 			ln:   ln,
 		}
 

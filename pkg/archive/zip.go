@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/mgumz/vopher/pkg/common"
 	"github.com/mgumz/vopher/pkg/vopher"
 )
 
@@ -41,6 +42,8 @@ func init() {
 
 func (za *ZipArchive) Extract(folder string, r io.Reader, stripDirs int) error {
 
+	const dirPerms = 0700
+
 	zfile, err := za.openReader(r)
 	if err != nil {
 		return err
@@ -56,12 +59,12 @@ func (za *ZipArchive) Extract(folder string, r io.Reader, stripDirs int) error {
 		oname = filepath.Join(folder, filepath.Clean(oname))
 
 		if f.FileInfo().IsDir() {
-			_ = os.MkdirAll(oname, 0700)
+			_ = os.MkdirAll(oname, dirPerms)
 			continue
 		}
 
 		// TODO: call only if needed
-		_ = os.MkdirAll(filepath.Dir(oname), 0700)
+		os.MkdirAll(filepath.Dir(oname), dirPerms) // #nosec G104
 
 		zreader, err := f.Open()
 		if err != nil {
@@ -87,19 +90,23 @@ func (za *ZipArchive) Extract(folder string, r io.Reader, stripDirs int) error {
 		_ = zreader.Close()
 	}
 
-	// github stores the git-commit in the comment of the `.zip` file
-	// so, we store a file called "github-commit" in the plugin-folder
-	// to be able to check for updates
-	if za.GitCommit && len(zfile.Comment) == 40 {
+	return za.maybeStoreGHCommit(zfile.Comment, folder)
+}
+
+// github stores the git-commit in the comment of the `.zip` file
+// so, we store a file called "github-commit" in the plugin-folder
+// to be able to check for updates
+func (za *ZipArchive) maybeStoreGHCommit(commit, folder string) error {
+
+	if za.GitCommit && len(commit) == common.Sha1ChecksumLen {
 		name := filepath.Join(folder, "github-commit")
-		file, err := os.Create(name)
+		file, err := os.Create(name) // #nosec G304
 		if err != nil {
 			return err
 		}
-		defer (func() { _ = file.Close() })()
-		_, _ = io.WriteString(file, zfile.Comment)
+		defer file.Close()           // #nosec G104
+		io.WriteString(file, commit) // #nosec G104
 	}
-
 	return nil
 }
 
@@ -141,4 +148,3 @@ func (*ZipArchive) openReader(r io.Reader) (*zip.Reader, error) {
 		return zip.NewReader(rt, fi.Size())
 	}
 }
-
