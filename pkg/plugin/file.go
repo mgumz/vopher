@@ -134,6 +134,7 @@ func (plugins List) ParseRemoteFile(url string) error {
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 	return plugins.Parse(resp.Body)
 }
 
