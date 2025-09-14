@@ -199,6 +199,20 @@ contributing, do the following:
 
     $> make bin/vopher
 
+### Optional: mise
+
+In case you want / need a reproducable build environment: use `mise`, check
+out https://mise.jdx.dev. In case you pick this route, you do not need to
+install a Golang compiler via your regular package manager on the OS level.
+`mise` takes care about it, on a per project level:
+
+    $> eval "$(mise activate zsh)"
+    $> mise install
+    $> make bin/vopher
+
+You get the act versions of Golang, golangci-lint, gopls etc which are 
+referenced in the mise.toml file.
+
 ## The vopher-file format
 
 The vopher-file is pretty simple:

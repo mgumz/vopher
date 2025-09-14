@@ -1,0 +1,13 @@
+[tools]
+act = "0.2.81"
+grype = "0.99.1"
+golangci-lint = "2.4.0"
+golangci-lint-langserver = "0.0.11"
+go = "1.25.1"
+"go:golang.org/x/tools/gopls" = "0.20.0"
+golines = "latest"
+crossplane = "2.0.2"
+
+[settings]
+lockfile = true
+experimental = true
