@@ -31,13 +31,13 @@ vopher-full:
 vopher-small:
 	make LDFLAGS="$(LDFLAGS) -s -w" vopher
 bin/vopher:
-	go build $(TAGS) -ldflags "$(LDFLAGS)" -v -o $@ ./cmd/vopher
+	go build $(TAGS) -trimpath -ldflags "$(LDFLAGS)" -v -o $@ ./cmd/vopher
 
 bin/vopher-$(VERSION).%:
 	env GOARCH=$(subst .,,$(suffix $(subst .exe,,$@))) \
 		GOOS=$(subst .,,$(suffix $(basename $(subst .exe,,$@)))) \
 		CGO_ENABLED=0 \
-		go build -ldflags "$(LDFLAGS)" -o $@ ./cmd/vopher
+		go build -trimpath -ldflags "$(LDFLAGS)" -o $@ ./cmd/vopher
 
 releases/vopher-$(VERSION).%.zip: bin/vopher-$(VERSION).%.exe
 	mkdir -p releases
