@@ -1,0 +1,38 @@
+---
+version: "2"
+linters:
+  disable:
+    - errcheck
+  enable:
+    - bodyclose
+    - funlen
+    - gocognit
+    - goconst
+    - gocritic
+    - gocyclo
+    - gosec
+    - govet
+    - lll
+    - misspell
+    - mnd
+    - prealloc
+    - staticcheck
+    - tagalign
+    - wastedassign
+  exclusions:
+    rules:
+      - source: "^func main"
+        linters:
+          - funlen
+      - path: 'utils_test\.go'
+        linters:
+          - gosec
+  settings:
+    funlen:
+      ignore-comments: true
+    goconst:
+      min-occurrences: 4
+    mnd:
+      ignored-numbers:
+        - '2'      # "half", come on
+        - '100.0'  # 100.0%

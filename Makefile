@@ -9,7 +9,6 @@ RELEASES=$(subst windows.amd64.tar.gz,windows.amd64.zip,$(foreach r,$(subst .exe
 LDFLAGS=-X main.version=$(VERSION) -X main.buildDate=$(BUILD_DATE) -X main.gitHash=$(GIT_HASH)
 TAGS=
 
-
 toc:
 	@echo "list of targets:"
 	@$(MAKE) -pRrq -f $(lastword $(MAKEFILE_LIST)) : 2>/dev/null | \
@@ -75,47 +74,23 @@ run-github-workflow-test:
 run-github-workflow-buildLinux:
 	act -j buildLinux --container-architecture linux/amd64
 
+reports: report-golangci-lint
+reports: report-vuln report-gosec report-vet
 
-reports: report-vuln report-gosec
-reports: report-staticcheck report-vet report-ineffassign
-reports: report-cyclo 
-reports: report-mispell
-
-report-cyclo:
+report-golangci-lint:
 	@echo '####################################################################'
-	gocyclo ./cmd/vopher
-report-mispell:
-	@echo '####################################################################'
-	misspell ./cmd/
-report-ineffassign:
-	@echo '####################################################################'
-	ineffassign ./cmd/... ./pkg/...
-report-vet:
-	@echo '####################################################################'
-	go vet ./cmd/... ./pkg/...
-report-staticcheck:
-	@echo '####################################################################'
-	staticcheck ./cmd/... ./pkg/...
+	golangci-lint run cmd/... pkg/...
 
 report-vuln:
 	@echo '####################################################################'
 	govulncheck ./cmd/... ./pkg/...
-
-report-gosec:
-	@echo '####################################################################'
-	gosec -conf .gosec.json ./cmd/... ./pkg/...
 
 report-grype:
 	@echo '####################################################################'
 	grype .
 
 fetch-report-tools:
-	go install github.com/fzipp/gocyclo/cmd/gocyclo@latest
-	go install github.com/client9/misspell/cmd/misspell@latest
-	go install github.com/gordonklaus/ineffassign@latest
-	go install honnef.co/go/tools/cmd/staticcheck@latest
 	go install golang.org/x/vuln/cmd/govulncheck@latest
-	go install github.com/securego/gosec/v2/cmd/gosec@latest
 
 fetch-report-tool-grype:
 	go install github.com/anchore/grype@latest
@@ -124,3 +99,4 @@ fetch-report-tool-grype:
 .PHONY: vopher vopher-full bin/vopher reports binaries releases toc
 .PHONY: deps-cleanup deps-ls deps-ls-updates deps-vendor
 .PHONY: test container-image
+
