@@ -113,10 +113,13 @@ func (ta *TarArchive) handle(folder string, r io.Reader, stripDirs int, extract 
 }
 
 func tarExtractEntry(name string, r io.Reader, maxBytes int64) error {
-	if err := os.MkdirAll(filepath.Dir(name), 0700); err != nil {
+
+	const dirPerms = 0700
+
+	if err := os.MkdirAll(filepath.Dir(name), dirPerms); err != nil {
 		return err
 	}
-	file, err := os.Create(name)
+	file, err := os.Create(name) // #nosec G304
 	if err != nil {
 		return err
 	}

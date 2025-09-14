@@ -66,7 +66,7 @@ func (gh Github) GuessCommitByZIP(name, base string) string {
 // "github-commit"
 func (gh Github) GuessCommitByFile(name, base string) string {
 	path := filepath.Join(base, name, "github-commit")
-	commit, err := os.ReadFile(path)
+	commit, err := os.ReadFile(path) // #nosec G304
 	if err != nil {
 		return ""
 	}

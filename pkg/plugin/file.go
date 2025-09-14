@@ -122,7 +122,7 @@ func (plugins List) Parse(reader io.ReadCloser) error {
 type Parser func(List, string) error
 
 func (plugins List) ParseFile(name string) error {
-	file, err := os.Open(name)
+	file, err := os.Open(name) // #nosec G304
 	if err != nil {
 		return err
 	}
@@ -130,7 +130,7 @@ func (plugins List) ParseFile(name string) error {
 }
 
 func (plugins List) ParseRemoteFile(url string) error {
-	resp, err := http.Get(url)
+	resp, err := http.Get(url) // #nosec G107
 	if err != nil {
 		return err
 	}

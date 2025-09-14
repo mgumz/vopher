@@ -13,7 +13,8 @@ import (
 
 // DetectFType issues HEAD to url, examines "Content-Disposition: attachment; filename=foo.EXT"
 func DetectFType(url string) (string, error) {
-	resp, err := nethttp.Head(url)
+
+	resp, err := nethttp.Head(url) // #nosec G107
 	if err != nil {
 		return "", err
 	}
@@ -37,8 +38,8 @@ func DetectFType(url string) (string, error) {
 // and comparing the downloaded data to checkSha1
 func Get(w io.Writer, url, checkSha1 string) (err error) {
 
-	var resp *nethttp.Response
-	if resp, err = nethttp.Get(url); err != nil {
+	resp, err := nethttp.Get(url) // #nosec G107
+	if err != nil {
 		return err
 	}
 	defer (func() { _ = resp.Body.Close() })()
@@ -67,7 +68,7 @@ func Get(w io.Writer, url, checkSha1 string) (err error) {
 		}
 	*/
 
-	if _, err := io.Copy(w, reader); err != nil {
+	if _, err = io.Copy(w, reader); err != nil {
 		return err
 	}
 

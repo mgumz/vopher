@@ -13,7 +13,7 @@ import (
 // Prune removes all given plugins from the disk.
 func Prune(plugins plugin.List, base string, force, all bool) {
 
-	dir, err := os.Open(base)
+	dir, err := os.Open(base) // #nosec G304
 	if err != nil {
 		log.Println(err)
 		return

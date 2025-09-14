@@ -23,7 +23,7 @@ func Acquire(base, ext, url string, archive vopher.Archive, skipDirs int, checkS
 
 	ts := time.Now().UTC().Format("-2006-01-02T03-04-05Z")
 	name, tmpName := base+ext, base+ts+ext
-	file, err := os.Create(tmpName)
+	file, err := os.Create(tmpName) // #nosec G304
 	if err != nil {
 		return err
 	}

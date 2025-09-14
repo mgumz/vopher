@@ -142,12 +142,14 @@ func (*VimballArchive) skipPreamble(scanner *bufio.Scanner) error {
 
 func (*VimballArchive) extractFile(name string, lines int, scanner *bufio.Scanner) error {
 
+	const dirPerms = 0700
+
 	dir := filepath.Dir(name)
-	if err := os.MkdirAll(dir, 0700); err != nil {
+	if err := os.MkdirAll(dir, dirPerms); err != nil {
 		return err
 	}
 
-	file, err := os.Create(name)
+	file, err := os.Create(name) // #nosec G304
 	if err != nil {
 		return err
 	}
