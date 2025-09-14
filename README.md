@@ -223,6 +223,9 @@ The vopher-file is pretty simple:
     # fetches vim-fugitive, current HEAD
     https://github.com/tpope/vim-fugitive
 
+    # fetches vim-fugitive, branch 'worktree'
+    https://github.com/tpope/vim-fugitive branch=worktree
+
     # fetches vim-fugitive, tagged release 'v2.1'
     https://github.com/tpope/vim-fugitive#v2.1.zip
 

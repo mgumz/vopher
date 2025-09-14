@@ -49,6 +49,8 @@ func (p *Plugin) optionsFromFields(fields []string) error {
 			p.Opts.PostUpdate = field[len(postUpdateOS):]
 		case strings.HasPrefix(field, "sha1="):
 			p.Opts.SHA1 = strings.ToLower(field[len("sha1="):])
+		case strings.HasPrefix(field, "branch="):
+			p.Opts.Branch = field[len("branch="):]
 		}
 	}
 

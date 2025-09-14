@@ -27,6 +27,7 @@ type Github struct{}
 //
 //	github.com/username/reponame
 //	github.com/username/reponame/archive/master.zip
+//	github.com/username/reponame/archive/main.zip
 //	github.com/username/reponame#v2.1
 func (gh Github) GetRepository(remote *url.URL) (name, head string) {
 	name = remote.Path

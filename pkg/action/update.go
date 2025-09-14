@@ -43,11 +43,15 @@ func Update(plugins plugin.List, ui ui.UI, opts *ActUpdateOpts) {
 
 		archiveName := filepath.Base(plugin.URL.Path)
 
-		// apply heuristics aka ""guess""
+		// apply heuristics - aka ""guess""
 		if isArchive, _ := archive.IsSupportedArchive(archiveName); !isArchive {
 			switch plugin.URL.Host {
 			case "github.com":
-				remoteZip := utils.FirstNotEmpty(plugin.URL.Fragment, "master") + ".zip"
+				// NOTE: "master" as default one is a classic fallback, but
+				// nowadays the primary branch is called "main" often. needs
+				// to be tackled somewhen
+				ref := utils.FirstNotEmpty(plugin.URL.Fragment, plugin.Opts.Branch, "master")
+				remoteZip := ref + ".zip"
 				plugin.URL.Path = path.Join(plugin.URL.Path, "archive", remoteZip)
 				archiveName = filepath.Base(remoteZip)
 				plugin.Ext, plugin.Archive = ".zip", &archive.ZipArchive{GitCommit: true}
