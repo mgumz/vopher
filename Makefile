@@ -15,10 +15,10 @@ TAGS=
 
 toc:
 	@echo "list of targets:"
-	@$(MAKE) -pRrq -f $(lastword $(MAKEFILE_LIST)) : 2>/dev/null | \
-		awk -v RS= -F: '/^# File/,/^# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | \
-		sort | \
-		egrep -v -e '^[^[:alnum:]]' -e '^$@$$' | \
+	@$(MAKE) -pRrq -f $(lastword $(MAKEFILE_LIST)) : 2>/dev/null|								\
+		awk -F: '/^# Files/,/^# Finished Make/ { if ($$1 !~ "^([#. \t]|$$)") {print $$1} }' |	\
+		sort |																					\
+		egrep -v -e '^[^[:alnum:]]' -e '^$@$$' |												\
 		awk '{ print " ", $$1 }'
 
 binaries: $(BINARIES)
