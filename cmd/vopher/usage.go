@@ -20,6 +20,8 @@ Actions:
   fupdate  - fast update - renames current -dir and fetchs everything
   fetch    - fetch a remote archive and extract it. the arguments are like fields
              in a vopher.list file
+  vp       - produces a vimscript full of "packadd!" for matching plugins
+             (aliases: 'vim-packs', 'nvim-packs', 'nvp')
   search   - searches http://vimawesome.com/ to list some plugins. Anything
              after this is considered as "the search arguments"
   check    - checks plugins from '-f <list>' for newer versions

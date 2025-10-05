@@ -264,6 +264,16 @@ The vopher-file is pretty simple:
 
     # variant of postupdate: postupdate.linux=/path/to/cmd
 
+    # fetches merginal and mark its dependency vim-fugitive. this allows
+    # action `vim-packs` to add vim-fugitive into the list of `packadd!`
+    # packs
+    https://github.com/idanarye/vim-merginal depends-on=vim-fugitive
+
+    # fetches nvim-origami. nvim-origami works only with nvim:0.11 and
+    # higher. again, this helps action `vim-pack` to guard inclusion
+    # of nvim-origami in too old versions
+    nvim/opt/nvim-origami https://github.com/idanarye/vim-merginal min-version=nvim-0.11
+
 ## Supported archive types
 
 * .zip
@@ -289,6 +299,36 @@ also use it to bootstrap your own `.vim` (or `.config/nvim`) folder:
     vopher: (38/38) [============== 100% =================]
 
 And done. I am ready to use Vim with all my plugins installed.
+
+### Combine `chezmoi` and `vopher`
+
+`chezmoi` allows to manage your dot-files and a ton more. A skeleton
+might look like this:
+
+```
+private_dot_config/
+                  /private_nvim/
+                                private_init.lua
+                                private_vopher.list
+                                run_after_private_vopher.list.sh
+```
+
+`private_vopher.list` instructs `chezmoi` to create the `vopher.list` file
+within `~/.config/nvim/`. "After" it has created `vopher.list`, it will "run"
+the script in the file `run_after_private_vopher.list.sh` which might look
+like this:
+
+```bash
+#!/bin/sh
+cd ~/.config/nvim
+vopher -dir pack -f vopher.list update
+vopher -f vopher.list -filter opt/vim -filter exp/opt vim-packs > vim-packs.vim
+vopher -f vopher.list -filter opt/nvim -filter exp/opt nvim-packs > nvim-packs.vim
+```
+
+So, as soon as our `vopher.list` file is created, `chezmoi` triggers 
+`vopher update` and it updates the vim-pack files.
+
 
 ## FAQ
 
@@ -317,13 +357,13 @@ Windows takes up ~ 250mb. The sum of my vim-plugins take up ~ 4mb.
 
 **curl** is easy to install and available everywhere. But it is a bit stupid
 on its own. I would have to write a lot of what **vopher** does on its own in
-a real programming language 'x'. Or `VimL` (vimscript). Which would lead to
-even more code and maybe an additional interpreter which might need even more
-stuff. On Windows the curl-binary which supports https weighs ~ 1.6mb. A
-python installer for Windows weighs ~ 17mb, installed ~ 60mb. Yeah, one could
-create a standalone binary with something like **PyInstaller**. This does not
-give anything substantially better than the **Golang**-produced binary and
-it's builtin networking and concurrency powers.
+a real programming language 'x'. Or `VimL` (vimscript). Or `Lua` (for neovim).
+Which would lead to even more code and maybe an additional interpreter which
+might need even more stuff. On Windows the curl-binary which supports https
+weighs ~ 1.6mb. A python installer for Windows weighs ~ 17mb, installed ~ 60mb.
+Yeah, one could create a standalone binary with something like
+**PyInstaller**. This does not give anything substantially better than the
+**Golang**-produced binary and it's builtin networking and concurrency powers.
 
 > But Python and Ruby are just a `brew install` away!
 
