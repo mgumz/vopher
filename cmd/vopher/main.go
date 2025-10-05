@@ -43,6 +43,7 @@ var allowedActions = []string{
 	"archives",
 	"list-archives",
 	"la",
+	"vim-packs", "vp", "nvim-packs", "nvp",
 }
 
 func main() {
@@ -156,6 +157,10 @@ func main() {
 		action.Search(flag.Args()[1:]...)
 	case "ping", "pong":
 		action.PingPong(ui)
+	case "vim-packs", "vp", "nvim-packs", "nvp":
+		parser := localOrRemoteParser(cli.from)
+		plugins := mustReadPlugins(cli.from, parser, cli.filter)
+		action.VimPacks(plugins)
 	}
 }
 

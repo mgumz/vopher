@@ -15,6 +15,9 @@ type Opts struct {
 	PostUpdate string // execute after 'update'-action
 	SHA1       string
 	Branch     string // usually "master" or "main"
+
+	DependsOn  []string
+	MinVersion string
 }
 
 // NOTE: somewhen, the default "branch" should become "main" to reflect

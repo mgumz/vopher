@@ -35,3 +35,16 @@ func stripBom(in string) string {
 	}
 	return in[utf8.RuneLen(ByteOrderMark):]
 }
+
+func parseDependsOn(depends string) []string {
+
+	deps := []string{}
+	for _, d := range strings.Split(depends, ",") {
+		d = strings.TrimSpace(d)
+		if d != "" {
+			deps = append(deps, d)
+		}
+		// TODO: warn about empty dependency
+	}
+	return deps
+}
