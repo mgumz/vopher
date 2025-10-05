@@ -51,7 +51,7 @@ func (pt *ProgressTicker) print(prefix string) {
 		return
 	}
 
-	cols := 0
+	var cols int
 
 	if colStr, exists := os.LookupEnv("COLUMNS"); exists {
 		val, err := strconv.ParseInt(colStr, 10, 64)
