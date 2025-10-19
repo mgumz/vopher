@@ -17,7 +17,7 @@ Flags:`
 Actions:
 
   update   - acquires the given plugins from '-f <list-file|url>'
-  fupdate  - fast update - renames current -dir and fetchs everything
+  fupdate  - fast update - renames current -dir and fetches everything
   fetch    - fetch a remote archive and extract it. the arguments are like fields
              in a vopher.list file
   vp       - produces a vimscript full of "packadd!" for matching plugins

@@ -23,7 +23,6 @@ seconds.
     Usage: vopher [flags] <action>
 
     Flags:
-
       -all
             don't keep <plugin>.zip around [prune]
       -dir string
@@ -38,12 +37,12 @@ seconds.
             force certain actions [prune, clean]
       -ui update
             ui mode ('simple' or 'oneline', works with update action)
-      -v    show version
+      -v	show version
 
     Actions:
 
-      update   - acquires the given plugins from '-f <list>'
-      fupdate  - fast update plugins from '-f <list>'
+      update   - acquires the given plugins from '-f <list-file|url>'
+      fupdate  - fast update - renames current -dir and fetches everything
       fetch    - fetch a remote archive and extract it. the arguments are like fields
                  in a vopher.list file
       vp       - produces a vimscript full of "packadd!" for matching plugins
@@ -64,8 +63,8 @@ seconds.
                  * no mark means that the plugin is not tracked by vopher
       sample   - prints a sample vopher.list to stdout
       version  - prints version of vopher
-      archives - list all supported archive types
 
+      archives - list supported archives
 
 ## Sample session
 
