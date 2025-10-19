@@ -9,8 +9,10 @@ package main
 // plugins: http://vimawesome.com/
 
 import (
+	"encoding/json"
 	"flag"
 	"log"
+	"os"
 	"strings"
 
 	"github.com/mgumz/vopher/pkg/action"
@@ -23,6 +25,8 @@ var allowedActions = []string{
 	"u",
 	"up",
 	"update",
+	"dj",
+	"dump-json",
 	"fu",
 	"fupdate",
 	"fast-update",
@@ -161,6 +165,13 @@ func main() {
 		parser := localOrRemoteParser(cli.from)
 		plugins := mustReadPlugins(cli.from, parser, cli.filter)
 		action.VimPacks(plugins)
+	// more of an internal, debug kind of action, so far, not documented by
+	// intention
+	case "dump-json", "dj":
+		parser := localOrRemoteParser(cli.from)
+		plugins := mustReadPlugins(cli.from, parser, cli.filter)
+		enc := json.NewEncoder(os.Stdout)
+		enc.Encode(plugins)
 	}
 }
 
