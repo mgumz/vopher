@@ -46,6 +46,8 @@ seconds.
       fupdate  - fast update plugins from '-f <list>'
       fetch    - fetch a remote archive and extract it. the arguments are like fields
                  in a vopher.list file
+      vp       - produces a vimscript full of "packadd!" for matching plugins
+                 (aliases: 'vim-packs', 'nvim-packs', 'nvp')
       search   - searches http://vimawesome.com/ to list some plugins. Anything
                  after this is considered as "the search arguments"
       check    - checks plugins from '-f <list>' for newer versions
@@ -266,7 +268,8 @@ The vopher-file is pretty simple:
 
     # fetches merginal and mark its dependency vim-fugitive. this allows
     # action `vim-packs` to add vim-fugitive into the list of `packadd!`
-    # packs
+    # packs. Note: the depndency given can be the full name (e.g.
+    # "nvim/opt/abc") or just the last part of the path ("abc")
     https://github.com/idanarye/vim-merginal depends-on=vim-fugitive
 
     # fetches nvim-origami. nvim-origami works only with nvim:0.11 and

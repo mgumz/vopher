@@ -2,6 +2,8 @@ package vim_packs
 
 import (
 	"cmp"
+	"fmt"
+	"os"
 	"strings"
 
 	"github.com/mgumz/vopher/pkg/plugin"
@@ -36,8 +38,10 @@ func (entries *sortedEntries) init(plugins plugin.List) {
 	for _, p := range plugins {
 		entries.add(p, 0)
 		for _, depends := range p.Opts.DependsOn {
-			if p, exists := plugins[depends]; exists {
+			if plugins.Exists(depends) {
 				entries.add(p, 1)
+			} else {
+				fmt.Fprintf(os.Stderr, "warning: referenced dependency %q was not found\n", depends)
 			}
 		}
 	}

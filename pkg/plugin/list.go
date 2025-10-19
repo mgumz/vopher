@@ -1,6 +1,7 @@
 package plugin
 
 import (
+	"path"
 	"sort"
 	"strings"
 
@@ -62,7 +63,18 @@ func (plugins List) SortByLineNumber() []string {
 	return ids
 }
 
-func (plugins List) Exists(name string) bool {
-	_, exists := plugins[name]
-	return exists
+// Exists(p) checks if a plugin named "p" exists in the plugin list using
+// path-based matching. The Key Idea: Instead of exact name matching, it
+// compares the last path segment of each plugin against p. So whether a
+// plugin is registered as wuzz, foo/wuzz, or foo/bar/wuzz, checking
+// Exists("wuzz") will find it. Why: This simplifies dependency
+// specifications — users only need to reference the final path segment (like
+// depends-on=wuzz), which aligns with how vim/nvim's packadd! command works.
+func (plugins List) Exists(p string) bool {
+	for name, _ := range plugins {
+		if p == name || path.Base(name) == p {
+			return true
+		}
+	}
+	return false
 }
