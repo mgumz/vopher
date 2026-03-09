@@ -57,13 +57,15 @@ deps-ls:
 deps-ls-updates:
 	go list -m -mod=readonly -f '{{if not .Indirect}}{{.}}{{end}}' -u all
 
-test: test-utils test-plugin test-vopher
+test: test-utils test-plugin test-vopher test-action
 test-utils:
-	cd pkg/utils && go test -v
+	go test -v ./pkg/utils/...
 test-plugin:
-	cd pkg/plugin && go test -v
+	go test -v ./pkg/plugin/...
+test-action:
+	go test -v ./pkg/action/...
 test-vopher:
-	cd cmd/vopher && go test -v
+	go test -v ./cmd/vopher/...
 
 release: $(BINARIES)
 
