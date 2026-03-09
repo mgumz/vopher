@@ -78,3 +78,12 @@ func (plugins List) Exists(p string) bool {
 	}
 	return false
 }
+
+func (plugins List) Get(p string) *Plugin {
+	for name, plugin := range plugins {
+		if p == name || path.Base(name) == p {
+			return plugin
+		}
+	}
+	return nil
+}

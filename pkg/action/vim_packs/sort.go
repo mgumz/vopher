@@ -1,60 +1,19 @@
 package vim_packs
 
-import (
-	"cmp"
-	"fmt"
-	"os"
-	"strings"
+import "sort"
 
-	"github.com/mgumz/vopher/pkg/plugin"
-)
+func (packs packNodes) sort() {
 
-// helper to sort the packs by weight and name.
-// idea is to use .add(), dependencies will be
-// added "multiple" times (increasing the weight).
-// if a dependency requires another one: it is increasing
-// the weight of that one.
-type sortedEntry struct {
-	weight int
-	p      *plugin.Plugin
-}
-
-type sortedEntries []sortedEntry
-
-// satisfy slices.SortFunc. also, descending order
-// for weight, regular "alphabetic" for plugin
-// name.
-func (a sortedEntry) cmp(b sortedEntry) int {
-
-	if n := cmp.Compare(a.weight, b.weight); n != 0 {
-		return n * -1
-	}
-	n := strings.Compare(a.p.Name, b.p.Name)
-	return n
-}
-
-func (entries *sortedEntries) init(plugins plugin.List) {
-
-	for _, p := range plugins {
-		entries.add(p, 0)
-		for _, depends := range p.Opts.DependsOn {
-			if plugins.Exists(depends) {
-				entries.add(p, 1)
-			} else {
-				fmt.Fprintf(os.Stderr, "warning: referenced dependency %q was not found\n", depends)
-			}
+	sort.Slice(packs, func(i, j int) bool {
+		// Dependencies come first
+		if packs[i].IsDependency() != packs[j].IsDependency() {
+			return packs[i].IsDependency()
 		}
-	}
-}
-
-func (entries *sortedEntries) add(p *plugin.Plugin, weight int) {
-
-	for i := range *entries {
-		if (*entries)[i].p == p {
-			(*entries)[i].weight += weight
-			return
+		// Same dependency status: sort by level (descending), then alphabetically
+		if packs[i].NDependents != packs[j].NDependents {
+			return packs[i].NDependents > packs[j].NDependents
 		}
-	}
+		return packs[i].Name < packs[j].Name
+	})
 
-	*entries = append(*entries, sortedEntry{weight, p})
 }
