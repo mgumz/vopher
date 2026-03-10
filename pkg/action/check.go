@@ -34,14 +34,20 @@ func Check(plugins plugin.List, base string, ui ui.UI) {
 	idFmt := calcIdFmt(plugins)
 	wg.Wait()
 
-	for _, id := range plugins.SortByLineNumber() {
+	sorted := plugins.SortByLineNumber()
+	if len(sorted) == 0 {
+		return
+	}
+
+	for _, id := range sorted {
 		if t, ok := m.Load(id); ok {
 			text, _ := t.(string)
 			// right aligned Id
 			id := fmt.Sprintf(idFmt, id)
-			ui.PrintShort(id, text)
+			ui.Print(id, text)
 		}
 	}
+	ui.Print("", "<!-- vim: foldmethod=marker foldmarker=✚,▲ foldenable -->\n")
 }
 
 func calcIdFmt(plugins plugin.List) string {

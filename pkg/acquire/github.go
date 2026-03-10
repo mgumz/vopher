@@ -103,7 +103,9 @@ func (gh Github) CheckPlugin(plugin *plugin.Plugin, base string) string {
 	buf := bytes.NewBuffer(nil)
 
 	// output header
-	fmt.Fprintf(buf, "\n\n## %s - %s\n", plugin.Name, plugin.URL)
+	const foldMarkerBegin = "  ✚"
+	const foldMarkerEnd = "▲"
+	fmt.Fprintf(buf, "## %s - %s%s\n", plugin.Name, plugin.URL, foldMarkerBegin)
 
 	// output body
 	for i := range feeds {
@@ -123,6 +125,7 @@ func (gh Github) CheckPlugin(plugin *plugin.Plugin, base string) string {
 			fmt.Fprintf(buf, "  %s%.10s %s %s\n", mark, entry.ID, entry.Updated, entry.Title)
 		}
 	}
+	fmt.Fprintf(buf, "\n%s\n", foldMarkerEnd)
 
 	return buf.String()
 }
