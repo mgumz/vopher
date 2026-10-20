@@ -216,7 +216,7 @@ install a Golang compiler via your regular package manager on the OS level.
     $> make bin/vopher
 
 You get the act versions of Golang, golangci-lint, gopls etc which are 
-referenced in the mise.toml file.
+referenced in the .mise/config.toml file.
 
 ## The vopher-file format
 

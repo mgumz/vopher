@@ -1,6 +1,6 @@
 module github.com/mgumz/vopher
 
-go 1.25
+go 1.26
 
 require (
 	github.com/klauspost/compress v1.18.4
