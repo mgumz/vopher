@@ -2,8 +2,10 @@ package action
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"sync"
+	"sync/atomic"
 
 	"github.com/mgumz/vopher/pkg/acquire"
 	"github.com/mgumz/vopher/pkg/plugin"
@@ -16,11 +18,20 @@ func Check(plugins plugin.List, base string, ui ui.UI) {
 
 	m := &sync.Map{}
 
+	total := 0
+	for _, p := range plugins {
+		if p.URL.Host == "github.com" {
+			total++
+		}
+	}
+	done := atomic.Int32{}
+
 	wg := sync.WaitGroup{}
 	check := func(p *plugin.Plugin) {
 		gh := acquire.Github{}
 		text := gh.CheckPlugin(p, base)
 		m.Store(p.Name, text)
+		fmt.Fprintf(os.Stderr, "check: %d/%d %s\n", done.Add(1), total, p.Name)
 		wg.Done()
 	}
 

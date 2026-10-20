@@ -13,6 +13,8 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+
+	vhttp "github.com/mgumz/vopher/pkg/http"
 )
 
 // SearchURL to be used when using the `search` action
@@ -33,11 +35,11 @@ func Search(args ...string) {
 	searchURL, _ := url.Parse(SearchURL)
 	searchURL.RawQuery = vals.Encode()
 
-	query, err := http.Get(searchURL.String())
+	query, done, err := vhttp.Request(http.MethodGet, searchURL.String())
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer (func() { _ = query.Body.Close() })()
+	defer done()
 
 	// TODO: handle status code
 

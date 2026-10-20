@@ -7,6 +7,8 @@ import (
 	"net/url"
 	"strings"
 	"sync"
+
+	vhttp "github.com/mgumz/vopher/pkg/http"
 )
 
 // GithubFeed is a minimal atom-parser sufficient to extract only what we need
@@ -68,18 +70,27 @@ func (feeds ghFeeds) fetch(gh Github, repo *url.URL) {
 func (gh Github) GetCommits(repo *url.URL, parts ...string) *githubFeed {
 
 	feedURL := gh.FeedURL(repo, parts...)
-	resp, err := http.Get(feedURL.String())
+	resp, done, err := vhttp.Request(http.MethodGet, feedURL.String())
 	if err != nil {
 		log.Printf("error: %q %v", feedURL.String(), err)
 		return nil
 	}
-	defer resp.Body.Close()
+	defer done()
 
+	// 404 is expected: either "master" or "main" does not exist
 	if resp.StatusCode == http.StatusNotFound {
 		return nil
 	}
 	if resp.StatusCode != http.StatusOK {
-		log.Printf("error: %q %v", feedURL.String(), err)
+		msg := resp.Status
+		if resp.StatusCode == http.StatusForbidden || resp.StatusCode == http.StatusTooManyRequests {
+			msg += " (rate limited?"
+			if ra := resp.Header.Get("Retry-After"); ra != "" {
+				msg += " retry after " + ra + "s"
+			}
+			msg += ")"
+		}
+		log.Printf("error: %q %s", feedURL.String(), msg)
 		return nil
 	}
 

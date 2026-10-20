@@ -16,6 +16,7 @@ import (
 	"strings"
 
 	"github.com/mgumz/vopher/pkg/action"
+	"github.com/mgumz/vopher/pkg/http"
 	"github.com/mgumz/vopher/pkg/plugin"
 	"github.com/mgumz/vopher/pkg/ui"
 	"github.com/mgumz/vopher/pkg/utils"
@@ -54,15 +55,17 @@ func main() {
 
 	log.SetPrefix("vopher.")
 	cli := struct {
-		action  string
-		force   bool
-		dry     bool
-		all     bool
-		from    string
-		dir     string
-		ui      string
-		filter  utils.StringList
-		version bool
+		action      string
+		force       bool
+		dry         bool
+		all         bool
+		from        string
+		dir         string
+		ui          string
+		filter      utils.StringList
+		httpJobs    http.HostJobs
+		httpTimeout http.HostTimeouts
+		version     bool
 	}{
 		action: "status",
 		from:   "vopher.list",
@@ -77,9 +80,13 @@ func main() {
 	flag.StringVar(&cli.dir, "dir", cli.dir, "directory to extract the plugins to")
 	flag.StringVar(&cli.ui, "ui", cli.ui, "ui mode ('simple' or 'oneline', works with `update` action)")
 	flag.Var(&cli.filter, "filter", "operate on given plugins only; matches substrings, can be given multiple times")
+	flag.Var(&cli.httpJobs, "http.jobs", "max. concurrent requests per host: host=n[,host=n], matches subdomains, '*' for all other hosts (default *=8), 0 = unlimited; can be given multiple times")
+	flag.Var(&cli.httpTimeout, "http.timeout", "abort a request after it made no progress for: host=duration[,host=duration], matches subdomains, '*' for all other hosts (default *=30s), 0 = no timeout; can be given multiple times")
 
 	flag.Usage = usage
 	flag.Parse()
+	http.SetJobs(cli.httpJobs)
+	http.SetTimeouts(cli.httpTimeout)
 
 	if cli.version {
 		printVersion()

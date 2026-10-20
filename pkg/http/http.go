@@ -14,11 +14,11 @@ import (
 // DetectFType issues HEAD to url, examines "Content-Disposition: attachment; filename=foo.EXT"
 func DetectFType(url string) (string, error) {
 
-	resp, err := nethttp.Head(url) // #nosec G107
+	resp, done, err := Request(nethttp.MethodHead, url)
 	if err != nil {
 		return "", err
 	}
-	_ = resp.Body.Close()
+	done()
 
 	content := resp.Header.Get("Content-Disposition")
 	if content == "" {
@@ -38,11 +38,11 @@ func DetectFType(url string) (string, error) {
 // and comparing the downloaded data to checkSha1
 func Get(w io.Writer, url, checkSha1 string) (err error) {
 
-	resp, err := nethttp.Get(url) // #nosec G107
+	resp, done, err := Request(nethttp.MethodGet, url)
 	if err != nil {
 		return err
 	}
-	defer (func() { _ = resp.Body.Close() })()
+	defer done()
 
 	if resp.StatusCode != nethttp.StatusOK {
 		log.Println(resp)

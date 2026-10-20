@@ -11,6 +11,7 @@ import (
 	"path"
 	"strings"
 
+	vhttp "github.com/mgumz/vopher/pkg/http"
 	"github.com/mgumz/vopher/pkg/utils"
 )
 
@@ -130,11 +131,11 @@ func (plugins List) ParseFile(name string) error {
 }
 
 func (plugins List) ParseRemoteFile(url string) error {
-	resp, err := http.Get(url) // #nosec G107
+	resp, done, err := vhttp.Request(http.MethodGet, url)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer done()
 	return plugins.Parse(resp.Body)
 }
 

@@ -35,6 +35,10 @@ seconds.
             operate on given plugins only; matches substrings, can be given multiple times
       -force
             force certain actions [prune, clean]
+      -http.jobs value
+            max. concurrent requests per host: host=n[,host=n], matches subdomains, '*' for all other hosts (default *=8), 0 = unlimited; can be given multiple times
+      -http.timeout value
+            abort a request after it made no progress for: host=duration[,host=duration], matches subdomains, '*' for all other hosts (default *=30s), 0 = no timeout; can be given multiple times
       -ui update
             ui mode ('simple' or 'oneline', works with update action)
       -v	show version
