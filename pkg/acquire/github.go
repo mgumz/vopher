@@ -9,6 +9,7 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"text/tabwriter"
 
 	"github.com/mgumz/vopher/pkg/common"
 	"github.com/mgumz/vopher/pkg/plugin"
@@ -108,6 +109,7 @@ func (gh Github) CheckPlugin(plugin *plugin.Plugin, base string) string {
 	fmt.Fprintf(buf, "## %s - %s%s\n", plugin.Name, plugin.URL, foldMarkerBegin)
 
 	// output body
+	tw := tabwriter.NewWriter(buf, 0, 0, 1, ' ', 0)
 	for i := range feeds {
 		feed := feeds[i].feed
 		section := feeds[i].section
@@ -116,16 +118,28 @@ func (gh Github) CheckPlugin(plugin *plugin.Plugin, base string) string {
 			continue
 		}
 
-		fmt.Fprintln(buf, section)
+		fmt.Fprintln(tw, section)
 		for _, entry := range feed.Entry {
 			mark := " "
 			if entry.ID == head || entry.ID == altHead {
 				mark = "*"
 			}
-			fmt.Fprintf(buf, "  %s%.10s %s %s\n", mark, entry.ID, entry.Updated, entry.Title)
+			title := strings.ReplaceAll(entry.Title, "\t", " ")
+			fmt.Fprintf(tw, "  %s%s\t%s\t%s\n", mark, shortID(entry.ID), entry.Updated, title)
 		}
 	}
+	tw.Flush()
 	fmt.Fprintf(buf, "\n%s\n", foldMarkerEnd)
 
 	return buf.String()
+}
+
+// shortID cuts a commit-id to 10 chars, like `git log --oneline`. Tag names
+// are kept as they are.
+func shortID(id string) string {
+	const n = 10
+	if len(id) == common.Sha1ChecksumLen && strings.Trim(id, "0123456789abcdef") == "" {
+		return id[:n]
+	}
+	return id
 }
