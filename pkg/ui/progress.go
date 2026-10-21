@@ -7,6 +7,7 @@ import (
 	"math"
 	"os"
 	"strconv"
+	"sync/atomic"
 	"time"
 	"unicode/utf8"
 )
@@ -19,7 +20,9 @@ type ProgressTicker struct {
 }
 
 func newProgressTicker(max int64) *ProgressTicker {
-	return &ProgressTicker{WriteMeter: WriteMeter{max: max}}
+	pt := &ProgressTicker{}
+	pt.max.Store(max)
+	return pt
 }
 
 func (pt *ProgressTicker) start(prefix string, dur time.Duration) {
@@ -49,9 +52,12 @@ func (pt *ProgressTicker) stop() {
 
 func (pt *ProgressTicker) print(prefix string) {
 
-	if pt.max == 0 {
+	// one snapshot, so counter, max and bar agree with each other
+	counter, max := pt.counter.Load(), pt.max.Load()
+	if max == 0 {
 		return
 	}
+	progress := float64(counter) / float64(max)
 
 	var cols int
 
@@ -86,10 +92,10 @@ func (pt *ProgressTicker) print(prefix string) {
 	)
 
 	// the info field / component
-	info := fmt.Sprintf(infoFmt, prefix, pt.counter, pt.max)
+	info := fmt.Sprintf(infoFmt, prefix, counter, max)
 	if pt.note != nil {
 		if note := pt.note(); note != "" {
-			info = fmt.Sprintf(infoNoteFmt, prefix, pt.counter, pt.max, note)
+			info = fmt.Sprintf(infoNoteFmt, prefix, counter, max, note)
 		}
 	}
 
@@ -97,7 +103,7 @@ func (pt *ProgressTicker) print(prefix string) {
 	barWidth := cols - utf8.RuneCountInString(info) - borderWidth
 	bar := bytes.Repeat([]byte("."), barWidth)
 
-	nticks := int(math.Max(1.0, math.Floor(float64(barWidth)*pt.progress())))
+	nticks := int(math.Max(1.0, math.Floor(float64(barWidth)*progress)))
 
 	for i := range nticks {
 		bar[i] = '='
@@ -109,7 +115,7 @@ func (pt *ProgressTicker) print(prefix string) {
 
 	showProgressNumber := (barWidth > progressThresholdWidth)
 	if showProgressNumber {
-		p := int(100.0 * pt.progress())
+		p := int(100.0 * progress)
 		progress := fmt.Sprintf(progressNumberFmt, p)
 		halfBar := barWidth / 2
 		halfProgress := len(progress) / 2
@@ -126,18 +132,19 @@ func (pt *ProgressTicker) print(prefix string) {
 }
 
 func (pt *ProgressTicker) maxOut() {
-	pt.counter = WriteCounter(pt.max)
+	pt.counter.Store(pt.max.Load())
 }
 
 // ========================================================================
 
+// WriteMeter is safe for concurrent use
 type WriteMeter struct {
 	counter WriteCounter
-	max     int64
+	max     atomic.Int64
 }
 
 func (meter *WriteMeter) progress() float64 {
-	return float64(meter.counter) / float64(meter.max)
+	return float64(meter.counter.Load()) / float64(meter.max.Load())
 }
 
 func (meter *WriteMeter) String() string {
@@ -146,10 +153,10 @@ func (meter *WriteMeter) String() string {
 
 // ========================================================================
 
-type WriteCounter int64
+type WriteCounter struct{ atomic.Int64 }
 
 func (counter *WriteCounter) Write(data []byte) (n int, _ error) {
 	n = len(data)
-	*counter += WriteCounter(n)
+	counter.Add(int64(n))
 	return
 }
