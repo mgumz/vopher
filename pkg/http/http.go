@@ -36,17 +36,48 @@ func DetectFType(url string) (string, error) {
 
 // Get fetches URL by streaming the data to io.Writer w
 // and comparing the downloaded data to checkSha1
-func Get(w io.Writer, url, checkSha1 string) (err error) {
+func Get(w io.Writer, url, checkSha1 string) error {
+	_, _, err := GetIfChanged(w, url, checkSha1, Validators{})
+	return err
+}
 
-	resp, done, err := Request(nethttp.MethodGet, url)
+// Validators identify the version of a resource a client already has, see
+// RFC 9110, section 8.8
+type Validators struct {
+	ETag         string `json:"etag,omitempty"`
+	LastModified string `json:"last_modified,omitempty"`
+}
+
+// GetIfChanged is Get, but sends the given validators along. If the server
+// answers "304 Not Modified", nothing is written to w and notModified is
+// true. Returns the validators of the fetched resource.
+func GetIfChanged(w io.Writer, url, checkSha1 string, have Validators) (got Validators, notModified bool, err error) {
+
+	header := nethttp.Header{}
+	if have.ETag != "" {
+		header.Set("If-None-Match", have.ETag)
+	}
+	if have.LastModified != "" {
+		header.Set("If-Modified-Since", have.LastModified)
+	}
+
+	resp, done, err := RequestWithHeader(nethttp.MethodGet, url, header)
 	if err != nil {
-		return err
+		return got, false, err
 	}
 	defer done()
 
+	got = Validators{
+		ETag:         resp.Header.Get("ETag"),
+		LastModified: resp.Header.Get("Last-Modified"),
+	}
+
+	if resp.StatusCode == nethttp.StatusNotModified && (have.ETag != "" || have.LastModified != "") {
+		return got, true, nil
+	}
 	if resp.StatusCode != nethttp.StatusOK {
 		log.Println(resp)
-		return fmt.Errorf("%d for %q", resp.StatusCode, url)
+		return got, false, fmt.Errorf("%d for %q", resp.StatusCode, url)
 	}
 
 	reader := io.Reader(resp.Body)
@@ -69,13 +100,13 @@ func Get(w io.Writer, url, checkSha1 string) (err error) {
 	*/
 
 	if _, err = io.Copy(w, reader); err != nil {
-		return err
+		return got, false, err
 	}
 
 	sha1Sum := hex.EncodeToString(hasher.Sum(nil))
 	if checkSha1 != "" && checkSha1 != sha1Sum {
-		return fmt.Errorf("sha1 does not match: got %s, expected %s", sha1Sum, checkSha1)
+		return got, false, fmt.Errorf("sha1 does not match: got %s, expected %s", sha1Sum, checkSha1)
 	}
 
-	return err
+	return got, false, nil
 }

@@ -64,8 +64,8 @@ func pruneEntry(name string, force bool) {
 	fmt.Println(suffix)
 }
 
-// pruneCache removes all files in cacheDir which are not the archive of one
-// of the plugins, see acquire.ArchiveStem
+// pruneCache removes all files in cacheDir which are not the archive (or its
+// meta file) of one of the plugins, see acquire.ArchiveStem
 func pruneCache(plugins plugin.List, cacheDir string, force bool) {
 
 	stems := make([]string, 0, len(plugins))
@@ -86,7 +86,8 @@ func pruneCache(plugins plugin.List, cacheDir string, force bool) {
 			dirs = append(dirs, name)
 			return nil
 		}
-		isArchive := func(stem string) bool { return acquire.IsArchiveOf(name, stem) }
+		archiveName := strings.TrimSuffix(name, acquire.MetaSuffix)
+		isArchive := func(stem string) bool { return acquire.IsArchiveOf(archiveName, stem) }
 		if !slices.ContainsFunc(stems, isArchive) {
 			pruneEntry(name, force)
 		}

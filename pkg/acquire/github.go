@@ -167,3 +167,18 @@ func (gh Github) PluginArchiveURL(p *plugin.Plugin) *url.URL {
 	}
 	return gh.ArchiveURL(p.URL, p.Opts.Branch)
 }
+
+// IsCommit returns true if ref looks like a (short) git commit id. The
+// archive of a commit never changes, unlike the one of a branch or tag.
+func (gh Github) IsCommit(ref string) bool {
+	const minShortCommitLen = 7
+	if len(ref) < minShortCommitLen || len(ref) > common.Sha1ChecksumLen {
+		return false
+	}
+	for _, c := range ref {
+		if !strings.ContainsRune("0123456789abcdefABCDEF", c) {
+			return false
+		}
+	}
+	return true
+}

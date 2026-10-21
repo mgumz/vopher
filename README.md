@@ -41,6 +41,8 @@ seconds.
             max. concurrent requests per host: host=n[,host=n], matches subdomains, '*' for all other hosts (default *=8), 0 = unlimited; can be given multiple times
       -http.timeout value
             abort a request after it made no progress for: host=duration[,host=duration], matches subdomains, '*' for all other hosts (default *=30s), 0 = no timeout; can be given multiple times
+      -offline
+            never fetch, extract the archives kept in -cache (or -dir) [update, fupdate, fetch]
       -ui update
             ui mode ('simple' or 'oneline', works with update action)
       -v	show version

@@ -27,14 +27,29 @@ func ArchiveStem(cacheDir string, u *url.URL) string {
 	return filepath.Join(cacheDir, host, filepath.FromSlash(p))
 }
 
-// ArchivePath returns ArchiveStem with ext appended, unless the stem already
-// ends with ext
+// ArchivePath returns ArchiveStem with ext, see WithExt
 func ArchivePath(cacheDir string, u *url.URL, ext string) string {
-	stem := ArchiveStem(cacheDir, u)
+	return WithExt(ArchiveStem(cacheDir, u), ext)
+}
+
+// WithExt returns stem with ext appended, unless stem already ends with ext
+func WithExt(stem, ext string) string {
 	if !strings.HasSuffix(stem, ext) {
 		stem += ext
 	}
 	return stem
+}
+
+// FindArchive returns the kept archive with the given stem, whatever its
+// archive suffix is
+func FindArchive(stem string) (string, bool) {
+	candidates, _ := filepath.Glob(stem + "*")
+	for _, name := range candidates {
+		if IsArchiveOf(name, stem) {
+			return name, true
+		}
+	}
+	return "", false
 }
 
 // IsArchiveOf returns true if name is the archive with the given stem, see

@@ -15,6 +15,11 @@ import (
 // the timeout configured for that host, see SetTimeouts. The caller has to
 // call done once the response body is consumed; done also closes the body.
 func Request(method, url string) (resp *nethttp.Response, done func(), err error) {
+	return RequestWithHeader(method, url, nil)
+}
+
+// RequestWithHeader is Request with additional request headers
+func RequestWithHeader(method, url string, header nethttp.Header) (resp *nethttp.Response, done func(), err error) {
 
 	u, err := neturl.Parse(url)
 	if err != nil {
@@ -43,6 +48,9 @@ func Request(method, url string) (resp *nethttp.Response, done func(), err error
 	if err != nil {
 		finish()
 		return nil, nil, err
+	}
+	for key, values := range header {
+		req.Header[key] = values
 	}
 	resp, err = nethttp.DefaultClient.Do(req) // #nosec G107
 	if err != nil {

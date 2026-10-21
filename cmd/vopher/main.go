@@ -13,6 +13,7 @@ import (
 	"flag"
 	"log"
 	"os"
+	"slices"
 	"strings"
 
 	"github.com/mgumz/vopher/pkg/action"
@@ -62,6 +63,7 @@ func main() {
 		from        string
 		dir         string
 		cache       string
+		offline     bool
 		ui          string
 		filter      utils.StringList
 		httpJobs    http.HostJobs
@@ -81,6 +83,7 @@ func main() {
 	flag.StringVar(&cli.from, "f", cli.from, "path|url to list of plugins")
 	flag.StringVar(&cli.dir, "dir", cli.dir, "directory to extract the plugins to")
 	flag.StringVar(&cli.cache, "cache", cli.cache, "directory to keep downloaded archives in; empty: keep them next to the plugins in -dir")
+	flag.BoolVar(&cli.offline, "offline", cli.offline, "never fetch, extract the archives kept in -cache (or -dir) [update, fupdate, fetch]")
 	flag.StringVar(&cli.ui, "ui", cli.ui, "ui mode ('simple' or 'oneline', works with `update` action)")
 	flag.Var(&cli.filter, "filter", "operate on given plugins only; matches substrings, can be given multiple times")
 	flag.Var(&cli.httpJobs, "http.jobs", "max. concurrent requests per host: host=n[,host=n], matches subdomains, '*' for all other hosts (default *=8), 0 = unlimited; can be given multiple times")
@@ -143,21 +146,30 @@ func main() {
 		cli.cache = cache
 	}
 
+	if cli.offline {
+		if slices.Contains([]string{"check", "ch", "search", "se"}, cli.action) {
+			log.Fatalf("error: %q needs the network, -offline given", cli.action)
+		}
+		if strings.HasPrefix(cli.from, "http://") || strings.HasPrefix(cli.from, "https://") {
+			log.Fatalf("error: remote -f %q needs the network, -offline given", cli.from)
+		}
+	}
+
 	switch cli.action {
 	case "fupdate", "fu", "fast-update", "fup":
 		parser := localOrRemoteParser(cli.from)
 		plugins := mustReadPlugins(cli.from, parser, cli.filter)
-		opts := action.ActUpdateOpts{Dir: cli.dir, Cache: cli.cache, Force: cli.force, DryRun: cli.dry}
+		opts := action.ActUpdateOpts{Dir: cli.dir, Cache: cli.cache, Offline: cli.offline, Force: cli.force, DryRun: cli.dry}
 		action.FastUpdate(plugins, ui, &opts)
 	case "update", "u", "up":
 		parser := localOrRemoteParser(cli.from)
 		plugins := mustReadPlugins(cli.from, parser, cli.filter)
-		opts := action.ActUpdateOpts{Dir: cli.dir, Cache: cli.cache, Force: cli.force, DryRun: cli.dry}
+		opts := action.ActUpdateOpts{Dir: cli.dir, Cache: cli.cache, Offline: cli.offline, Force: cli.force, DryRun: cli.dry}
 		action.Update(plugins, ui, &opts)
 	case "fetch", "f":
 		from := strings.Join(flag.Args()[1:], " ")
 		plugins := mustReadPlugins(from, plugin.List.ParseLine, []string{})
-		opts := action.ActUpdateOpts{Dir: cli.dir, Cache: cli.cache, Force: cli.force, DryRun: cli.dry}
+		opts := action.ActUpdateOpts{Dir: cli.dir, Cache: cli.cache, Offline: cli.offline, Force: cli.force, DryRun: cli.dry}
 		action.Update(plugins, ui, &opts)
 	case "check", "ch":
 		parser := localOrRemoteParser(cli.from)
