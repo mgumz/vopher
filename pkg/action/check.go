@@ -62,7 +62,7 @@ func Check(plugins plugin.List, base, cacheDir string, ui ui.UI) {
 			ui.Print(id, text)
 		}
 	}
-	ui.Print("", "<!-- vim: foldmethod=marker foldmarker=✚,▲ foldenable -->\n")
+	ui.Print("", "<!-- vim: set foldmethod=marker foldmarker=✚,▲ foldenable : -->\n")
 }
 
 func calcIdFmt(plugins plugin.List) string {
