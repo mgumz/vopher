@@ -51,6 +51,8 @@ func (p *Plugin) optionsFromFields(fields []string) error {
 			p.Opts.SHA1 = strings.ToLower(field[len("sha1="):])
 		case strings.HasPrefix(field, "branch="):
 			p.Opts.Branch = field[len("branch="):]
+		case strings.HasPrefix(field, "hoster="):
+			p.Opts.Hoster = strings.ToLower(field[len("hoster="):])
 		case strings.HasPrefix(field, "min-version="):
 			p.Opts.MinVersion = field[len("min-version="):]
 		case strings.HasPrefix(field, "depends-on="):

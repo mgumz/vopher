@@ -15,6 +15,7 @@ type Opts struct {
 	PostUpdate string // execute after 'update'-action
 	SHA1       string
 	Branch     string // usually "master" or "main"
+	Hoster     string // git hoster, eg. "github"; default by host of the URL
 
 	DependsOn  []string
 	MinVersion string

@@ -2,6 +2,7 @@ package action
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"sync"
@@ -18,27 +19,31 @@ func Check(plugins plugin.List, base, cacheDir string, ui ui.UI) {
 
 	m := &sync.Map{}
 
-	total := 0
+	hosters := map[*plugin.Plugin]acquire.Hoster{}
 	for _, p := range plugins {
-		if p.URL.Host == "github.com" {
-			total++
+		hoster, err := acquire.HosterFor(p)
+		if err != nil {
+			log.Printf("error: %q: %s", p.URL, err)
+			continue
+		}
+		if hoster != nil {
+			hosters[p] = hoster
 		}
 	}
+	total := len(hosters)
 	done := atomic.Int32{}
 
 	wg := sync.WaitGroup{}
-	check := func(p *plugin.Plugin) {
-		text := acquire.CheckPlugin(acquire.Github{}, p, base, cacheDir)
+	check := func(p *plugin.Plugin, hoster acquire.Hoster) {
+		text := acquire.CheckPlugin(hoster, p, base, cacheDir)
 		m.Store(p.Name, text)
 		fmt.Fprintf(os.Stderr, "check: %d/%d %s\n", done.Add(1), total, p.Name)
 		wg.Done()
 	}
 
-	for _, p := range plugins {
-		if p.URL.Host == "github.com" {
-			wg.Add(1)
-			go check(p)
-		}
+	for p, hoster := range hosters {
+		wg.Add(1)
+		go check(p, hoster)
 	}
 
 	idFmt := calcIdFmt(plugins)

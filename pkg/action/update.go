@@ -51,16 +51,22 @@ func Update(plugins plugin.List, ui ui.UI, opts *ActUpdateOpts) {
 		}
 		immutable := false
 
+		var hoster acquire.Hoster
+		if hoster, err = acquire.HosterFor(plugin); err != nil {
+			log.Printf("error: %q: %s", plugin.URL, err)
+			continue
+		}
+
 		// apply heuristics - aka ""guess""
 		if isArchive, _ := archive.IsSupportedArchive(archiveName); !isArchive {
-			switch plugin.URL.Host {
-			case "github.com":
+			switch {
+			case hoster != nil:
 				ref := utils.FirstNotEmpty(plugin.URL.Fragment, plugin.Opts.Branch)
-				immutable = acquire.Github{}.IsCommit(ref)
+				immutable = acquire.IsCommit(ref)
 				// NOTE: "master" as default one is a classic fallback, but
 				// nowadays the primary branch is called "main" often. needs
 				// to be tackled somewhen
-				remoteZip := acquire.Github{}.ArchiveURL(plugin.URL, utils.FirstNotEmpty(ref, "master"))
+				remoteZip := hoster.ArchiveURL(plugin.URL, utils.FirstNotEmpty(ref, "master"))
 				plugin.URL = &remoteZip
 				if opts.Cache != "" {
 					stem = acquire.ArchiveStem(opts.Cache, plugin.URL)

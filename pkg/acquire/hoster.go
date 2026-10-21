@@ -52,6 +52,34 @@ func PluginArchiveURL(hoster Hoster, p *plugin.Plugin) *url.URL {
 	return &u
 }
 
+// hosters maps the names usable in `hoster=` to the Hoster
+var hosters = map[string]Hoster{
+	"github": Github{},
+}
+
+// knownHosts maps a host to the name of its hoster
+var knownHosts = map[string]string{
+	"github.com": "github",
+}
+
+// HosterFor returns the Hoster of plugin: the one named by `hoster=`, else
+// the one of the host of the plugin URL. It returns nil for hosts it does
+// not know.
+func HosterFor(plugin *plugin.Plugin) (Hoster, error) {
+	name := plugin.Opts.Hoster
+	if name == "" {
+		name = knownHosts[strings.ToLower(plugin.URL.Hostname())]
+	}
+	if name == "" {
+		return nil, nil
+	}
+	hoster, ok := hosters[name]
+	if !ok {
+		return nil, fmt.Errorf("unknown hoster %q", name)
+	}
+	return hoster, nil
+}
+
 // GuessCommitByZIP guesses the commit by the comment in the zip file at
 // path. `git archive` puts the commit-id there when it is given a commit or
 // tag; the zip files of GitHub, Forgejo and GitLab carry it.
@@ -142,4 +170,19 @@ func shortID(id string) string {
 		return id[:n]
 	}
 	return id
+}
+
+// IsCommit returns true if ref looks like a (short) git commit id. The
+// archive of a commit never changes, unlike the one of a branch or tag.
+func IsCommit(ref string) bool {
+	const minShortCommitLen = 7
+	if len(ref) < minShortCommitLen || len(ref) > common.Sha1ChecksumLen {
+		return false
+	}
+	for _, c := range ref {
+		if !strings.ContainsRune("0123456789abcdefABCDEF", c) {
+			return false
+		}
+	}
+	return true
 }

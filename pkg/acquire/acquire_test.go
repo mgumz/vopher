@@ -149,7 +149,6 @@ func TestAcquireOfflineMissing(t *testing.T) {
 }
 
 func TestIsCommit(t *testing.T) {
-	gh := Github{}
 	for ref, want := range map[string]bool{
 		"913fff1c": true,
 		"913fff1cea3aa1a08a360a494fa05555e59147f5": true,
@@ -159,7 +158,7 @@ func TestIsCommit(t *testing.T) {
 		"deadbeefx": false,
 		"":          false,
 	} {
-		if got := gh.IsCommit(ref); got != want {
+		if got := IsCommit(ref); got != want {
 			t.Errorf("%q: got %v, want %v", ref, got, want)
 		}
 	}
