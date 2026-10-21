@@ -28,8 +28,7 @@ func Check(plugins plugin.List, base, cacheDir string, ui ui.UI) {
 
 	wg := sync.WaitGroup{}
 	check := func(p *plugin.Plugin) {
-		gh := acquire.Github{}
-		text := gh.CheckPlugin(p, base, cacheDir)
+		text := acquire.CheckPlugin(acquire.Github{}, p, base, cacheDir)
 		m.Store(p.Name, text)
 		fmt.Fprintf(os.Stderr, "check: %d/%d %s\n", done.Add(1), total, p.Name)
 		wg.Done()

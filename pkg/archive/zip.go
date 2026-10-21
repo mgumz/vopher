@@ -93,13 +93,13 @@ func (za *ZipArchive) Extract(folder string, r io.Reader, stripDirs int) error {
 	return za.maybeStoreGHCommit(zfile.Comment, folder)
 }
 
-// github stores the git-commit in the comment of the `.zip` file
-// so, we store a file called "github-commit" in the plugin-folder
+// `git archive` stores the git-commit in the comment of the `.zip` file
+// so, we store it in common.CommitFileName in the plugin-folder
 // to be able to check for updates
 func (za *ZipArchive) maybeStoreGHCommit(commit, folder string) error {
 
 	if za.GitCommit && len(commit) == common.Sha1ChecksumLen {
-		name := filepath.Join(folder, "github-commit")
+		name := filepath.Join(folder, common.CommitFileName)
 		file, err := os.Create(name) // #nosec G304
 		if err != nil {
 			return err

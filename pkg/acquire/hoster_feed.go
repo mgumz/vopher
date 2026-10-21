@@ -11,9 +11,9 @@ import (
 	vhttp "github.com/mgumz/vopher/pkg/http"
 )
 
-// GithubFeed is a minimal atom-parser sufficient to extract only what we need
-// from Github
-type githubFeed struct {
+// atomFeed is a minimal atom-parser sufficient to extract only what we need
+// from the commit- and tag-feeds of a git hoster
+type atomFeed struct {
 	XMLName xml.Name `xml:"feed"`
 	Entry   []struct {
 		Title   string `xml:"title"`
@@ -22,43 +22,44 @@ type githubFeed struct {
 	} `xml:"entry"`
 }
 
-type ghFeed struct {
-	parts   []string
-	feed    *githubFeed
+type feedSection struct {
+	url     url.URL
+	entryID func(id string) string // commit-id or tag name of an entry-id
+	feed    *atomFeed
 	section string
 }
-type ghFeeds []ghFeed
+type feedSections []feedSection
 
-func buildFeeds(branch, head string) ghFeeds {
+func buildFeeds(hoster Hoster, repo *url.URL, branch, head string) feedSections {
 
-	commits := ghFeeds{}
+	commits := feedSections{}
 
 	if branch != "" {
 		commits = append(commits,
-			ghFeed{[]string{"commits", branch}, nil, "\n - " + branch + " commits:\n"})
+			feedSection{hoster.CommitsFeedURL(repo, branch), commitID, nil, "\n - " + branch + " commits:\n"})
 	} else {
 		commits = append(commits,
-			ghFeed{[]string{"commits", "master"}, nil, "\n - master commits:\n"},
-			ghFeed{[]string{"commits", "main"}, nil, "\n - main commits:\n"},
+			feedSection{hoster.CommitsFeedURL(repo, "master"), commitID, nil, "\n - master commits:\n"},
+			feedSection{hoster.CommitsFeedURL(repo, "main"), commitID, nil, "\n - main commits:\n"},
 		)
 		if head != "master" && head != "main" {
 			commits = append(commits,
-				ghFeed{[]string{"commits", head}, nil, "\n - commits:\n"})
+				feedSection{hoster.CommitsFeedURL(repo, head), commitID, nil, "\n - commits:\n"})
 		}
 	}
-	commits = append(commits, ghFeed{[]string{"tags"}, nil, "\n - tags:\n"})
+	commits = append(commits, feedSection{hoster.TagsFeedURL(repo), hoster.TagName, nil, "\n - tags:\n"})
 
 	return commits
 }
 
-func (feeds ghFeeds) fetch(gh Github, repo *url.URL) {
+func (feeds feedSections) fetch() {
 
 	wg := sync.WaitGroup{}
 	wg.Add(len(feeds))
 
 	for i := range feeds {
 		go func(j int) {
-			feeds[j].feed = gh.GetCommits(repo, feeds[j].parts...)
+			feeds[j].feed = fetchFeed(feeds[j].url, feeds[j].entryID)
 			wg.Done()
 		}(i)
 	}
@@ -66,10 +67,10 @@ func (feeds ghFeeds) fetch(gh Github, repo *url.URL) {
 	wg.Wait()
 }
 
-// GetCommits returns the GithubFeed of the repository
-func (gh Github) GetCommits(repo *url.URL, parts ...string) *githubFeed {
+// fetchFeed fetches and parses the atom feed at feedURL. The entry-ids are
+// reduced by entryID.
+func fetchFeed(feedURL url.URL, entryID func(id string) string) *atomFeed {
 
-	feedURL := gh.FeedURL(repo, parts...)
 	resp, done, err := vhttp.Request(http.MethodGet, feedURL.String())
 	if err != nil {
 		log.Printf("error: %q %v", feedURL.String(), err)
@@ -95,7 +96,7 @@ func (gh Github) GetCommits(repo *url.URL, parts ...string) *githubFeed {
 	}
 
 	xmldec := xml.NewDecoder(resp.Body)
-	feed := new(githubFeed)
+	feed := new(atomFeed)
 
 	if err = xmldec.Decode(feed); err != nil {
 		log.Printf("error: %q %v", feedURL.String(), err)
@@ -108,24 +109,15 @@ func (gh Github) GetCommits(repo *url.URL, parts ...string) *githubFeed {
 
 	for i, entry := range feed.Entry {
 		title := strings.TrimSpace(entry.Title)
-		feed.Entry[i].ID = feedEntryID(entry.ID)
+		feed.Entry[i].ID = entryID(entry.ID)
 		feed.Entry[i].Title = title
 	}
 
 	return feed
 }
 
-// feedEntryID returns the commit-id or the tag name of a feed entry-id:
-//
-//	tag:github.com,2008:Grit::Commit/<commit>
-//	tag:github.com,2008:Repository/<repo-id>/<tag>
-//
-// The tag name may contain "/", eg. "firestore/v1.27.0".
-func feedEntryID(id string) string {
-	if _, rest, ok := strings.Cut(id, ":Repository/"); ok {
-		if _, tag, ok := strings.Cut(rest, "/"); ok {
-			return tag
-		}
-	}
+// commitID returns the part of the entry-id after the last "/", which is the
+// commit-id in the commits feeds of GitHub, Forgejo and GitLab
+func commitID(id string) string {
 	return id[strings.LastIndex(id, "/")+1:]
 }
