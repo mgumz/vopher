@@ -3,6 +3,7 @@ package acquire
 import (
 	"net/url"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/mgumz/vopher/pkg/plugin"
@@ -43,11 +44,11 @@ func TestIsArchiveOf(t *testing.T) {
 	}
 }
 
-func TestPluginArchiveURL(t *testing.T) {
+func TestPluginArchiveURLs(t *testing.T) {
 	tests := []struct {
 		url, branch, want string
 	}{
-		{"https://github.com/tpope/vim-fugitive", "", "https://github.com/tpope/vim-fugitive/archive/master.zip"},
+		{"https://github.com/tpope/vim-fugitive", "", "https://github.com/tpope/vim-fugitive/archive/main.zip https://github.com/tpope/vim-fugitive/archive/master.zip"},
 		{"https://github.com/tpope/vim-fugitive", "main", "https://github.com/tpope/vim-fugitive/archive/main.zip"},
 		{"https://github.com/tpope/vim-fugitive#v2.1", "main", "https://github.com/tpope/vim-fugitive/archive/v2.1.zip#v2.1"},
 		{"https://github.com/tpope/vim-fugitive/archive/v2.1.zip", "", "https://github.com/tpope/vim-fugitive/archive/v2.1.zip"},
@@ -55,7 +56,11 @@ func TestPluginArchiveURL(t *testing.T) {
 	for _, tt := range tests {
 		u, _ := url.Parse(tt.url)
 		p := &plugin.Plugin{URL: u, Opts: plugin.Opts{Branch: tt.branch}}
-		if got := PluginArchiveURL(Github{}, p).String(); got != tt.want {
+		urls := []string{}
+		for _, u := range PluginArchiveURLs(Github{}, p) {
+			urls = append(urls, u.String())
+		}
+		if got := strings.Join(urls, " "); got != tt.want {
 			t.Errorf("%s: got %q, want %q", tt.url, got, tt.want)
 		}
 	}

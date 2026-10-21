@@ -1,6 +1,8 @@
 package acquire
 
 import (
+	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"testing"
 
@@ -55,6 +57,37 @@ func TestHosterFor(t *testing.T) {
 		}
 		if hoster != test.expected {
 			t.Fatalf("%d: expected %v, got %v", i, test.expected, hoster)
+		}
+	}
+}
+
+func TestProbeBranch(t *testing.T) {
+
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodHead && r.URL.Path == "/o/r/archive/master.zip" {
+			return
+		}
+		http.NotFound(w, r)
+	}))
+	defer ts.Close()
+
+	repo, _ := url.Parse(ts.URL + "/o/r")
+
+	tests := []struct {
+		branches []string
+		expected string
+		fails    bool
+	}{
+		{DefaultBranches, "master", false},
+		{[]string{"master", "main"}, "master", false},
+		{[]string{"main"}, "", true},
+	}
+
+	for i, test := range tests {
+		branch, err := ProbeBranch(Github{}, repo, test.branches...)
+		t.Logf("test-%d: %q: %q %v", i, test.branches, branch, err)
+		if (err != nil) != test.fails || branch != test.expected {
+			t.Fatalf("%d: expected %q fail=%v, got %q %v", i, test.expected, test.fails, branch, err)
 		}
 	}
 }

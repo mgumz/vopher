@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"bytes"
 	"fmt"
+	"net/http"
 	"net/url"
 	"os"
 	"path"
@@ -13,6 +14,7 @@ import (
 
 	"github.com/mgumz/vopher/pkg/archive"
 	"github.com/mgumz/vopher/pkg/common"
+	vhttp "github.com/mgumz/vopher/pkg/http"
 	"github.com/mgumz/vopher/pkg/plugin"
 	"github.com/mgumz/vopher/pkg/utils"
 )
@@ -40,16 +42,25 @@ type Hoster interface {
 	TagName(id string) string
 }
 
-// PluginArchiveURL returns the URL vopher fetches plugin p from: p.URL if it
-// already points to an archive, else the archive of the ref given by the
-// fragment of p.URL, `branch=` or "master" (in that order)
-func PluginArchiveURL(hoster Hoster, p *plugin.Plugin) *url.URL {
+// PluginArchiveURLs returns the URLs vopher may have fetched plugin p from:
+// p.URL if it already points to an archive, else the archive of the ref
+// given by the fragment of p.URL or `branch=` (in that order). Without
+// both, `update` probes DefaultBranches, so it is the archive of each of
+// them.
+func PluginArchiveURLs(hoster Hoster, p *plugin.Plugin) []*url.URL {
 	if ok, _ := archive.IsSupportedArchive(path.Base(p.URL.Path)); ok {
-		return p.URL
+		return []*url.URL{p.URL}
 	}
-	ref := utils.FirstNotEmpty(p.URL.Fragment, p.Opts.Branch, "master")
-	u := hoster.ArchiveURL(p.URL, ref)
-	return &u
+	refs := DefaultBranches
+	if ref := utils.FirstNotEmpty(p.URL.Fragment, p.Opts.Branch); ref != "" {
+		refs = []string{ref}
+	}
+	urls := []*url.URL{}
+	for _, ref := range refs {
+		u := hoster.ArchiveURL(p.URL, ref)
+		urls = append(urls, &u)
+	}
+	return urls
 }
 
 // hosters maps the names usable in `hoster=` to the Hoster
@@ -76,6 +87,27 @@ func HosterFor(plugin *plugin.Plugin) (Hoster, error) {
 		return nil, fmt.Errorf("unknown hoster %q", name)
 	}
 	return hoster, nil
+}
+
+// DefaultBranches are probed by ProbeBranch, in this order, for plugins
+// without `#ref` and without `branch=`
+var DefaultBranches = []string{"main", "master"}
+
+// ProbeBranch returns the first of branches with an archive at the hoster.
+// It asks with HEAD requests.
+func ProbeBranch(hoster Hoster, repo *url.URL, branches ...string) (string, error) {
+	for _, branch := range branches {
+		archiveURL := hoster.ArchiveURL(repo, branch)
+		resp, done, err := vhttp.Request(http.MethodHead, archiveURL.String())
+		if err != nil {
+			return "", err
+		}
+		done()
+		if resp.StatusCode == http.StatusOK {
+			return branch, nil
+		}
+	}
+	return "", fmt.Errorf("no archive for any of the branches %q", branches)
 }
 
 // GuessCommitByZIP guesses the commit by the comment in the zip file at
@@ -115,7 +147,11 @@ func CheckPlugin(hoster Hoster, plugin *plugin.Plugin, base, cacheDir string) st
 	name, head := hoster.GetRepository(plugin.URL)
 	altHead := GuessCommitByFile(plugin.Name, base)
 	if altHead == "" && cacheDir != "" {
-		altHead = GuessCommitByZIP(ArchivePath(cacheDir, PluginArchiveURL(hoster, plugin), ".zip"))
+		for _, u := range PluginArchiveURLs(hoster, plugin) {
+			if altHead = GuessCommitByZIP(ArchivePath(cacheDir, u, ".zip")); altHead != "" {
+				break
+			}
+		}
 	}
 	if altHead == "" {
 		altHead = GuessCommitByZIP(filepath.Join(base, plugin.Name+".zip"))

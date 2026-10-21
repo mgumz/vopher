@@ -70,11 +70,14 @@ func pruneCache(plugins plugin.List, cacheDir string, force bool) {
 
 	stems := make([]string, 0, len(plugins))
 	for _, p := range plugins {
-		u := p.URL
-		if hoster, _ := acquire.HosterFor(p); hoster != nil {
-			u = acquire.PluginArchiveURL(hoster, p)
+		hoster, _ := acquire.HosterFor(p)
+		if hoster == nil {
+			stems = append(stems, acquire.ArchiveStem(cacheDir, p.URL))
+			continue
 		}
-		stems = append(stems, acquire.ArchiveStem(cacheDir, u))
+		for _, u := range acquire.PluginArchiveURLs(hoster, p) {
+			stems = append(stems, acquire.ArchiveStem(cacheDir, u))
+		}
 	}
 
 	dirs := []string{}

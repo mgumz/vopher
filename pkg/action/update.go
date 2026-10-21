@@ -3,6 +3,7 @@ package action
 import (
 	"fmt"
 	"log"
+	"net/url"
 	"os"
 	"path/filepath"
 
@@ -63,10 +64,14 @@ func Update(plugins plugin.List, ui ui.UI, opts *ActUpdateOpts) {
 			case hoster != nil:
 				ref := utils.FirstNotEmpty(plugin.URL.Fragment, plugin.Opts.Branch)
 				immutable = acquire.IsCommit(ref)
-				// NOTE: "master" as default one is a classic fallback, but
-				// nowadays the primary branch is called "main" often. needs
-				// to be tackled somewhen
-				remoteZip := hoster.ArchiveURL(plugin.URL, utils.FirstNotEmpty(ref, "master"))
+				if ref == "" {
+					ref, err = defaultBranch(hoster, plugin.URL, pluginFolder, opts)
+					if err != nil {
+						log.Printf("error: %q: %s", plugin.URL, err)
+						continue
+					}
+				}
+				remoteZip := hoster.ArchiveURL(plugin.URL, ref)
 				plugin.URL = &remoteZip
 				if opts.Cache != "" {
 					stem = acquire.ArchiveStem(opts.Cache, plugin.URL)
@@ -123,4 +128,23 @@ func detectExt(url, stem string, offline bool) (string, error) {
 	}
 	_, suffixLen := archive.IsSupportedArchive(name)
 	return name[len(name)-suffixLen:], nil
+}
+
+// defaultBranch asks the hoster for the first of acquire.DefaultBranches
+// with an archive; offline, it takes the first of them with a kept archive
+func defaultBranch(hoster acquire.Hoster, repo *url.URL, pluginFolder string, opts *ActUpdateOpts) (string, error) {
+	if !opts.Offline {
+		return acquire.ProbeBranch(hoster, repo, acquire.DefaultBranches...)
+	}
+	for _, branch := range acquire.DefaultBranches {
+		stem := pluginFolder
+		if opts.Cache != "" {
+			archiveURL := hoster.ArchiveURL(repo, branch)
+			stem = acquire.ArchiveStem(opts.Cache, &archiveURL)
+		}
+		if _, ok := acquire.FindArchive(stem); ok {
+			return branch, nil
+		}
+	}
+	return "", fmt.Errorf("not available offline")
 }

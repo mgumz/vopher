@@ -21,8 +21,6 @@ type Opts struct {
 	MinVersion string
 }
 
-// NOTE: somewhen, the default "branch" should become "main" to reflect
-// current situation in most repos. atm, "" is ok to behave like before
-// once we set a default branch, users need to put `branch="master"` into
-// their vopher files to point to the correct branch. not yet.
+// There is no default "branch": without `branch=` and `#ref`, `update` asks
+// the hoster for acquire.DefaultBranches.
 var defaultOpts = Opts{StripDir: DefaultStrip}
