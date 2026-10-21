@@ -72,7 +72,7 @@ func pruneCache(plugins plugin.List, cacheDir string, force bool) {
 	for _, p := range plugins {
 		u := p.URL
 		if u.Host == "github.com" {
-			u = acquire.Github{}.PluginArchiveURL(p)
+			u = acquire.PluginArchiveURL(acquire.Github{}, p)
 		}
 		stems = append(stems, acquire.ArchiveStem(cacheDir, u))
 	}

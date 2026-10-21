@@ -6,12 +6,15 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 	"text/tabwriter"
 
+	"github.com/mgumz/vopher/pkg/archive"
 	"github.com/mgumz/vopher/pkg/common"
 	"github.com/mgumz/vopher/pkg/plugin"
+	"github.com/mgumz/vopher/pkg/utils"
 )
 
 // Hoster describes the URL layout of a git hoster (GitHub, Forgejo, GitLab,
@@ -26,15 +29,27 @@ type Hoster interface {
 	// CommitsFeedURL returns the atom feed of the commits on branch
 	CommitsFeedURL(repo *url.URL, branch string) url.URL
 
+	// ArchiveURL returns the zip archive of ref (branch, tag or commit)
+	ArchiveURL(repo *url.URL, ref string) url.URL
+
 	// TagsFeedURL returns the atom feed of the tags
 	TagsFeedURL(repo *url.URL) url.URL
-
-	// PluginArchiveURL returns the URL vopher fetches plugin p from
-	PluginArchiveURL(p *plugin.Plugin) *url.URL
 
 	// TagName returns the tag name of an entry-id of the tags feed. The tag
 	// name may contain "/".
 	TagName(id string) string
+}
+
+// PluginArchiveURL returns the URL vopher fetches plugin p from: p.URL if it
+// already points to an archive, else the archive of the ref given by the
+// fragment of p.URL, `branch=` or "master" (in that order)
+func PluginArchiveURL(hoster Hoster, p *plugin.Plugin) *url.URL {
+	if ok, _ := archive.IsSupportedArchive(path.Base(p.URL.Path)); ok {
+		return p.URL
+	}
+	ref := utils.FirstNotEmpty(p.URL.Fragment, p.Opts.Branch, "master")
+	u := hoster.ArchiveURL(p.URL, ref)
+	return &u
 }
 
 // GuessCommitByZIP guesses the commit by the comment in the zip file at
@@ -74,7 +89,7 @@ func CheckPlugin(hoster Hoster, plugin *plugin.Plugin, base, cacheDir string) st
 	name, head := hoster.GetRepository(plugin.URL)
 	altHead := GuessCommitByFile(plugin.Name, base)
 	if altHead == "" && cacheDir != "" {
-		altHead = GuessCommitByZIP(ArchivePath(cacheDir, hoster.PluginArchiveURL(plugin), ".zip"))
+		altHead = GuessCommitByZIP(ArchivePath(cacheDir, PluginArchiveURL(hoster, plugin), ".zip"))
 	}
 	if altHead == "" {
 		altHead = GuessCommitByZIP(filepath.Join(base, plugin.Name+".zip"))

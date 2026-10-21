@@ -5,9 +5,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/mgumz/vopher/pkg/archive"
 	"github.com/mgumz/vopher/pkg/common"
-	"github.com/mgumz/vopher/pkg/plugin"
 	"github.com/mgumz/vopher/pkg/utils"
 )
 
@@ -43,6 +41,13 @@ func (gh Github) GetRepository(remote *url.URL) (name, head string) {
 	return name, head
 }
 
+// ArchiveURL returns github.com/username/reponame/archive/<ref>.zip
+func (gh Github) ArchiveURL(repo *url.URL, ref string) url.URL {
+	archiveURL := *repo
+	archiveURL.Path = path.Join(archiveURL.Path, "archive", ref+".zip")
+	return archiveURL
+}
+
 // CommitsFeedURL returns github.com/username/reponame/commits/<branch>.atom
 func (gh Github) CommitsFeedURL(repo *url.URL, branch string) url.URL {
 	return gh.feedURL(repo, "commits", branch)
@@ -67,27 +72,6 @@ func (gh Github) TagName(id string) string {
 		}
 	}
 	return commitID(id)
-}
-
-// ArchiveURL returns the URL of the zip github creates for repo at the ref
-// given by the fragment of repo, branch or "master" (in that order)
-func (gh Github) ArchiveURL(repo *url.URL, branch string) *url.URL {
-	// NOTE: "master" as default one is a classic fallback, but
-	// nowadays the primary branch is called "main" often. needs
-	// to be tackled somewhen
-	ref := utils.FirstNotEmpty(repo.Fragment, branch, "master")
-	u := *repo
-	u.Path = path.Join(u.Path, "archive", ref+".zip")
-	return &u
-}
-
-// PluginArchiveURL returns the URL vopher fetches the github plugin p from:
-// p.URL if it already points to an archive, ArchiveURL otherwise
-func (gh Github) PluginArchiveURL(p *plugin.Plugin) *url.URL {
-	if ok, _ := archive.IsSupportedArchive(path.Base(p.URL.Path)); ok {
-		return p.URL
-	}
-	return gh.ArchiveURL(p.URL, p.Opts.Branch)
 }
 
 // IsCommit returns true if ref looks like a (short) git commit id. The

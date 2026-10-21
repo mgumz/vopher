@@ -55,7 +55,7 @@ func TestPluginArchiveURL(t *testing.T) {
 	for _, tt := range tests {
 		u, _ := url.Parse(tt.url)
 		p := &plugin.Plugin{URL: u, Opts: plugin.Opts{Branch: tt.branch}}
-		if got := (Github{}).PluginArchiveURL(p).String(); got != tt.want {
+		if got := PluginArchiveURL(Github{}, p).String(); got != tt.want {
 			t.Errorf("%s: got %q, want %q", tt.url, got, tt.want)
 		}
 	}

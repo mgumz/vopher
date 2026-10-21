@@ -1,6 +1,9 @@
 package acquire
 
-import "testing"
+import (
+	"net/url"
+	"testing"
+)
 
 func TestGithubFeedIDs(t *testing.T) {
 
@@ -18,6 +21,30 @@ func TestGithubFeedIDs(t *testing.T) {
 		t.Logf("test-%d: %q: %q", i, test.id, id)
 		if id != test.expected {
 			t.Fatalf("%d: expected %q, got %q", i, test.expected, id)
+		}
+	}
+}
+
+func TestGithubURLs(t *testing.T) {
+
+	repo, _ := url.Parse("https://github.com/tpope/vim-fugitive")
+	gh := Github{}
+
+	tests := []struct {
+		u        url.URL
+		expected string
+	}{
+		{gh.ArchiveURL(repo, "master"), "https://github.com/tpope/vim-fugitive/archive/master.zip"},
+		{gh.ArchiveURL(repo, "firestore/v1.27.0"), "https://github.com/tpope/vim-fugitive/archive/firestore/v1.27.0.zip"},
+		{gh.CommitsFeedURL(repo, "main"), "https://github.com/tpope/vim-fugitive/commits/main.atom"},
+		{gh.TagsFeedURL(repo), "https://github.com/tpope/vim-fugitive/tags.atom"},
+	}
+
+	for i, test := range tests {
+		u := test.u.String()
+		t.Logf("test-%d: %q", i, u)
+		if u != test.expected {
+			t.Fatalf("%d: expected %q, got %q", i, test.expected, u)
 		}
 	}
 }
