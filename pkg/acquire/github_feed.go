@@ -107,12 +107,25 @@ func (gh Github) GetCommits(repo *url.URL, parts ...string) *githubFeed {
 	}
 
 	for i, entry := range feed.Entry {
-		idx := strings.LastIndex(entry.ID, "/")
-		id := entry.ID[idx+1:]
 		title := strings.TrimSpace(entry.Title)
-		feed.Entry[i].ID = id
+		feed.Entry[i].ID = feedEntryID(entry.ID)
 		feed.Entry[i].Title = title
 	}
 
 	return feed
+}
+
+// feedEntryID returns the commit-id or the tag name of a feed entry-id:
+//
+//	tag:github.com,2008:Grit::Commit/<commit>
+//	tag:github.com,2008:Repository/<repo-id>/<tag>
+//
+// The tag name may contain "/", eg. "firestore/v1.27.0".
+func feedEntryID(id string) string {
+	if _, rest, ok := strings.Cut(id, ":Repository/"); ok {
+		if _, tag, ok := strings.Cut(rest, "/"); ok {
+			return tag
+		}
+	}
+	return id[strings.LastIndex(id, "/")+1:]
 }
