@@ -6,6 +6,8 @@ import (
 	stduser "os/user"
 	"path/filepath"
 	"strings"
+
+	"github.com/mgumz/vopher/pkg/common"
 )
 
 // FirstNotEmpty checks all given `parts` and returns the first one which is
@@ -110,10 +112,11 @@ func ExpandPathEnvironment(path, vopherDir string) string {
 // parsePluginURL will parse a given URL into a *url.URL
 // Since people are lazy and lazy people will just hand over
 // "github.com/tpope/vim-fugitive" - we want to support lazy typing by
-// prepending a protocol
+// prepending a protocol for the hosts in common.KnownHosts
 func ParsePluginURL(u string) (*url.URL, error) {
 
-	if strings.HasPrefix(u, "github.com/") {
+	host, _, _ := strings.Cut(u, "/")
+	if _, ok := common.KnownHosts[strings.ToLower(host)]; ok {
 		u = "https://" + u
 	}
 

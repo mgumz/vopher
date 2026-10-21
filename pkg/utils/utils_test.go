@@ -62,3 +62,29 @@ func TestExpandVar(t *testing.T) {
 		}
 	}
 }
+
+func TestParsePluginURL(t *testing.T) {
+
+	tests := []struct {
+		in, expected string
+	}{
+		{"github.com/tpope/vim-fugitive", "https://github.com/tpope/vim-fugitive"},
+		{"codeberg.org/mfussenegger/nvim-dap", "https://codeberg.org/mfussenegger/nvim-dap"},
+		{"gitea.com/gitea/tea", "https://gitea.com/gitea/tea"},
+		{"gitlab.com/gitlab-org/editor-extensions/gitlab.vim", "https://gitlab.com/gitlab-org/editor-extensions/gitlab.vim"},
+		{"GitLab.com/group/repo#v1.0", "https://GitLab.com/group/repo#v1.0"},
+		{"https://codeberg.org/o/r", "https://codeberg.org/o/r"},
+		{"example.com/plugin.zip", "example.com/plugin.zip"},
+	}
+
+	for i, test := range tests {
+		u, err := ParsePluginURL(test.in)
+		if err != nil {
+			t.Fatalf("%d: %q: %v", i, test.in, err)
+		}
+		t.Logf("test-%d: %q: %q", i, test.in, u)
+		if u.String() != test.expected {
+			t.Fatalf("%d: expected %q, got %q", i, test.expected, u)
+		}
+	}
+}

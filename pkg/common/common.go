@@ -9,3 +9,12 @@ const (
 	// checkable.
 	CommitFileName = "github-commit"
 )
+
+// KnownHosts maps the host of a git hoster to the name of its hoster, as
+// used in the plugin option `hoster=`
+var KnownHosts = map[string]string{
+	"github.com":   "github",
+	"codeberg.org": "forgejo",
+	"gitea.com":    "gitea",
+	"gitlab.com":   "gitlab",
+}

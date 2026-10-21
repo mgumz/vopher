@@ -60,21 +60,13 @@ var hosters = map[string]Hoster{
 	"gitlab":  Gitlab{},
 }
 
-// knownHosts maps a host to the name of its hoster
-var knownHosts = map[string]string{
-	"github.com":   "github",
-	"codeberg.org": "forgejo",
-	"gitea.com":    "gitea",
-	"gitlab.com":   "gitlab",
-}
-
 // HosterFor returns the Hoster of plugin: the one named by `hoster=`, else
 // the one of the host of the plugin URL. It returns nil for hosts it does
 // not know.
 func HosterFor(plugin *plugin.Plugin) (Hoster, error) {
 	name := plugin.Opts.Hoster
 	if name == "" {
-		name = knownHosts[strings.ToLower(plugin.URL.Hostname())]
+		name = common.KnownHosts[strings.ToLower(plugin.URL.Hostname())]
 	}
 	if name == "" {
 		return nil, nil
