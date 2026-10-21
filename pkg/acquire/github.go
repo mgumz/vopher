@@ -4,40 +4,19 @@ import (
 	"net/url"
 	"path"
 	"strings"
-
-	"github.com/mgumz/vopher/pkg/utils"
-)
-
-const (
-	nGithubRepoParts = 3
 )
 
 // Github is a pseudo type to group Github related functions
 type Github struct{}
 
-// GetRepository extracts parts of `url`. The repo-name is usually the first 2
-// parts of the repo.Path:
+// GetRepository extracts parts of `url`, see ownerRepository:
 //
 //	github.com/username/reponame
 //	github.com/username/reponame/archive/master.zip
 //	github.com/username/reponame/archive/main.zip
 //	github.com/username/reponame#v2.1
 func (gh Github) GetRepository(remote *url.URL) (name, head string) {
-	name = remote.Path
-	if idx := utils.IndexByteN(remote.Path, '/', nGithubRepoParts); idx > 0 {
-		name = name[:idx]
-	}
-
-	// TODO: other means to detect the current used 'head'
-	head = "master"
-	if remote.Fragment != "" {
-		head = remote.Fragment
-	} else if strings.HasSuffix(remote.Path, ".zip") {
-		head = path.Base(remote.Path)
-		head = head[:len(head)-4]
-	}
-
-	return name, head
+	return ownerRepository(remote)
 }
 
 // ArchiveURL returns github.com/username/reponame/archive/<ref>.zip

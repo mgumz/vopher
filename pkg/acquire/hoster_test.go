@@ -36,8 +36,11 @@ func TestHosterFor(t *testing.T) {
 	}{
 		{"https://github.com/tpope/vim-fugitive", "", Github{}, false},
 		{"https://GitHub.com/tpope/vim-fugitive", "", Github{}, false},
+		{"https://codeberg.org/mfussenegger/nvim-dap", "", Forgejo{}, false},
+		{"https://gitea.com/gitea/tea", "", Forgejo{}, false},
 		{"https://example.com/plugin.zip", "", nil, false},
 		{"https://git.example.com/o/r", "github", Github{}, false},
+		{"https://git.example.com/o/r", "Forgejo", nil, true},
 		{"https://git.example.com/o/r", "nope", nil, true},
 	}
 

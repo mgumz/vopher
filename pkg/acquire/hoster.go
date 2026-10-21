@@ -54,12 +54,16 @@ func PluginArchiveURL(hoster Hoster, p *plugin.Plugin) *url.URL {
 
 // hosters maps the names usable in `hoster=` to the Hoster
 var hosters = map[string]Hoster{
-	"github": Github{},
+	"github":  Github{},
+	"forgejo": Forgejo{},
+	"gitea":   Forgejo{},
 }
 
 // knownHosts maps a host to the name of its hoster
 var knownHosts = map[string]string{
-	"github.com": "github",
+	"github.com":   "github",
+	"codeberg.org": "forgejo",
+	"gitea.com":    "gitea",
 }
 
 // HosterFor returns the Hoster of plugin: the one named by `hoster=`, else
@@ -185,4 +189,26 @@ func IsCommit(ref string) bool {
 		}
 	}
 	return true
+}
+
+// ownerRepository extracts parts of `url` for hosters with repositories at
+// "<owner>/<repo>" (GitHub, Forgejo). The repo-name is the first 2 parts of
+// the repo.Path; head is the #fragment, the name of the .zip or "master".
+func ownerRepository(remote *url.URL) (name, head string) {
+	const nRepoParts = 3
+	name = remote.Path
+	if idx := utils.IndexByteN(remote.Path, '/', nRepoParts); idx > 0 {
+		name = name[:idx]
+	}
+
+	// TODO: other means to detect the current used 'head'
+	head = "master"
+	if remote.Fragment != "" {
+		head = remote.Fragment
+	} else if strings.HasSuffix(remote.Path, ".zip") {
+		head = path.Base(remote.Path)
+		head = head[:len(head)-4]
+	}
+
+	return name, head
 }
