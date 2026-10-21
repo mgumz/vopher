@@ -1,6 +1,9 @@
 package acquire
 
 import (
+	"encoding/json"
+	"fmt"
+	"net/http"
 	"net/url"
 	"path"
 	"strings"
@@ -73,4 +76,38 @@ func (gl Gitlab) TagName(id string) string {
 		return unescaped
 	}
 	return tag
+}
+
+// BranchOf asks the api
+// gitlab.com/api/v4/projects/<group%2Freponame>/repository/commits/<commit>/refs?type=branch
+func (gl Gitlab) BranchOf(repo *url.URL, commit, branch string) (string, error) {
+	project := url.PathEscape(strings.TrimPrefix(repo.Path, "/"))
+	u := repo.Scheme + "://" + repo.Host + "/api/v4/projects/" + project +
+		"/repository/commits/" + url.PathEscape(commit) + "/refs?type=branch&per_page=100"
+	body, status, err := fetchBody(u)
+	if err != nil {
+		return "", err
+	}
+	if status != http.StatusOK {
+		return "", fmt.Errorf("%q: %d", u, status)
+	}
+	branches, err := parseGitlabBranches(body)
+	if err != nil {
+		return "", fmt.Errorf("%q: %w", u, err)
+	}
+	return pickBranch(branches, branchCandidates(branch, "")), nil
+}
+
+func parseGitlabBranches(body []byte) ([]string, error) {
+	var refs []struct {
+		Name string `json:"name"`
+	}
+	if err := json.Unmarshal(body, &refs); err != nil {
+		return nil, err
+	}
+	branches := []string{}
+	for _, r := range refs {
+		branches = append(branches, r.Name)
+	}
+	return branches, nil
 }

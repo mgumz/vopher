@@ -1,8 +1,12 @@
 package acquire
 
 import (
+	"fmt"
+	"html"
+	"net/http"
 	"net/url"
 	"path"
+	"regexp"
 	"strings"
 )
 
@@ -50,4 +54,30 @@ func (gh Github) TagName(id string) string {
 		}
 	}
 	return commitID(id)
+}
+
+var githubBranchRE = regexp.MustCompile(`<li class="branch"><a [^>]*>([^<]+)</a>`)
+
+// BranchOf asks github.com/username/reponame/branch_commits/<commit>, the
+// HTML snippet of the commit page listing the branches and tags holding
+// the commit. It is not documented, so it may change.
+func (gh Github) BranchOf(repo *url.URL, commit, branch string) (string, error) {
+	u := *repo
+	u.Path = path.Join(u.Path, "branch_commits", commit)
+	body, status, err := fetchBody(u.String())
+	if err != nil {
+		return "", err
+	}
+	if status != http.StatusOK {
+		return "", fmt.Errorf("%q: %d", u.String(), status)
+	}
+	return pickBranch(parseGithubBranches(body), branchCandidates(branch, "")), nil
+}
+
+func parseGithubBranches(body []byte) []string {
+	branches := []string{}
+	for _, m := range githubBranchRE.FindAllSubmatch(body, -1) {
+		branches = append(branches, html.UnescapeString(string(m[1])))
+	}
+	return branches
 }

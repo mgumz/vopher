@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"bytes"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -36,6 +37,11 @@ type Hoster interface {
 
 	// TagsFeedURL returns the atom feed of the tags
 	TagsFeedURL(repo *url.URL) url.URL
+
+	// BranchOf returns the branch holding commit. If several do, it prefers
+	// branch (`branch=`, may be ""), then the default branches, see
+	// branchCandidates. It returns "" if it finds none.
+	BranchOf(repo *url.URL, commit, branch string) (string, error)
 
 	// TagName returns the tag name of an entry-id of the tags feed. The tag
 	// name may contain "/".
@@ -165,7 +171,16 @@ func CheckPlugin(hoster Hoster, plugin *plugin.Plugin, base, cacheDir string) st
 	u := *plugin.URL
 	u.Path = name
 
-	feeds := buildFeeds(hoster, &u, plugin.Opts.Branch, head)
+	// a #ref: show the commits of the branch holding the installed commit
+	refBranch := ""
+	if plugin.URL.Fragment != "" && altHead != "" {
+		var err error
+		if refBranch, err = hoster.BranchOf(&u, altHead, plugin.Opts.Branch); err != nil {
+			log.Printf("error: %q %v", plugin.URL, err)
+		}
+	}
+
+	feeds := buildFeeds(hoster, &u, plugin.Opts.Branch, head, refBranch)
 	feeds.fetch()
 
 	buf := bytes.NewBuffer(nil)

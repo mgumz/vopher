@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"slices"
 	"strings"
 	"sync"
 
@@ -31,9 +32,13 @@ type feedSection struct {
 }
 type feedSections []feedSection
 
-func buildFeeds(hoster Hoster, repo *url.URL, branch, head string) feedSections {
+// buildFeeds returns the feeds `check` shows: the commits of branch, or of
+// master and main; the commits of head and of refBranch, the branch holding
+// head, if not shown already; the tags.
+func buildFeeds(hoster Hoster, repo *url.URL, branch, head, refBranch string) feedSections {
 
 	commits := feedSections{}
+	shown := []string{branch}
 
 	if branch != "" {
 		commits = append(commits,
@@ -43,10 +48,15 @@ func buildFeeds(hoster Hoster, repo *url.URL, branch, head string) feedSections 
 			feedSection{hoster.CommitsFeedURL(repo, "master"), commitID, nil, "\n - master commits:\n"},
 			feedSection{hoster.CommitsFeedURL(repo, "main"), commitID, nil, "\n - main commits:\n"},
 		)
+		shown = []string{"master", "main"}
 		if head != "master" && head != "main" {
 			commits = append(commits,
 				feedSection{hoster.CommitsFeedURL(repo, head), commitID, nil, "\n - commits:\n"})
 		}
+	}
+	if refBranch != "" && !slices.Contains(shown, refBranch) {
+		commits = append(commits,
+			feedSection{hoster.CommitsFeedURL(repo, refBranch), commitID, nil, "\n - " + refBranch + " commits:\n"})
 	}
 	commits = append(commits, feedSection{hoster.TagsFeedURL(repo), hoster.TagName, nil, "\n - tags:\n"})
 
