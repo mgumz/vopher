@@ -2,8 +2,8 @@ package plugin
 
 const (
 
-	// Most plugins are fetched from github. The github zip-files
-	// put the files into a sub folder like this:
+	// The zip-files of the git hosters put the files into a sub folder
+	// like this:
 	//   vim-plugin/doc/plugin.txt
 	//   vim-plugin/README.txt
 	//

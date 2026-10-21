@@ -164,6 +164,9 @@ Let's check for updates / new stuff:
       V1.3.0 2013-04-22T21:57:01Z V1.3.0
       ...
 
+For a plugin pinned with `#ref`, `check` also shows the commits of the branch
+holding the installed commit, if it is none of the branches shown already.
+
 `GoldenView.Vim#V1.3.5` is referenced in the `vopher.list`-file. **vopher**
 tries to guess what commit this actually is and marks that line with a '\*'.
 So, you can easily see that there seems to be no new release for `GoldenView`,
@@ -241,13 +244,17 @@ The vopher-file is pretty simple:
     # stripping away the first path within the .zip file
     diffchar https://vim.sourceforge.io/scripts/download_script.php?src_id=25736 strip=0
 
-    # Github hosts lots of vimscripts and it has special powers: the regular
-    # file fetching API allows to specifiy versions etc.
+    # git hosters have special powers: vopher knows where they keep the
+    # archive of a branch, tag or commit, and `vopher check` reads their
+    # feeds. Known hosts: github.com, codeberg.org (Forgejo), gitea.com,
+    # gitlab.com; for them the "https://" may be left out.
 
-    # fetches vim-fugitive, current HEAD
+    # fetches vim-fugitive, default branch: "main", else "master"
     https://github.com/tpope/vim-fugitive
+    github.com/tpope/vim-fugitive
 
-    # fetches vim-fugitive, branch 'worktree'
+    # fetches vim-fugitive, branch 'worktree'. a #ref (see below) wins
+    # over branch=
     https://github.com/tpope/vim-fugitive branch=worktree
 
     # fetches vim-fugitive, tagged release 'v2.1'
@@ -284,6 +291,16 @@ The vopher-file is pretty simple:
     # higher. again, this helps action `vim-pack` to guard inclusion
     # of nvim-origami in too old versions
     nvim/opt/nvim-origami https://github.com/idanarye/vim-merginal min-version=nvim-0.11
+
+    # fetches nvim-dap from codeberg.org, a Forgejo instance
+    codeberg.org/mfussenegger/nvim-dap
+
+    # fetches gitlab.vim from gitlab.com, which allows nested groups
+    gitlab.com/gitlab-org/editor-extensions/gitlab.vim
+
+    # fetches from a self-hosted instance: its host tells nothing about the
+    # software, so name the hoster: github, forgejo, gitea or gitlab
+    https://git.example.com/someone/vim-plugin hoster=forgejo
 
 ## Supported archive types
 

@@ -14,12 +14,17 @@ func Sample() {
 # simply redirect it using your shell's '>' operator, e.g.:
 # 'vopher sample > sample.list'.
 #
-# Fetch tpope's 'vim-fugitive' plugin, the master branch (rox, btw) and places
-# the content of the zip-file into -dir <folder>/vim-fugitive.
+# Fetch tpope's 'vim-fugitive' plugin, the default branch ("main", else
+# "master") and places the content of the zip-file into
+# -dir <folder>/vim-fugitive. For github.com, codeberg.org, gitea.com and
+# gitlab.com the "https://" may be left out.
 # https://github.com/tpope/vim-fugitive
 #
+# Fetch tpope's 'vim-fugitive' plugin, branch 'worktree'.
+# https://github.com/tpope/vim-fugitive branch=worktree
+#
 # Fetch tpope's 'vim-fugitive' plugin, but grab the tagged release 'v2.1'
-# instead of 'master'.
+# instead of the default branch.
 # https://github.com/tpope/vim-fugitive#v2.1
 #
 # Fetch tpope's 'vim-fugitive' plugin and place it under -dir <folder>/foo
@@ -36,6 +41,10 @@ func Sample() {
 #
 # Same as before, but check the zip against the sha1 given
 # https://github.com/tpope/vim-fugitive/archive/v2.1.zip sha1=90437a3bd5f248bf5061f9afd3cc4a22fca4a11c
+#
+# Fetch a plugin from a self-hosted Forgejo; one of github, forgejo, gitea,
+# gitlab.
+# https://git.example.com/someone/vim-plugin hoster=forgejo
 #
 # SAMPLE PLUGIN LIST
 # The following are a set of plugins that are rather popular and are a good
