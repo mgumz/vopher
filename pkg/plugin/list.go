@@ -71,7 +71,7 @@ func (plugins List) SortByLineNumber() []string {
 // specifications — users only need to reference the final path segment (like
 // depends-on=wuzz), which aligns with how vim/nvim's packadd! command works.
 func (plugins List) Exists(p string) bool {
-	for name, _ := range plugins {
+	for name := range plugins {
 		if p == name || path.Base(name) == p {
 			return true
 		}
