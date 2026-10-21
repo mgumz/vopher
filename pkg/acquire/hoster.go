@@ -57,6 +57,7 @@ var hosters = map[string]Hoster{
 	"github":  Github{},
 	"forgejo": Forgejo{},
 	"gitea":   Forgejo{},
+	"gitlab":  Gitlab{},
 }
 
 // knownHosts maps a host to the name of its hoster
@@ -64,6 +65,7 @@ var knownHosts = map[string]string{
 	"github.com":   "github",
 	"codeberg.org": "forgejo",
 	"gitea.com":    "gitea",
+	"gitlab.com":   "gitlab",
 }
 
 // HosterFor returns the Hoster of plugin: the one named by `hoster=`, else
