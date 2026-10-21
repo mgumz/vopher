@@ -159,3 +159,43 @@ func TestIsCommit(t *testing.T) {
 		}
 	}
 }
+
+func TestExtractAtomic(t *testing.T) {
+	dir := t.TempDir()
+	base := filepath.Join(dir, "plugin")
+	if err := os.MkdirAll(filepath.Join(base, "plugin"), 0700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(base, "stale.vim"), []byte("old"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(base, "plugin", "a.vim"), []byte("old"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	leftovers := func() []string {
+		names, _ := filepath.Glob(filepath.Join(dir, ".plugin.vopher*"))
+		return names
+	}
+
+	// broken archive: base stays as it was
+	err := extractAtomic(base, &archive.ZipArchive{}, bytes.NewReader([]byte("no zip")), 1)
+	if err == nil {
+		t.Fatal("expected an error for a broken archive")
+	}
+	mustExtracted(t, base, "old")
+	if l := leftovers(); len(l) != 0 {
+		t.Fatalf("leftovers after failure: %v", l)
+	}
+
+	// valid archive: base is replaced as a whole
+	if err = extractAtomic(base, &archive.ZipArchive{}, bytes.NewReader(testZip(t, "v1")), 1); err != nil {
+		t.Fatal(err)
+	}
+	mustExtracted(t, base, "v1")
+	if _, err = os.Stat(filepath.Join(base, "stale.vim")); err == nil {
+		t.Fatal("stale.vim of the old version survived")
+	}
+	if l := leftovers(); len(l) != 0 {
+		t.Fatalf("leftovers after success: %v", l)
+	}
+}

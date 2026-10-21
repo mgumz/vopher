@@ -4,8 +4,10 @@ import (
 	"crypto/sha1" /* #nosec */
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"time"
@@ -88,7 +90,7 @@ func Acquire(base string, src Source, archive vopher.Archive, skipDirs int) erro
 	_ = file.Sync()
 	_, _ = file.Seek(0, 0)
 
-	err = archive.Extract(base, file, skipDirs)
+	err = extractAtomic(base, archive, file, skipDirs)
 	_ = file.Close()
 	if err == nil {
 		err = os.Rename(tmpName, src.Path)
@@ -105,7 +107,37 @@ func extractFile(base, name string, archive vopher.Archive, skipDirs int) error 
 		return err
 	}
 	defer file.Close()
-	return archive.Extract(base, file, skipDirs)
+	return extractAtomic(base, archive, file, skipDirs)
+}
+
+// extractAtomic extracts r into a hidden sibling of base and swaps it in
+// only once the extraction is complete. A failed extraction leaves base as
+// it was.
+func extractAtomic(base string, archive vopher.Archive, r io.Reader, skipDirs int) error {
+
+	const dirPerms = 0700
+	ts := time.Now().UTC().Format("-2006-01-02T03-04-05.000000000Z")
+	hidden := filepath.Join(filepath.Dir(base), "."+filepath.Base(base)+".vopher"+ts)
+	next, prev := hidden, hidden+".old"
+
+	if err := os.MkdirAll(next, dirPerms); err != nil {
+		return fmt.Errorf("mkdir %q: %s", next, err)
+	}
+	if err := archive.Extract(next, r, skipDirs); err != nil {
+		_ = os.RemoveAll(next)
+		return err
+	}
+
+	if err := os.Rename(base, prev); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		_ = os.RemoveAll(next)
+		return err
+	}
+	if err := os.Rename(next, base); err != nil {
+		_ = os.Rename(prev, base)
+		_ = os.RemoveAll(next)
+		return err
+	}
+	return os.RemoveAll(prev)
 }
 
 func fileSHA1(name string) (string, error) {
