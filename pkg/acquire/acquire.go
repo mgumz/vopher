@@ -36,18 +36,19 @@ type Source struct {
 // The archive kept at src.Path is used without asking the server if src is
 // Offline, Immutable or its SHA1 matches. Otherwise it is fetched
 // conditionally: if the server reports it unchanged, the kept one is used.
-func Acquire(base string, src Source, archive vopher.Archive, skipDirs int) error {
+// The returned origin tells which of these happened.
+func Acquire(base string, src Source, archive vopher.Archive, skipDirs int) (vopher.Origin, error) {
 
 	const dirPerms = 0700
 	err := os.MkdirAll(base, dirPerms)
 
 	if err != nil {
-		return fmt.Errorf("mkdir %q: %s", base, err)
+		return 0, fmt.Errorf("mkdir %q: %s", base, err)
 	}
 
 	cacheDir := filepath.Dir(src.Path)
 	if err = os.MkdirAll(cacheDir, dirPerms); err != nil {
-		return fmt.Errorf("mkdir %q: %s", cacheDir, err)
+		return 0, fmt.Errorf("mkdir %q: %s", cacheDir, err)
 	}
 
 	kept, err := fileSHA1(src.Path)
@@ -55,13 +56,13 @@ func Acquire(base string, src Source, archive vopher.Archive, skipDirs int) erro
 	case err == nil:
 		matches := src.SHA1 == "" || src.SHA1 == kept
 		if matches && (src.Offline || src.Immutable || src.SHA1 != "") {
-			return extractFile(base, src.Path, archive, skipDirs)
+			return vopher.OriginKept, extractFile(base, src.Path, archive, skipDirs)
 		}
 		if src.Offline {
-			return fmt.Errorf("sha1 of %q does not match: got %s, expected %s", src.Path, kept, src.SHA1)
+			return 0, fmt.Errorf("sha1 of %q does not match: got %s, expected %s", src.Path, kept, src.SHA1)
 		}
 	case src.Offline:
-		return fmt.Errorf("%q not available offline: %s", src.URL, err)
+		return 0, fmt.Errorf("%q not available offline: %s", src.URL, err)
 	}
 
 	// a kept archive not matching src.SHA1 must not be confirmed by a 304
@@ -74,7 +75,7 @@ func Acquire(base string, src Source, archive vopher.Archive, skipDirs int) erro
 	tmpName := src.Path + ts
 	file, err := os.Create(tmpName) // #nosec G304
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	got, notModified, err := http.GetIfChanged(file, src.URL, src.SHA1, have)
@@ -82,9 +83,9 @@ func Acquire(base string, src Source, archive vopher.Archive, skipDirs int) erro
 		_ = file.Close()
 		_ = os.Remove(tmpName)
 		if err != nil {
-			return err
+			return 0, err
 		}
-		return extractFile(base, src.Path, archive, skipDirs)
+		return vopher.OriginNotModified, extractFile(base, src.Path, archive, skipDirs)
 	}
 
 	_ = file.Sync()
@@ -98,7 +99,7 @@ func Acquire(base string, src Source, archive vopher.Archive, skipDirs int) erro
 	if err == nil {
 		writeMeta(src.Path, got)
 	}
-	return err
+	return vopher.OriginDownloaded, err
 }
 
 func extractFile(base, name string, archive vopher.Archive, skipDirs int) error {

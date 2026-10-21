@@ -37,6 +37,7 @@ type UI interface {
 	AddJob(id string)
 	Print(id, msg string)
 	PrintShort(id, msg string)
+	JobOrigin(id string, origin vopher.Origin) // where the archive of job id came from
 	JobDone(id string)
 	Wait() // wait for all jobs to be .Done()
 }

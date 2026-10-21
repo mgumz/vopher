@@ -11,6 +11,7 @@ import (
 	"github.com/mgumz/vopher/pkg/plugin"
 	"github.com/mgumz/vopher/pkg/ui"
 	"github.com/mgumz/vopher/pkg/utils"
+	"github.com/mgumz/vopher/pkg/vopher"
 )
 
 func AcquireAndPostupdate(dir string, src acquire.Source, dryRun bool, plugin *plugin.Plugin, ui ui.UI) {
@@ -30,7 +31,11 @@ func AcquireAndPostupdate(dir string, src acquire.Source, dryRun bool, plugin *p
 	if dryRun {
 		entries, err = acquire.DryAcquire(src, plugin.Archive, stripDir)
 	} else {
-		err = acquire.Acquire(dir, src, plugin.Archive, stripDir)
+		var origin vopher.Origin
+		origin, err = acquire.Acquire(dir, src, plugin.Archive, stripDir)
+		if err == nil {
+			ui.JobOrigin(dir, origin)
+		}
 	}
 	if err != nil {
 		log.Printf("%s: %v", dir, err)

@@ -14,6 +14,7 @@ import (
 
 	"github.com/mgumz/vopher/pkg/archive"
 	vhttp "github.com/mgumz/vopher/pkg/http"
+	"github.com/mgumz/vopher/pkg/vopher"
 )
 
 func testZip(t *testing.T, content string) []byte {
@@ -67,17 +68,21 @@ func TestAcquireCache(t *testing.T) {
 	srv, hits, notModified := testServer(t, data)
 	dir := t.TempDir()
 	src := Source{URL: srv.URL + "/plugin.zip", Path: filepath.Join(dir, "cache", "plugin.zip")}
-	acquire := func(src Source) error {
+	acquire := func(src Source, want vopher.Origin) error {
 		base := filepath.Join(dir, "plugin")
 		_ = os.RemoveAll(base)
-		if err := Acquire(base, src, &archive.ZipArchive{}, 1); err != nil {
+		origin, err := Acquire(base, src, &archive.ZipArchive{}, 1)
+		if err != nil {
 			return err
+		}
+		if origin != want {
+			t.Errorf("origin %d, want %d", origin, want)
 		}
 		mustExtracted(t, base, "v1")
 		return nil
 	}
 
-	if err := acquire(src); err != nil {
+	if err := acquire(src, vopher.OriginDownloaded); err != nil {
 		t.Fatal(err)
 	}
 	if hits.Load() != 1 {
@@ -88,7 +93,7 @@ func TestAcquireCache(t *testing.T) {
 	}
 
 	// kept archive + etag: conditional request, 304, extracted from cache
-	if err := acquire(src); err != nil {
+	if err := acquire(src, vopher.OriginNotModified); err != nil {
 		t.Fatal(err)
 	}
 	if hits.Load() != 2 || notModified.Load() != 1 {
@@ -103,7 +108,7 @@ func TestAcquireCache(t *testing.T) {
 		"sha1 matches": {URL: src.URL, Path: src.Path, SHA1: hex.EncodeToString(sum[:])},
 	} {
 		before := hits.Load()
-		if err := acquire(s); err != nil {
+		if err := acquire(s, vopher.OriginKept); err != nil {
 			t.Fatalf("%s: %s", name, err)
 		}
 		if hits.Load() != before {
@@ -126,7 +131,7 @@ func TestAcquireSHA1MismatchIgnoresETag(t *testing.T) {
 	src.SHA1 = hex.EncodeToString(sum[:])
 
 	base := filepath.Join(dir, "plugin")
-	if err := Acquire(base, src, &archive.ZipArchive{}, 1); err != nil {
+	if _, err := Acquire(base, src, &archive.ZipArchive{}, 1); err != nil {
 		t.Fatal(err)
 	}
 	if notModified.Load() != 0 {
@@ -138,7 +143,7 @@ func TestAcquireSHA1MismatchIgnoresETag(t *testing.T) {
 func TestAcquireOfflineMissing(t *testing.T) {
 	dir := t.TempDir()
 	src := Source{URL: "http://127.0.0.1:1/plugin.zip", Path: filepath.Join(dir, "plugin.zip"), Offline: true}
-	if err := Acquire(filepath.Join(dir, "plugin"), src, &archive.ZipArchive{}, 1); err == nil {
+	if _, err := Acquire(filepath.Join(dir, "plugin"), src, &archive.ZipArchive{}, 1); err == nil {
 		t.Fatal("expected an error for a missing archive")
 	}
 }

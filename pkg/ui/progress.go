@@ -8,10 +8,12 @@ import (
 	"os"
 	"strconv"
 	"time"
+	"unicode/utf8"
 )
 
 type ProgressTicker struct {
 	WriteMeter
+	note   func() string // optional, shown after the counter
 	ticker *time.Ticker
 	stopCh chan bool
 }
@@ -79,14 +81,20 @@ func (pt *ProgressTicker) print(prefix string) {
 		borderWidth            = 2  // 1 left/right of progress bar
 		progressThresholdWidth = 10 // "[= 100% =]" <- 10 chars
 		infoFmt                = "%s: (%d/%d)"
+		infoNoteFmt            = "%s: (%d/%d %s)"
 		progressNumberFmt      = " %d%% "
 	)
 
 	// the info field / component
 	info := fmt.Sprintf(infoFmt, prefix, pt.counter, pt.max)
+	if pt.note != nil {
+		if note := pt.note(); note != "" {
+			info = fmt.Sprintf(infoNoteFmt, prefix, pt.counter, pt.max, note)
+		}
+	}
 
 	// the progress bar
-	barWidth := cols - len(info) - borderWidth
+	barWidth := cols - utf8.RuneCountInString(info) - borderWidth
 	bar := bytes.Repeat([]byte("."), barWidth)
 
 	nticks := int(math.Max(1.0, math.Floor(float64(barWidth)*pt.progress())))

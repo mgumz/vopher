@@ -12,11 +12,12 @@ type Quiet struct {
 	vopher.Runtime
 }
 
-func (quiet *Quiet) Start()                    { quiet.Runtime.Start() }
-func (quiet *Quiet) Stop()                     { quiet.Runtime.Stop() }
-func (quiet *Quiet) AddJob(id string)          { quiet.Add(1) }
-func (quiet *Quiet) JobDone(id string)         { quiet.Done() }
-func (quiet *Quiet) Print(id, msg string)      {}
-func (quiet *Quiet) PrintShort(id, msg string) {}
-func (quiet *Quiet) Wait()                     { quiet.WaitGroup.Wait() }
-func (quiet *Quiet) Refresh()                  {}
+func (quiet *Quiet) Start()                          { quiet.Runtime.Start() }
+func (quiet *Quiet) Stop()                           { quiet.Runtime.Stop() }
+func (quiet *Quiet) AddJob(id string)                { quiet.Add(1) }
+func (quiet *Quiet) JobDone(id string)               { quiet.Done() }
+func (quiet *Quiet) JobOrigin(string, vopher.Origin) {}
+func (quiet *Quiet) Print(id, msg string)            {}
+func (quiet *Quiet) PrintShort(id, msg string)       {}
+func (quiet *Quiet) Wait()                           { quiet.WaitGroup.Wait() }
+func (quiet *Quiet) Refresh()                        {}

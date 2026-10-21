@@ -14,7 +14,8 @@ import (
 // UISimple is an UI which prints the list of fetched plugins onto the
 // terminal
 type Simple struct {
-	jobs map[string]*vopher.Runtime
+	jobs    map[string]*vopher.Runtime
+	origins map[string]vopher.Origin
 	vopher.Runtime
 	sync.WaitGroup
 	sync.Mutex
@@ -59,7 +60,11 @@ func (simple *Simple) JobDone(id string) {
 	rt.Stop()
 	simple.jobs[id] = rt
 	simple.Lock()
-	fmt.Printf(" job %.2fs %s\n", simple.jobs[id].Duration().Seconds(), id)
+	origin := ""
+	if o, ok := simple.origins[id]; ok {
+		origin = "  " + o.String()
+	}
+	fmt.Printf(" job %.2fs %s%s\n", simple.jobs[id].Duration().Seconds(), id, origin)
 	simple.Unlock()
 }
 
@@ -89,3 +94,12 @@ func (simple *Simple) PrintShort(id, msg string) {
 
 func (simple *Simple) Wait()    { simple.WaitGroup.Wait() }
 func (simple *Simple) Refresh() {}
+
+func (simple *Simple) JobOrigin(id string, origin vopher.Origin) {
+	simple.Lock()
+	if simple.origins == nil {
+		simple.origins = make(map[string]vopher.Origin)
+	}
+	simple.origins[id] = origin
+	simple.Unlock()
+}
