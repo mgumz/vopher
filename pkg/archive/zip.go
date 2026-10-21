@@ -90,13 +90,13 @@ func (za *ZipArchive) Extract(folder string, r io.Reader, stripDirs int) error {
 		zreader.Close() // #nosec G104
 	}
 
-	return za.maybeStoreGHCommit(zfile.Comment, folder)
+	return za.maybeStoreCommit(zfile.Comment, folder)
 }
 
 // `git archive` stores the git-commit in the comment of the `.zip` file
 // so, we store it in common.CommitFileName in the plugin-folder
 // to be able to check for updates
-func (za *ZipArchive) maybeStoreGHCommit(commit, folder string) error {
+func (za *ZipArchive) maybeStoreCommit(commit, folder string) error {
 
 	if za.GitCommit && len(commit) == common.Sha1ChecksumLen {
 		name := filepath.Join(folder, common.CommitFileName)
@@ -106,6 +106,7 @@ func (za *ZipArchive) maybeStoreGHCommit(commit, folder string) error {
 		}
 		defer file.Close()           // #nosec G104
 		io.WriteString(file, commit) // #nosec G104
+		_ = os.Remove(filepath.Join(folder, common.LegacyCommitFileName))
 	}
 	return nil
 }

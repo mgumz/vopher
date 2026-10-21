@@ -4,8 +4,11 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
+	"path/filepath"
 	"testing"
 
+	"github.com/mgumz/vopher/pkg/common"
 	"github.com/mgumz/vopher/pkg/plugin"
 )
 
@@ -88,6 +91,37 @@ func TestProbeBranch(t *testing.T) {
 		t.Logf("test-%d: %q: %q %v", i, test.branches, branch, err)
 		if (err != nil) != test.fails || branch != test.expected {
 			t.Fatalf("%d: expected %q fail=%v, got %q %v", i, test.expected, test.fails, branch, err)
+		}
+	}
+}
+
+func TestGuessCommitByFile(t *testing.T) {
+
+	const (
+		commitNew = "3b753cf8c6a4dcde6edee8827d464ba9b8c4a6f0"
+		commitOld = "045d2de2d7b964259a5ba9d1af580ff87a80ffef"
+	)
+
+	tests := []struct {
+		files    map[string]string
+		expected string
+	}{
+		{map[string]string{common.CommitFileName: commitNew}, commitNew},
+		{map[string]string{common.LegacyCommitFileName: commitOld}, commitOld},
+		{map[string]string{common.CommitFileName: commitNew, common.LegacyCommitFileName: commitOld}, commitNew},
+		{map[string]string{}, ""},
+	}
+
+	for i, test := range tests {
+		base := t.TempDir()
+		os.Mkdir(filepath.Join(base, "plugin"), 0700)
+		for name, content := range test.files {
+			os.WriteFile(filepath.Join(base, "plugin", name), []byte(content), 0600)
+		}
+		commit := GuessCommitByFile("plugin", base)
+		t.Logf("test-%d: %v: %q", i, test.files, commit)
+		if commit != test.expected {
+			t.Fatalf("%d: expected %q, got %q", i, test.expected, commit)
 		}
 	}
 }

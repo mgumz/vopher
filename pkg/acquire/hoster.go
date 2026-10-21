@@ -127,10 +127,15 @@ func GuessCommitByZIP(path string) string {
 }
 
 // GuessCommitByFile "guesses" the git-commit by the content of the file
-// written while extracting the zip (see common.CommitFileName)
+// written while extracting the zip (see common.CommitFileName), or of the
+// file written by older versions of vopher
 func GuessCommitByFile(name, base string) string {
 	path := filepath.Join(base, name, common.CommitFileName)
 	commit, err := os.ReadFile(path) // #nosec G304
+	if os.IsNotExist(err) {
+		path = filepath.Join(base, name, common.LegacyCommitFileName)
+		commit, err = os.ReadFile(path) // #nosec G304
+	}
 	if err != nil {
 		return ""
 	}

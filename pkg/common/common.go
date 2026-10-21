@@ -4,10 +4,13 @@ const (
 	Sha1ChecksumLen = 40
 
 	// CommitFileName is written into the plugin folder and holds the
-	// commit-id taken from the zip comment. The name stems from the time
-	// only GitHub was supported; it is kept so installed plugins stay
-	// checkable.
-	CommitFileName = "github-commit"
+	// commit-id taken from the zip comment
+	CommitFileName = "git-commit"
+
+	// LegacyCommitFileName is the name of CommitFileName from the time only
+	// GitHub was supported; read so plugins installed back then stay
+	// checkable
+	LegacyCommitFileName = "github-commit"
 )
 
 // KnownHosts maps the host of a git hoster to the name of its hoster, as
