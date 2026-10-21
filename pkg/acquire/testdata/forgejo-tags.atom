@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Tags for mfussenegger/nvim-dap</title>
+  <id>https://codeberg.org/mfussenegger/nvim-dap/tags</id>
+  <updated>2026-10-21T22:14:56+02:00</updated>
+  <subtitle>Debug Adapter Protocol client implementation for Neovim</subtitle>
+  <link href="https://codeberg.org/mfussenegger/nvim-dap/tags"></link>
+  <entry>
+    <title>0.10.0</title>
+    <updated>2025-03-26T20:24:50+01:00</updated>
+    <id>3157808: https://codeberg.org/mfussenegger/nvim-dap/releases/tag/0.10.0</id>
+    <link href="https://codeberg.org/mfussenegger/nvim-dap/releases/tag/0.10.0" rel="alternate"></link>
+  </entry>
+  <entry>
+    <title>0.9.0</title>
+    <updated>2024-12-20T09:27:01+01:00</updated>
+    <id>3157811: https://codeberg.org/mfussenegger/nvim-dap/releases/tag/0.9.0</id>
+    <link href="https://codeberg.org/mfussenegger/nvim-dap/releases/tag/0.9.0" rel="alternate"></link>
+  </entry>
+</feed>

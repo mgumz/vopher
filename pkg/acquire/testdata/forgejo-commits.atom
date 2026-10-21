@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Latest commits for branch master</title>
+  <id>https://codeberg.org/mfussenegger/nvim-dap/branch/master</id>
+  <updated>2026-10-21T22:14:56+02:00</updated>
+  <subtitle>Debug Adapter Protocol client implementation for Neovim</subtitle>
+  <link href="https://codeberg.org/mfussenegger/nvim-dap/branch/master"></link>
+  <entry>
+    <title>Handle windows with winfixbuf when switchbuf contains uselast</title>
+    <updated>2026-09-11T15:37:10+02:00</updated>
+    <id>cfa2d58f4537aca6ca83e2de1a0d9f1491121264</id>
+    <link href="https://codeberg.org/mfussenegger/nvim-dap/commit/cfa2d58f4537aca6ca83e2de1a0d9f1491121264" rel="alternate"></link>
+  </entry>
+  <entry>
+    <title>Search for child sessions when handling source bufs</title>
+    <updated>2026-09-11T15:22:12+02:00</updated>
+    <id>10c58a303f0d735e382b9ccd45ad4e13c240b309</id>
+    <link href="https://codeberg.org/mfussenegger/nvim-dap/commit/10c58a303f0d735e382b9ccd45ad4e13c240b309" rel="alternate"></link>
+  </entry>
+</feed>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/" xml:lang="en-US">
+  <id>tag:github.com,2008:https://github.com/googleapis/google-cloud-go/releases</id>
+  <link type="text/html" rel="alternate" href="https://github.com/googleapis/google-cloud-go/releases"/>
+  <link type="application/atom+xml" rel="self" href="https://github.com/googleapis/google-cloud-go/releases.atom"/>
+  <title>Tags from google-cloud-go</title>
+  <updated>2026-10-21T18:58:34Z</updated>
+  <entry>
+    <id>tag:github.com,2008:Repository/19608522/pubsub/v2.8.0</id>
+    <updated>2026-10-21T20:09:39Z</updated>
+    <link rel="alternate" type="text/html" href="https://github.com/googleapis/google-cloud-go/releases/tag/pubsub%2Fv2.8.0"/>
+    <title>pubsub: v2.8.0</title>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Repository/19608522/firestore/v1.28.0</id>
+    <updated>2026-10-21T18:58:48Z</updated>
+    <link rel="alternate" type="text/html" href="https://github.com/googleapis/google-cloud-go/releases/tag/firestore%2Fv1.28.0"/>
+    <title>firestore: v1.28.0</title>
+  </entry>
+</feed>

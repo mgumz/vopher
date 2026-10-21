@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/">
+<title>GitLab Plugin for Neovim:main commits</title>
+<link href="https://gitlab.com/gitlab-org/editor-extensions/gitlab.vim/-/commits/main?format=atom" rel="self" type="application/atom+xml"/>
+<link href="https://gitlab.com/gitlab-org/editor-extensions/gitlab.vim/-/commits/main" rel="alternate" type="text/html"/>
+<id>https://gitlab.com/gitlab-org/editor-extensions/gitlab.vim/-/commits/main</id>
+<updated>2026-10-14T15:54:44+01:00</updated>
+  <entry>
+  <id>https://gitlab.com/gitlab-org/editor-extensions/gitlab.vim/-/commit/a867a65a65d9d236164ed009fb534813d2e2c60b</id>
+  <link href="https://gitlab.com/gitlab-org/editor-extensions/gitlab.vim/-/commit/a867a65a65d9d236164ed009fb534813d2e2c60b"/>
+  <title>Merge branch 'docs-fix-contributing-preposition' into 'main'</title>
+  <updated>2026-10-14T15:54:44+01:00</updated>
+</entry>
+  <entry>
+  <id>https://gitlab.com/gitlab-org/editor-extensions/gitlab.vim/-/commit/b1f8286df533c604f9f307d454c0fd8bef3723f2</id>
+  <link href="https://gitlab.com/gitlab-org/editor-extensions/gitlab.vim/-/commit/b1f8286df533c604f9f307d454c0fd8bef3723f2"/>
+  <title>docs: Fix preposition in README contributing section</title>
+  <updated>2026-10-11T09:36:34+02:00</updated>
+</entry>
+</feed>

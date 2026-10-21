@@ -2,6 +2,7 @@ package acquire
 
 import (
 	"encoding/xml"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -95,16 +96,23 @@ func fetchFeed(feedURL url.URL, entryID func(id string) string) *atomFeed {
 		return nil
 	}
 
-	xmldec := xml.NewDecoder(resp.Body)
-	feed := new(atomFeed)
-
-	if err = xmldec.Decode(feed); err != nil {
+	feed, err := parseFeed(resp.Body, entryID)
+	if err != nil {
 		log.Printf("error: %q %v", feedURL.String(), err)
 		return nil
 	}
-
 	if len(feed.Entry) == 0 {
 		return nil
+	}
+	return feed
+}
+
+// parseFeed parses the atom feed in r and reduces the entry-ids by entryID
+func parseFeed(r io.Reader, entryID func(id string) string) (*atomFeed, error) {
+
+	feed := new(atomFeed)
+	if err := xml.NewDecoder(r).Decode(feed); err != nil {
+		return nil, err
 	}
 
 	for i, entry := range feed.Entry {
@@ -113,7 +121,7 @@ func fetchFeed(feedURL url.URL, entryID func(id string) string) *atomFeed {
 		feed.Entry[i].Title = title
 	}
 
-	return feed
+	return feed, nil
 }
 
 // commitID returns the part of the entry-id after the last "/", which is the

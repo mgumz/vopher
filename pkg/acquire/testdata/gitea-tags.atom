@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Tags for gitea/go-sdk</title>
+  <id>https://gitea.com/gitea/go-sdk/tags</id>
+  <updated>2026-10-21T20:14:57Z</updated>
+  <subtitle>Gitea: Golang SDK</subtitle>
+  <link href="https://gitea.com/gitea/go-sdk/tags"></link>
+  <entry>
+    <title>v0.25.1</title>
+    <updated>2026-05-12T22:11:16Z</updated>
+    <id>868261: https://gitea.com/gitea/go-sdk/releases/tag/gitea/v0.25.1</id>
+    <link href="https://gitea.com/gitea/go-sdk/releases/tag/gitea/v0.25.1" rel="alternate"></link>
+  </entry>
+  <entry>
+    <title>v0.25.0</title>
+    <updated>2026-05-06T04:14:43Z</updated>
+    <id>865390: https://gitea.com/gitea/go-sdk/releases/tag/gitea/v0.25.0</id>
+    <link href="https://gitea.com/gitea/go-sdk/releases/tag/gitea/v0.25.0" rel="alternate"></link>
+  </entry>
+</feed>

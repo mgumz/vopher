@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/" xml:lang="en-US">
+  <id>tag:github.com,2008:/tpope/vim-fugitive/commits/master</id>
+  <link type="text/html" rel="alternate" href="https://github.com/tpope/vim-fugitive/commits/master"/>
+  <link type="application/atom+xml" rel="self" href="https://github.com/tpope/vim-fugitive/commits/master.atom"/>
+  <title>Recent Commits to vim-fugitive:master</title>
+  <updated>2026-03-07T19:15:53Z</updated>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/3b753cf8c6a4dcde6edee8827d464ba9b8c4a6f0</id>
+    <link type="text/html" rel="alternate" href="https://github.com/tpope/vim-fugitive/commit/3b753cf8c6a4dcde6edee8827d464ba9b8c4a6f0"/>
+    <title>
+        Use --list-cmds=others instead of hunting through PATH
+    </title>
+    <updated>2026-03-07T19:15:53Z</updated>
+  </entry>
+  <entry>
+    <id>tag:github.com,2008:Grit::Commit/045d2de2d7b964259a5ba9d1af580ff87a80ffef</id>
+    <link type="text/html" rel="alternate" href="https://github.com/tpope/vim-fugitive/commit/045d2de2d7b964259a5ba9d1af580ff87a80ffef"/>
+    <title>
+        Add line limit to read of MERGE_MSG
+    </title>
+    <updated>2025-07-15T21:29:50Z</updated>
+  </entry>
+</feed>
