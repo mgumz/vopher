@@ -3,15 +3,14 @@ package action
 import (
 	"log"
 	"os"
-	"path"
 	"path/filepath"
 
+	"github.com/mgumz/vopher/pkg/acquire"
 	"github.com/mgumz/vopher/pkg/action/update"
 	"github.com/mgumz/vopher/pkg/archive"
 	"github.com/mgumz/vopher/pkg/http"
 	"github.com/mgumz/vopher/pkg/plugin"
 	"github.com/mgumz/vopher/pkg/ui"
-	"github.com/mgumz/vopher/pkg/utils"
 )
 
 // ActUpdateOpts holds options for action "update"
@@ -20,6 +19,7 @@ type ActUpdateOpts struct {
 	Force  bool   // enforce acquire, even plugin exists
 	DryRun bool   // don't extract, just show the files
 	SHA1   string // checksum to check the downloaded file against
+	Cache  string // dir to keep the downloaded archives in; "" = next to the plugins in Dir
 }
 
 // Update fetches available updates for all given `plugins` and prints the
@@ -47,13 +47,8 @@ func Update(plugins plugin.List, ui ui.UI, opts *ActUpdateOpts) {
 		if isArchive, _ := archive.IsSupportedArchive(archiveName); !isArchive {
 			switch plugin.URL.Host {
 			case "github.com":
-				// NOTE: "master" as default one is a classic fallback, but
-				// nowadays the primary branch is called "main" often. needs
-				// to be tackled somewhen
-				ref := utils.FirstNotEmpty(plugin.URL.Fragment, plugin.Opts.Branch, "master")
-				remoteZip := ref + ".zip"
-				plugin.URL.Path = path.Join(plugin.URL.Path, "archive", remoteZip)
-				archiveName = filepath.Base(remoteZip)
+				plugin.URL = acquire.Github{}.ArchiveURL(plugin.URL, plugin.Opts.Branch)
+				archiveName = filepath.Base(plugin.URL.Path)
 				plugin.Ext, plugin.Archive = ".zip", &archive.ZipArchive{GitCommit: true}
 			default:
 				plugin.Ext, err = http.DetectFType(plugin.URL.String())
@@ -77,8 +72,13 @@ func Update(plugins plugin.List, ui ui.UI, opts *ActUpdateOpts) {
 			}
 		}
 
+		archivePath := pluginFolder + plugin.Ext
+		if opts.Cache != "" {
+			archivePath = acquire.ArchivePath(opts.Cache, plugin.URL, plugin.Ext)
+		}
+
 		ui.AddJob(pluginFolder)
-		go update.AcquireAndPostupdate(pluginFolder, opts.DryRun, plugin, ui)
+		go update.AcquireAndPostupdate(pluginFolder, archivePath, opts.DryRun, plugin, ui)
 	}
 
 	ui.Wait()

@@ -14,7 +14,7 @@ import (
 
 // Check checks for updates in the upstream repository of each plugin in the
 // plugins list and uses the ui to output the result
-func Check(plugins plugin.List, base string, ui ui.UI) {
+func Check(plugins plugin.List, base, cacheDir string, ui ui.UI) {
 
 	m := &sync.Map{}
 
@@ -29,7 +29,7 @@ func Check(plugins plugin.List, base string, ui ui.UI) {
 	wg := sync.WaitGroup{}
 	check := func(p *plugin.Plugin) {
 		gh := acquire.Github{}
-		text := gh.CheckPlugin(p, base)
+		text := gh.CheckPlugin(p, base, cacheDir)
 		m.Store(p.Name, text)
 		fmt.Fprintf(os.Stderr, "check: %d/%d %s\n", done.Add(1), total, p.Name)
 		wg.Done()

@@ -11,6 +11,7 @@ import (
 	"strings"
 	"text/tabwriter"
 
+	"github.com/mgumz/vopher/pkg/archive"
 	"github.com/mgumz/vopher/pkg/common"
 	"github.com/mgumz/vopher/pkg/plugin"
 	"github.com/mgumz/vopher/pkg/utils"
@@ -48,10 +49,9 @@ func (gh Github) GetRepository(remote *url.URL) (name, head string) {
 	return name, head
 }
 
-// GuessCommitByZIP guesses the commit by the comment in a github-zip file. It
-// refers to the git-commit-id used by github to create the zip.
-func (gh Github) GuessCommitByZIP(name, base string) string {
-	path := filepath.Join(base, name+".zip")
+// GuessCommitByZIP guesses the commit by the comment in the github-zip file
+// at path. It refers to the git-commit-id used by github to create the zip.
+func (gh Github) GuessCommitByZIP(path string) string {
 	zfile, err := zip.OpenReader(path)
 	if err != nil {
 		return ""
@@ -87,12 +87,15 @@ func (gh Github) FeedURL(repo *url.URL, parts ...string) url.URL {
 
 // CheckPlugin checks the given plugin for updates and returns printable
 // text as result
-func (gh Github) CheckPlugin(plugin *plugin.Plugin, base string) string {
+func (gh Github) CheckPlugin(plugin *plugin.Plugin, base, cacheDir string) string {
 
 	name, head := gh.GetRepository(plugin.URL)
 	altHead := gh.GuessCommitByFile(plugin.Name, base)
+	if altHead == "" && cacheDir != "" {
+		altHead = gh.GuessCommitByZIP(ArchivePath(cacheDir, gh.PluginArchiveURL(plugin), ".zip"))
+	}
 	if altHead == "" {
-		altHead = gh.GuessCommitByZIP(plugin.Name, base)
+		altHead = gh.GuessCommitByZIP(filepath.Join(base, plugin.Name+".zip"))
 	}
 
 	u := *plugin.URL
@@ -142,4 +145,25 @@ func shortID(id string) string {
 		return id[:n]
 	}
 	return id
+}
+
+// ArchiveURL returns the URL of the zip github creates for repo at the ref
+// given by the fragment of repo, branch or "master" (in that order)
+func (gh Github) ArchiveURL(repo *url.URL, branch string) *url.URL {
+	// NOTE: "master" as default one is a classic fallback, but
+	// nowadays the primary branch is called "main" often. needs
+	// to be tackled somewhen
+	ref := utils.FirstNotEmpty(repo.Fragment, branch, "master")
+	u := *repo
+	u.Path = path.Join(u.Path, "archive", ref+".zip")
+	return &u
+}
+
+// PluginArchiveURL returns the URL vopher fetches the github plugin p from:
+// p.URL if it already points to an archive, ArchiveURL otherwise
+func (gh Github) PluginArchiveURL(p *plugin.Plugin) *url.URL {
+	if ok, _ := archive.IsSupportedArchive(path.Base(p.URL.Path)); ok {
+		return p.URL
+	}
+	return gh.ArchiveURL(p.URL, p.Opts.Branch)
 }

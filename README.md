@@ -24,7 +24,9 @@ seconds.
 
     Flags:
       -all
-            don't keep <plugin>.zip around [prune]
+            also delete <plugin>.zip in -dir and archives in -cache not referenced in -f <list> [prune]
+      -cache string
+            directory to keep downloaded archives in; empty: keep them next to the plugins in -dir (default "$XDG_CACHE_HOME/vopher" or "~/.cache/vopher")
       -dir string
             directory to extract the plugins to (default "./pack/vopher/start")
       -dry
@@ -59,7 +61,8 @@ seconds.
       prune    - removes all entries from -dir <folder> which are not referenced in
                  '-f <list>'.
                  * use '-force' to delete plugins.
-                 * use '-all=true' to delete <plugin>.zip files.
+                 * use '-all=true' to delete <plugin>.zip files in -dir and
+                   archives in -cache not referenced in '-f <list>'.
       status   - lists plugins in '-dir <folder>' and marks them accordingly
                  * 'v' means vopher is tracking the plugin in your '-f <list>'
                  * 'm' means vopher is tracking the plugin and it's missing. You can
@@ -262,7 +265,7 @@ The vopher-file is pretty simple:
     # fetches vim-fugitive, call a post-update cmd. vophers
     # sets the following environment variables:
     # VOPHR_NAME        - plugin name
-    # VOPHER_ARCHIVE    - plugin name.ext
+    # VOPHER_ARCHIVE    - path to the downloaded archive
     # VOPHER_DIR        - plugin folder
     # VOPHER_URL        - url of plugin
     https://github.com/tpope/vim-fugitive postupdate=/path/to/cmd

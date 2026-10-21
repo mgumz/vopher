@@ -13,7 +13,7 @@ import (
 	"github.com/mgumz/vopher/pkg/utils"
 )
 
-func AcquireAndPostupdate(dir string, dryRun bool, plugin *plugin.Plugin, ui ui.UI) {
+func AcquireAndPostupdate(dir, archivePath string, dryRun bool, plugin *plugin.Plugin, ui ui.UI) {
 
 	defer ui.JobDone(dir)
 
@@ -31,7 +31,7 @@ func AcquireAndPostupdate(dir string, dryRun bool, plugin *plugin.Plugin, ui ui.
 	if dryRun {
 		entries, err = acquire.DryAcquire(dir, url, plugin.Archive, stripDir, sha1)
 	} else {
-		err = acquire.Acquire(dir, plugin.Ext, url, plugin.Archive, stripDir, sha1)
+		err = acquire.Acquire(dir, archivePath, url, plugin.Archive, stripDir, sha1)
 	}
 	if err != nil {
 		log.Printf("%s: %v", dir, err)
@@ -67,7 +67,7 @@ func AcquireAndPostupdate(dir string, dryRun bool, plugin *plugin.Plugin, ui ui.
 	// underneath it. if the user wants to call a script inside .Dir (which
 	// should be a rare case anyway) then she should use $VOPHER_DIR/cmd which
 	// gets expanded, see above.
-	cmd := buildCmd(path, plugin.Name, plugin.Ext, dir, url)
+	cmd := buildCmd(path, plugin.Name, archivePath, dir, url)
 
 	if dryRun {
 		ui.Print(dir, fmt.Sprintf("# postupdate: %q (env: %v)\n", cmd.Path, cmd.Env))
@@ -88,13 +88,13 @@ func AcquireAndPostupdate(dir string, dryRun bool, plugin *plugin.Plugin, ui ui.
 	ui.Print(dir, string(out))
 }
 
-func buildCmd(path, name, ext, dir, url string) exec.Cmd {
+func buildCmd(path, name, archivePath, dir, url string) exec.Cmd {
 
 	return exec.Cmd{
 		Path: path,
 		Env: append(os.Environ(),
 			"VOPHER_NAME="+name,
-			"VOPHER_ARCHIVE="+name+ext,
+			"VOPHER_ARCHIVE="+archivePath,
 			"VOPHER_DIR="+dir,
 			"VOPHER_URL="+url),
 	}

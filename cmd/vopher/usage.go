@@ -30,7 +30,8 @@ Actions:
   prune    - removes all entries from -dir <folder> which are not referenced in
              '-f <list>'.
              * use '-force' to delete plugins.
-             * use '-all=true' to delete <plugin>.zip files.
+             * use '-all=true' to delete <plugin>.zip files in -dir and
+               archives in -cache not referenced in '-f <list>'.
   status   - lists plugins in '-dir <folder>' and marks them accordingly
              * 'v' means vopher is tracking the plugin in your '-f <list>'
              * 'm' means vopher is tracking the plugin and it's missing. You can

@@ -55,7 +55,7 @@ const (
 // # fetches vim-fugitive, call a post-update cmd. vophers
 // # sets the following environment variables:
 // # VOPHER_NAME    - plugin name
-// # VOPHER_ARCHIVE - plugin name.ext
+// # VOPHER_ARCHIVE - path to the downloaded archive
 // # VOPHER_DIR     - plugin folder
 // # VOPHER_URL     - url of plugin
 // https://github.com/tpope/vim-fugitive postupdate=/path/to/cmd

@@ -61,6 +61,7 @@ func main() {
 		all         bool
 		from        string
 		dir         string
+		cache       string
 		ui          string
 		filter      utils.StringList
 		httpJobs    http.HostJobs
@@ -70,14 +71,16 @@ func main() {
 		action: "status",
 		from:   "vopher.list",
 		dir:    "./pack/vopher/start", // vim8 default "package" folder
+		cache:  utils.CacheDir(),
 	}
 
 	flag.BoolVar(&cli.force, "force", cli.force, "force certain actions [prune, clean]")
 	flag.BoolVar(&cli.dry, "dry", cli.dry, "dry-run, show what would happen [prune, clean]")
-	flag.BoolVar(&cli.all, "all", cli.force, "don't keep <plugin>.zip around [prune]")
+	flag.BoolVar(&cli.all, "all", cli.force, "also delete <plugin>.zip in -dir and archives in -cache not referenced in -f <list> [prune]")
 	flag.BoolVar(&cli.version, "v", cli.version, "show version")
 	flag.StringVar(&cli.from, "f", cli.from, "path|url to list of plugins")
 	flag.StringVar(&cli.dir, "dir", cli.dir, "directory to extract the plugins to")
+	flag.StringVar(&cli.cache, "cache", cli.cache, "directory to keep downloaded archives in; empty: keep them next to the plugins in -dir")
 	flag.StringVar(&cli.ui, "ui", cli.ui, "ui mode ('simple' or 'oneline', works with `update` action)")
 	flag.Var(&cli.filter, "filter", "operate on given plugins only; matches substrings, can be given multiple times")
 	flag.Var(&cli.httpJobs, "http.jobs", "max. concurrent requests per host: host=n[,host=n], matches subdomains, '*' for all other hosts (default *=8), 0 = unlimited; can be given multiple times")
@@ -132,26 +135,34 @@ func main() {
 	}
 	cli.dir = path
 
+	if cli.cache != "" {
+		cache, err := utils.ExpandPath(cli.cache)
+		if err != nil {
+			log.Fatalf("error: expanding %q failed while obtaining current user?? %s", cli.cache, err)
+		}
+		cli.cache = cache
+	}
+
 	switch cli.action {
 	case "fupdate", "fu", "fast-update", "fup":
 		parser := localOrRemoteParser(cli.from)
 		plugins := mustReadPlugins(cli.from, parser, cli.filter)
-		opts := action.ActUpdateOpts{Dir: cli.dir, Force: cli.force, DryRun: cli.dry}
+		opts := action.ActUpdateOpts{Dir: cli.dir, Cache: cli.cache, Force: cli.force, DryRun: cli.dry}
 		action.FastUpdate(plugins, ui, &opts)
 	case "update", "u", "up":
 		parser := localOrRemoteParser(cli.from)
 		plugins := mustReadPlugins(cli.from, parser, cli.filter)
-		opts := action.ActUpdateOpts{Dir: cli.dir, Force: cli.force, DryRun: cli.dry}
+		opts := action.ActUpdateOpts{Dir: cli.dir, Cache: cli.cache, Force: cli.force, DryRun: cli.dry}
 		action.Update(plugins, ui, &opts)
 	case "fetch", "f":
 		from := strings.Join(flag.Args()[1:], " ")
 		plugins := mustReadPlugins(from, plugin.List.ParseLine, []string{})
-		opts := action.ActUpdateOpts{Dir: cli.dir, Force: cli.force, DryRun: cli.dry}
+		opts := action.ActUpdateOpts{Dir: cli.dir, Cache: cli.cache, Force: cli.force, DryRun: cli.dry}
 		action.Update(plugins, ui, &opts)
 	case "check", "ch":
 		parser := localOrRemoteParser(cli.from)
 		plugins := mustReadPlugins(cli.from, parser, cli.filter)
-		action.Check(plugins, cli.dir, ui)
+		action.Check(plugins, cli.dir, cli.cache, ui)
 	case "clean", "cl":
 		parser := localOrRemoteParser(cli.from)
 		plugins := mustReadPlugins(cli.from, parser, cli.filter)
@@ -159,7 +170,7 @@ func main() {
 	case "prune", "p", "pr":
 		parser := localOrRemoteParser(cli.from)
 		plugins := mustReadPlugins(cli.from, parser, cli.filter)
-		action.Prune(plugins, cli.dir, cli.force, cli.all)
+		action.Prune(plugins, cli.dir, cli.cache, cli.force, cli.all)
 	case "status", "st":
 		parser := localOrRemoteParser(cli.from)
 		plugins := mayReadPlugins(cli.from, parser, cli.filter)
