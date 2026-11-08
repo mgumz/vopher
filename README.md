@@ -196,7 +196,8 @@ I need more color! Are there any color schemes available?
 
 ## Building / Installation
 
-To build **vopher**, a working Go compiler is needed. Then do this:
+To build **vopher**, a working Go compiler (1.26 or newer) is needed. Then do
+this:
 
     $> go install -v github.com/mgumz/vopher/cmd/vopher@latest
 
