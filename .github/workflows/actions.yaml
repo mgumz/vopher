@@ -14,29 +14,26 @@ jobs:
     strategy:
       matrix:
         os: ["windows-latest", "ubuntu-latest", "macOS-latest"]
-        go: ["1.19.x", "1.20.x"]
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         fetch-depth: 1
-    - uses: WillAbides/setup-go-faster@v1.8.0
-      with:
-        go-version: ${{ matrix.go }}
+    - uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
     - run: "go test ./pkg/..."
 
   reports:
     name: "Run various reports on code basis"
     runs-on: "ubuntu-latest"
+    env:
+      MISE_ENV: report
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         fetch-depth: 1    
-    - uses: WillAbides/setup-go-faster@v1.8.0
-      with:
-        go-version: "1.20.2"
+    - uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
     - run: "go env; mkdir -p /opt/local/bin || ls -l /opt/local/bin"
-    - uses: actions/cache@v3
+    - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       id: cache-report-tools
       with:
         path: /opt/local/bin
@@ -52,11 +49,9 @@ jobs:
     runs-on: "ubuntu-latest"
     needs: [test, reports]
     steps:
-      - uses: WillAbides/setup-go-faster@v1.8.0
-        with:
-          go-version: "1.20.x"
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 1
+      - uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
       - run: "make bin/vopher"
       - run: "./bin/vopher version"
