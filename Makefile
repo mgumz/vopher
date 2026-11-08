@@ -41,12 +41,10 @@ bin/vopher-$(VERSION).%:
 
 releases/vopher-$(VERSION).%.zip: bin/vopher-$(VERSION).%.exe
 	mkdir -p releases
-	zip -9 -j -r $@ README.md $<
+	go run ./tools/pack.go -zip README.md $< > $@
 releases/vopher-$(VERSION).%.tar.gz: bin/vopher-$(VERSION).%
 	mkdir -p releases
-	tar -cf $(basename $@) README.md && \
-		tar -rf $(basename $@) --strip-components 1 $< && \
-		gzip -9 $(basename $@)
+	go run ./tools/pack.go README.md $< | gzip -9 > $@
 
 deps-vendor:
 	go mod vendor
