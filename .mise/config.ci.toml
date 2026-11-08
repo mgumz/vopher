@@ -1,0 +1,7 @@
+[tools]
+act = "0.2.97"
+pinact = "5.0.2"
+
+[settings]
+lockfile = true
+experimental = true

@@ -1,0 +1,10 @@
+[tools]
+go = "1.27.3"
+"go:github.com/loov/goda" = "0.10.2"
+golangci-lint = "2.15.0"
+golangci-lint-langserver = "0.0.12"
+grype = "0.121.2"
+
+[settings]
+lockfile = true
+experimental = true
