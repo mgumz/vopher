@@ -223,84 +223,98 @@ install a Golang compiler via your regular package manager on the OS level.
     $> mise install
     $> make bin/vopher
 
-You get the act versions of Golang, golangci-lint, gopls etc which are 
-referenced in the .mise/config.toml file.
+The tools are split into several sets in the `.mise/` folder. Each set has
+its own lock file next to it. `mise install` reads `config.toml`, the other
+sets are added by naming them in `MISE_ENV`:
+
+    $> MISE_ENV=dev mise install
+
+| set                  | tools                                          | used for                              |
+|----------------------|------------------------------------------------|---------------------------------------|
+| `config.toml`        | go                                             | building and testing, also in the CI  |
+| `config.dev.toml`    | go, gopls, golangci-lint (+ langserver), goda  | working on the code                   |
+| `config.report.toml` | go, golangci-lint, goda, grype                 | `make reports`, also in the CI        |
+| `config.ci.toml`     | act, pinact                                    | working on `.github/workflows`        |
+
+Combine sets with a comma: `MISE_ENV=dev,ci`.
 
 ## The vopher-file format
 
 The vopher-file is pretty simple:
 
-    # a comment starts with a '#'
-    # empty lines are ignored
-    #  whitespaces at start or end of the line are ignored by vopher
+```properties
+# a comment starts with a '#'
+# empty lines are ignored
+#  whitespaces at start or end of the line are ignored by vopher
 
-    # fetches diffchar from vimscripts
-    https://vim.sourceforge.io/scripts/download_script.php?src_id=25736
+# fetches diffchar from vimscripts
+https://vim.sourceforge.io/scripts/download_script.php?src_id=25736
 
-    # fetches diffchar from vimscripts and pick a proper folder name
-    diffchar https://vim.sourceforge.io/scripts/download_script.php?src_id=25736
+# fetches diffchar from vimscripts and pick a proper folder name
+diffchar https://vim.sourceforge.io/scripts/download_script.php?src_id=25736
 
-    # fetches diffchar from vimscripts, pick a proper folder name AND prevent
-    # stripping away the first path within the .zip file
-    diffchar https://vim.sourceforge.io/scripts/download_script.php?src_id=25736 strip=0
+# fetches diffchar from vimscripts, pick a proper folder name AND prevent
+# stripping away the first path within the .zip file
+diffchar https://vim.sourceforge.io/scripts/download_script.php?src_id=25736 strip=0
 
-    # git hosters have special powers: vopher knows where they keep the
-    # archive of a branch, tag or commit, and `vopher check` reads their
-    # feeds. Known hosts: github.com, codeberg.org (Forgejo), gitea.com,
-    # gitlab.com; for them the "https://" may be left out.
+# git hosters have special powers: vopher knows where they keep the
+# archive of a branch, tag or commit, and `vopher check` reads their
+# feeds. Known hosts: github.com, codeberg.org (Forgejo), gitea.com,
+# gitlab.com; for them the "https://" may be left out.
 
-    # fetches vim-fugitive, default branch: "main", else "master"
-    https://github.com/tpope/vim-fugitive
-    github.com/tpope/vim-fugitive
+# fetches vim-fugitive, default branch: "main", else "master"
+https://github.com/tpope/vim-fugitive
+github.com/tpope/vim-fugitive
 
-    # fetches vim-fugitive, branch 'worktree'. a #ref (see below) wins
-    # over branch=
-    https://github.com/tpope/vim-fugitive branch=worktree
+# fetches vim-fugitive, branch 'worktree'. a #ref (see below) wins
+# over branch=
+https://github.com/tpope/vim-fugitive branch=worktree
 
-    # fetches vim-fugitive, tagged release 'v2.1'
-    https://github.com/tpope/vim-fugitive#v2.1.zip
+# fetches vim-fugitive, tagged release 'v2.1'
+https://github.com/tpope/vim-fugitive#v2.1.zip
 
-    # fetches vim-fugitive, commit 913fff1cea3aa1a08a360a494fa05555e59147f5
-    https://github.com/tpope/vim-fugitive#913fff1cea3aa1a08a360a494fa05555e59147f5
+# fetches vim-fugitive, commit 913fff1cea3aa1a08a360a494fa05555e59147f5
+https://github.com/tpope/vim-fugitive#913fff1cea3aa1a08a360a494fa05555e59147f5
 
-    # fetches vim-fugitive, commit 913fff1cea3aa1a08a360a494fa05555e59147f5,
-    # but since it's too long, just use the short-version of it
-    https://github.com/tpope/vim-fugitive#913fff1c
+# fetches vim-fugitive, commit 913fff1cea3aa1a08a360a494fa05555e59147f5,
+# but since it's too long, just use the short-version of it
+https://github.com/tpope/vim-fugitive#913fff1c
 
-    # fetches vim-fugitive, apply some options to the
-    # parser/extractor
-    https://github.com/tpope/vim-fugitive option1=foo option2=bar
+# fetches vim-fugitive, apply some options to the
+# parser/extractor
+https://github.com/tpope/vim-fugitive option1=foo option2=bar
 
-    # fetches vim-fugitive, call a post-update cmd. vophers
-    # sets the following environment variables:
-    # VOPHR_NAME        - plugin name
-    # VOPHER_ARCHIVE    - path to the downloaded archive
-    # VOPHER_DIR        - plugin folder
-    # VOPHER_URL        - url of plugin
-    https://github.com/tpope/vim-fugitive postupdate=/path/to/cmd
+# fetches vim-fugitive, call a post-update cmd. vophers
+# sets the following environment variables:
+# VOPHR_NAME        - plugin name
+# VOPHER_ARCHIVE    - path to the downloaded archive
+# VOPHER_DIR        - plugin folder
+# VOPHER_URL        - url of plugin
+https://github.com/tpope/vim-fugitive postupdate=/path/to/cmd
 
-    # variant of postupdate: postupdate.linux=/path/to/cmd
+# variant of postupdate: postupdate.linux=/path/to/cmd
 
-    # fetches merginal and mark its dependency vim-fugitive. this allows
-    # action `vim-packs` to add vim-fugitive into the list of `packadd!`
-    # packs. Note: the depndency given can be the full name (e.g.
-    # "nvim/opt/abc") or just the last part of the path ("abc")
-    https://github.com/idanarye/vim-merginal depends-on=vim-fugitive
+# fetches merginal and mark its dependency vim-fugitive. this allows
+# action `vim-packs` to add vim-fugitive into the list of `packadd!`
+# packs. Note: the depndency given can be the full name (e.g.
+# "nvim/opt/abc") or just the last part of the path ("abc")
+https://github.com/idanarye/vim-merginal depends-on=vim-fugitive
 
-    # fetches nvim-origami. nvim-origami works only with nvim:0.11 and
-    # higher. again, this helps action `vim-pack` to guard inclusion
-    # of nvim-origami in too old versions
-    nvim/opt/nvim-origami https://github.com/idanarye/vim-merginal min-version=nvim-0.11
+# fetches nvim-origami. nvim-origami works only with nvim:0.11 and
+# higher. again, this helps action `vim-pack` to guard inclusion
+# of nvim-origami in too old versions
+nvim/opt/nvim-origami https://github.com/idanarye/vim-merginal min-version=nvim-0.11
 
-    # fetches nvim-dap from codeberg.org, a Forgejo instance
-    codeberg.org/mfussenegger/nvim-dap
+# fetches nvim-dap from codeberg.org, a Forgejo instance
+codeberg.org/mfussenegger/nvim-dap
 
-    # fetches gitlab.vim from gitlab.com, which allows nested groups
-    gitlab.com/gitlab-org/editor-extensions/gitlab.vim
+# fetches gitlab.vim from gitlab.com, which allows nested groups
+gitlab.com/gitlab-org/editor-extensions/gitlab.vim
 
-    # fetches from a self-hosted instance: its host tells nothing about the
-    # software, so name the hoster: github, forgejo, gitea or gitlab
-    https://git.example.com/someone/vim-plugin hoster=forgejo
+# fetches from a self-hosted instance: its host tells nothing about the
+# software, so name the hoster: github, forgejo, gitea or gitlab
+https://git.example.com/someone/vim-plugin hoster=forgejo
+```
 
 ## Supported archive types
 
